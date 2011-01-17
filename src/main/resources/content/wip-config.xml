@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<configuration>
+
+	<wipDefault>
+	
+		<initUrl>http://blog.ippon.fr/</initUrl>
+		
+		<enableUrlRewriting>true</enableUrlRewriting>
+		
+		<domainsToProxy>http://blog.ippon.fr/</domainsToProxy>
+		
+		<cssRegex>(?:url\((?:'|")?(.*?)(?:'|")?\))|(?:@import\s+[^url](?:'|")?(.*?)(?:'|")|;|\s+|$)</cssRegex>
+		
+		<jsRegex>open\('([^']*)'|open\("([^\"]*)"</jsRegex>
+		
+		<enableCssRewriting>true</enableCssRewriting>
+		
+		<enableCssRetrieving>true</enableCssRetrieving>
+		
+		<portletDivId>wip</portletDivId>
+		
+		<absolutePositioning>true</absolutePositioning>
+		
+		<addPrefix>true</addPrefix>
+		
+		<customCss></customCss>
+		
+		<javascriptUrls>/share/proxy/alfresco::::AJAX, /share/proxy/alfresco-feed::::AJAX, /share/feedservice::::AJAX, /share/service::::AJAX, /share/page::::LINK</javascriptUrls>
+		
+		<scriptsToIgnore></scriptsToIgnore>
+		
+		<clippingType>none</clippingType>
+		
+		<xPath></xPath>
+		
+		<xsltClipping></xsltClipping>
+		
+		<xsltTransform></xsltTransform>
+		
+		<!-- Caching -->
+		
+		<enableCache>false</enableCache>
+		
+		<pageCachePrivate>false</pageCachePrivate>
+		
+		<resourceCachePublic>false</resourceCachePublic>
+		
+		<forcePageCaching>false</forcePageCaching>
+		
+		<forceResourceCaching>false</forceResourceCaching>
+		
+		<pageCacheTimeout>0</pageCacheTimeout>
+		
+		<resourceCacheTimeout>0</resourceCacheTimeout>
+		
+		<cacheDateRate>30</cacheDateRate>
+	
+	</wipDefault>
+	
+</configuration>

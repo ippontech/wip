@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<portlet-app xmlns="http://java.sun.com/xml/ns/portlet/portlet-app_2_0.xsd"
+	version="2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/portlet/portlet-app_2_0.xsd http://java.sun.com/xml/ns/portlet/portlet-app_2_0.xsd">
+	
+	<portlet>
+	
+		<description>This portlet enable simple web application integration within a portlet</description>
+		<portlet-name>WIP</portlet-name>
+		<display-name>WIPortlet</display-name>
+
+		<portlet-class>fr.ippon.wip.portlet.WIPortlet</portlet-class>
+
+		<supports>
+			<mime-type>text/html</mime-type>
+			<portlet-mode>VIEW</portlet-mode>
+			<portlet-mode>EDIT</portlet-mode>
+		</supports>
+
+		<supported-locale>fr</supported-locale>
+		<supported-locale>en</supported-locale>
+
+		<resource-bundle>content.Language</resource-bundle>
+
+		<portlet-info>
+			<title>Portlet d'intégration web</title>
+			<short-title>WIP</short-title>
+			<keywords>WIP</keywords>
+		</portlet-info>
+		
+	</portlet>
+	
+</portlet-app>

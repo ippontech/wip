@@ -1,0 +1,61 @@
+/*
+ *	Copyright 2010,2011 Ippon Technologies 
+ *  
+ *	This file is part of Wip Portlet.
+ *	Wip Portlet is free software: you can redistribute it and/or modify
+ *	it under the terms of the GNU General Public License as published by
+ *	the Free Software Foundation, either version 3 of the License, or
+ *	(at your option) any later version.
+ *
+ *	Wip Portlet is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *	GNU General Public License for more details.
+ *
+ *	You should have received a copy of the GNU General Public License
+ *	along with Wip Portlet.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package fr.ippon.wip.util;
+
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+/**
+ * This class is used to cache DTD resources needed by the XSLT parser.
+ * These resources are saved in a dtd folder in the classpath.
+ * 
+ * @author Anthony Luce
+ * @author Quentin Thierry
+ */
+public class CachedDTD implements EntityResolver {
+	
+	public static final String XHTML_DTD = "xhtml1-transitional.dtd";
+	public static final String XHTML_LAT1 = "xhtml-lat1.ent";
+	public static final String XHTML_SYMBOL = "xhtml-symbol.ent";
+	public static final String XHTML_SPECIAL = "xhtml-special.ent";
+	
+	public InputSource resolveEntity(String arg0, String arg1)
+			throws SAXException, IOException {
+		String resource = arg1.substring(arg1.lastIndexOf("/") + 1);
+		InputStream uri = null;
+		if (resource.equals(XHTML_DTD)) {
+			uri = this.getClass().getResourceAsStream("/dtd/" + XHTML_DTD);
+		} else if (resource.equals(XHTML_LAT1)) {
+			uri = this.getClass().getResourceAsStream("/dtd/" + XHTML_LAT1);
+		} else if (resource.equals(XHTML_SYMBOL)) {
+			uri = this.getClass().getResourceAsStream("/dtd/" + XHTML_SYMBOL);
+		} else if (resource.equals(XHTML_SPECIAL)) {
+			uri = this.getClass().getResourceAsStream("/dtd/" + XHTML_SPECIAL);
+		} else {
+			return null;
+		}
+		return new InputSource(uri);
+		
+	}
+	
+}
