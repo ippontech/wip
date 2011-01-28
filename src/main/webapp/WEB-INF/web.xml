@@ -5,6 +5,17 @@
 	id="wip" version="2.5">
 	<display-name>WIPortlet</display-name>
 
+	<jsp-config>
+		<taglib>
+			<taglib-uri>http://java.sun.com/jstl/core_rt</taglib-uri>
+			<taglib-location>/WEB-INF/tld/c.tld</taglib-location>
+	    </taglib>
+	    <taglib>
+			<taglib-uri>http://java.sun.com/jstl/fmt_rt</taglib-uri>
+			<taglib-location>/WEB-INF/tld/fmt.tld</taglib-location>
+	    </taglib>
+	</jsp-config>
+	
 	<servlet>
 		<servlet-name>ResourceHandler</servlet-name>
 		<servlet-class>fr.ippon.wip.servlet.ResourceHandler</servlet-class>
