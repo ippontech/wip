@@ -1,7 +1,7 @@
 Web Integration Portlet (WIP)
 =======================
 
-WIP is an open source Java EE portlet developed by Ippon Technologies under GPL license.
+WIP is an open source Java EE portlet developed by Ippon Technologies under GNU Lesser General Public License.
 It allows the integration of web pages in a Java EE portail with better fidelity than classical solutions.
 
 Why another Web Integration Portlet ?
@@ -35,5 +35,5 @@ WIP should be compatible with any JSR 268 compatible portail. We tested it with 
 
 Contribution
 ------------
-We releasing this software under GPL license, hopping it will help companies to integrates web site in their portails.
+We releasing this software under GNU Lesser General Public License, hopping it will help companies to integrates web site in their portails.
 If you find this portlet useful, your contribution to the code is welcome
