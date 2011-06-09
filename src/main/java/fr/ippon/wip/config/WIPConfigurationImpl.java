@@ -477,4 +477,29 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 		return config.getInt(instance+".cacheDateRate");
 	}
 
+	public void setLtpaSsoAuthentication(boolean b) {
+		config.setProperty(instance+".ltpaSsoAuthentication", b);
+	}
+
+	public boolean getLtpaSsoAuthentication() {
+		return config.getBoolean(instance+".ltpaSsoAuthentication");
+	}
+
+	public void setLtpaSecretProviderClassName(String name) {
+		config.setProperty(instance+".ltpaSecretProviderClassName", name);
+		
+	}
+
+	public String getLtpaSecretProviderClassName() {
+		return config.getString(instance+".ltpaSecretProviderClassName");
+	}
+
+	public void setCredentialProviderClassName(String name) {
+		config.setProperty(instance+".credentialProviderClassName", name);
+	}
+
+	public String getCredentialProviderClassName() {
+		return config.getString(instance+".credentialProviderClassName");
+	}
+
 }

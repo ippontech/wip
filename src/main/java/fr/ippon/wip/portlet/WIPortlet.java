@@ -46,6 +46,7 @@ import fr.ippon.wip.http.StatusCode;
 import fr.ippon.wip.http.WIPDownloader;
 import fr.ippon.wip.http.WIPRequest;
 import fr.ippon.wip.http.WIPResponse;
+import fr.ippon.wip.ltpa.LtpaCookieUtil;
 import fr.ippon.wip.transformers.HTMLTransformer;
 
 /**
@@ -88,12 +89,20 @@ public class WIPortlet extends GenericPortlet {
 		// Getting WIP request 
 		WIPRequest wipRequest = (WIPRequest) session.getAttribute(WIP_REQUEST_KEY);
 		WIPResponse wipResponse = (WIPResponse) session.getAttribute(WIP_RESPONSE_KEY);
-
+		
+		// Getting WIP config
+		WIPConfiguration wipConfig = wipConfigurationManager.getConfiguration(response.getNamespace());
+		
 		// The response is set only if processAction have been executed before
 		if (wipResponse == null) {
+			// LTPA SSO authentication
+			if (wipConfig.getLtpaSsoAuthentication()) {
+				String cookie = LtpaCookieUtil.getLtpaCookie(request, wipConfig);
+				if (cookie != null)
+					httpManager.saveSingleCookie(id, cookie);
+			}
 			// First request
 			if (wipRequest == null) {
-				WIPConfiguration wipConfig = wipConfigurationManager.getConfiguration(response.getNamespace());
 				wipRequest = new WIPRequest(wipConfig.getInitUrlAsString(), request, false);
 				session.setAttribute(WIP_REQUEST_KEY, wipRequest);
 			}
@@ -275,6 +284,9 @@ public class WIPortlet extends GenericPortlet {
 			PrintWriter pw = response.getWriter();
 			pw.print(ret.replaceAll("<", "&lt;").replaceAll(">", "&gt;<br />"));
 			pw.close();
+	 	} else if (session.getAttribute("back") != null) {
+	 		session.removeAttribute("back");
+	 		doView(request, response);
 	 	} else {
 	 		PortletRequestDispatcher portletRequestDispatcher = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/generalsettings.jsp");
 			portletRequestDispatcher.include(request, response);

@@ -373,4 +373,40 @@ public interface WIPConfiguration {
 	 */
 	public int getCacheDateRate();
 		
+	/**
+	 * Enable or disable LTPA SSO authentication
+	 * @param b if enable then true else false
+	 */
+	public void setLtpaSsoAuthentication(boolean b);
+	
+	/**
+	 * Is LTPA SSO authentication enabled
+	 * @return if enable then true else false
+	 */
+	public boolean getLtpaSsoAuthentication();
+	
+	/**
+	 * Set the LTPA secret provider class name
+	 * @param name the class name
+	 */
+	public void setLtpaSecretProviderClassName(String name);
+	
+	/**
+	 * Get the LTPA secret provider class name
+	 * @return the class name
+	 */
+	public String getLtpaSecretProviderClassName();
+	
+	/**
+	 * Set the credential provider class name
+	 * @param name the class name
+	 */
+	public void setCredentialProviderClassName(String name);
+	
+	/**
+	 * Get the credential provider class name
+	 * @return the class name
+	 */
+	public String getCredentialProviderClassName();
+	
 }

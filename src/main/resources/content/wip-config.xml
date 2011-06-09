@@ -4,11 +4,11 @@
 
 	<wipDefault>
 	
-		<initUrl>http://blog.ippon.fr/</initUrl>
-		
-		<enableUrlRewriting>true</enableUrlRewriting>
-		
-		<domainsToProxy>http://blog.ippon.fr/</domainsToProxy>
+		<initUrl>http://blog.ippon.fr</initUrl>
+        
+        <enableUrlRewriting>true</enableUrlRewriting>
+        
+        <domainsToProxy></domainsToProxy>
 		
 		<cssRegex>(?:url\((?:'|")?(.*?)(?:'|")?\))|(?:@import\s+[^url](?:'|")?(.*?)(?:'|")|;|\s+|$)</cssRegex>
 		
@@ -26,7 +26,7 @@
 		
 		<customCss></customCss>
 		
-		<javascriptUrls>/share/proxy/alfresco::::AJAX, /share/proxy/alfresco-feed::::AJAX, /share/feedservice::::AJAX, /share/service::::AJAX, /share/page::::LINK</javascriptUrls>
+		<javascriptUrls></javascriptUrls>
 		
 		<scriptsToIgnore></scriptsToIgnore>
 		
@@ -56,6 +56,14 @@
 		
 		<cacheDateRate>30</cacheDateRate>
 	
+	   <!-- LTPA SSO Authentication -->
+	   
+	   <ltpaSsoAuthentication>false</ltpaSsoAuthentication>
+	   
+	   <ltpaSecretProviderClassName></ltpaSecretProviderClassName>
+	   
+	   <credentialProviderClassName></credentialProviderClassName>
+	   
 	</wipDefault>
 	
 </configuration>

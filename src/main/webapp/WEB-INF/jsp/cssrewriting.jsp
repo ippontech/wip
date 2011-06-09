@@ -45,6 +45,7 @@
 				<option value="clipping"><fmt:message key="wip.config.easyclipping"/></option>
 				<option value="cssrewriting" selected="selected"><fmt:message key="wip.config.cssrewriting"/></option>
 				<option value="jsrewriting"><fmt:message key="wip.config.jsrewriting"/></option>
+				<option value="ltpaauth"><fmt:message key="wip.config.ltpaauth"/></option>
 			</select>
 		</form>
 		</div>

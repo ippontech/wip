@@ -113,6 +113,7 @@ public class CSSTransformer implements WIPTransformer {
 							if (selector.startsWith("@media")) {
 								// Copy the entire bloc without modification
 								blocEnd = input.indexOf("}}", index)+1;
+								if (blocEnd < 1) blocEnd = input.indexOf("} }", index)+1;
 								aux += "\n" + selector; 
 								aux += input.substring(blocStart, blocEnd+1);
 							} else {

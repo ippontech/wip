@@ -25,21 +25,22 @@
 				<option value="clipping"><fmt:message key="wip.config.easyclipping"/></option>
 				<option value="cssrewriting"><fmt:message key="wip.config.cssrewriting"/></option>
 				<option value="jsrewriting"><fmt:message key="wip.config.jsrewriting"/></option>
+				<option value="ltpaauth"><fmt:message key="wip.config.ltpaauth"/></option>
 			</select>
 		</form>
 		</div>
 	</div>
 	<form method="POST" action="<portlet:actionURL/>" class="wip_form" name="wipform">
 		<input type="hidden" name="form" value="1"/>
-		<p class="line">
-			<label for="initUrl"><fmt:message key="wip.config.initurl" /> :</label>
-			<input type="text" name="initUrl" id="initUrl" value="<%= wipConf.getInitUrl() %>" />
-			<%= printHelp(rb.getString("wip.help.initurl")) %>
-			<%= printError("initUrl", errors) %>
-		</p>
+        <p class="line">
+            <label for="initUrl"><fmt:message key="wip.config.initurl" /> :</label>
+            <input type="text" name="initUrl" id="initUrl" value="<%= wipConf.getInitUrl() %>" />
+            <%= printHelp(rb.getString("wip.help.initurl")) %>
+            <%= printError("initUrl", errors) %>
+        </p>		
 		<p class="line">
 			<label for="enableUrlRewriting"><fmt:message key="wip.config.enableurlrewriting" /> :</label>
-			<input type="checkbox" name="enableUrlRewriting" id="enableUrlRewriting" onclick="javascript:checkUrlRewriting();" <% if (wipConf.getEnableUrlRewriting()) out.print("checked"); %> />
+			<input type="checkbox" name="enableUrlRewriting" id="enableUrlRewriting" <% if (wipConf.getEnableUrlRewriting()) out.print("checked"); %> />
 			<%= printHelp(rb.getString("wip.help.enableurlrewriting")) %>
 		</p>
 		<p class="line" id="domainstoproxydiv" <% if (!wipConf.getEnableUrlRewriting()) out.print("style=\"display:none;\""); %>>

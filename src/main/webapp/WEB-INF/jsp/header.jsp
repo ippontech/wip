@@ -65,6 +65,9 @@
 	<a href="<portlet:actionURL><portlet:param name="saveConfig" value=""/></portlet:actionURL>">
 		<fmt:message key="wip.config.savecurrent" /> 
 	</a>
+	<a href="<portlet:actionURL><portlet:param name="back" value=""/></portlet:actionURL>" title="Back">
+	   <fmt:message key="wip.config.back"/>
+	</a>
 </div>
 
 <style>

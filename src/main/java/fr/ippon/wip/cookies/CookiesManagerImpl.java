@@ -91,6 +91,34 @@ public class CookiesManagerImpl implements CookiesManager {
 		}		
 	}
 
+	public void saveSingleCookie(String id, String cookie) {
+		if (cookiesMap.get(id) == null) {
+			cookiesMap.put(id, new ArrayList<Cookie>());
+		}
+		Map<String, String> m = new HashMap<String, String>();
+		String[] sCookie = cookie.split(";");
+		int index = sCookie[0].indexOf("=", 0);
+		if (index > 0) {
+			m.put("name", sCookie[0].substring(0, index));
+			m.put("value", sCookie[0].substring(index+1));
+			m.put("secure", "false");
+			for (int j=1; j<sCookie.length; j++) {
+				if (sCookie[j].toUpperCase().equals("SECURE"))
+					m.put("secure", "true");
+				else if (!sCookie[j].equals("")) {
+					String[] aux = sCookie[j].split("=");
+					if (aux.length>1) 
+						m.put(aux[0].toLowerCase(), aux[1]); 
+					else 
+						m.put(aux[0].toLowerCase(), "");
+				}
+			}
+			cookiesMap.get(id).add(new Cookie(
+					m.get("domain"), m.get("name"), m.get("value"), m.get("path"), 
+					WIPUtil.getDate(m.get("expires")), Boolean.parseBoolean(m.get("secure"))));
+		}
+	}
+	
 	public void setCookies(String id, String url, HttpMethod method) throws MalformedURLException {
 		List<Cookie> c = cookiesMap.get(id);
 		if (c != null) {

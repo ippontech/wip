@@ -59,6 +59,7 @@ public class WIPEdit {
 				case 4 : handleCSSRewriting(request, response); break;
 				case 5 : handleJSRewriting(request, response); break;
 				case 6 : handleCaching(request, response); break;
+				case 7 : handleLTPAAuthentication(request, response); break;
 			}
 			// Removing the portlet's current url attribute to take the config changes in consideration
 			request.getPortletSession().removeAttribute(WIPortlet.WIP_REQUEST_KEY);
@@ -80,9 +81,11 @@ public class WIPEdit {
 			if (url.equals(""))
 				url = WIPConfigurationManager.getInstance().getConfiguration(response.getNamespace()).getInitUrlAsString();
 			request.getPortletSession().setAttribute("source", url);
+		} else if (request.getParameter("back") != null) {
+			request.getPortletSession().setAttribute("back", request.getParameter("back"));
 		}
 	}
-	
+
 	/**
 	 * Handle general settings: get settings in request parameters 
 	 * from the configuration form. Save them in the portlet configuration.
@@ -355,6 +358,35 @@ public class WIPEdit {
 		
 		// Sending the page to display to the portlet session
 		request.getPortletSession().setAttribute("editPage", "caching");
+	}
+	
+	private static void handleLTPAAuthentication(ActionRequest request, ActionResponse response) {
+		// Getting WIPConfig, resource bundle and a map to store errors
+		WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(response.getNamespace());
+		Map<String, String> errors = new HashMap<String, String>();
+
+		// Getting the parameters from the request
+		String tmpLtpaSsoAuthentication = request.getParameter("ltpaSsoAuthentication");
+		boolean ltpaSsoAuthentication = true;
+		if (tmpLtpaSsoAuthentication == null) ltpaSsoAuthentication = false;
+		String ltpaSecretProviderClassName = request.getParameter("ltpaSecretProviderClassName");
+		String credentialProviderClassName = request.getParameter("credentialProviderClassName");
+		
+		// Saving the new configuration
+		try {
+			wipConfig.setLtpaSsoAuthentication(ltpaSsoAuthentication);
+			wipConfig.setLtpaSecretProviderClassName(ltpaSecretProviderClassName);
+			wipConfig.setCredentialProviderClassName(credentialProviderClassName);
+			wipConfig.save();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		// Sending errors to the portlet session
+		request.getPortletSession().setAttribute("errors", errors, PortletSession.APPLICATION_SCOPE);
+		
+		// Sending the page to display to the portlet session
+		request.getPortletSession().setAttribute("editPage", "ltpaauth");
 	}
 	
 	/**

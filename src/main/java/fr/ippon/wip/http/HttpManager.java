@@ -59,6 +59,13 @@ public interface HttpManager {
 	public void cleanPrivateCache(String id);
 	
 	/**
+	 * Save a cookie in the cookies map.
+	 * @param id the key in cookies map
+	 * @param cookie the cookie to save
+	 */
+	public void saveSingleCookie(String id, String cookie);
+	
+	/**
 	 * Destroy the HttpManager.
 	 */
 	public void destroy();

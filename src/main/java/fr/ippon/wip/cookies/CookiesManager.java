@@ -51,6 +51,13 @@ public interface CookiesManager {
 	public void saveCookies(String id, Header[] h);
 
 	/**
+	 * 
+	 * @param id
+	 * @param cookie
+	 */
+	public void saveSingleCookie(String id, String cookie);
+	
+	/**
 	 * Return true if the user specified by the given id has one or more cookies
 	 * linked to his session.
 	 * @param id The user id

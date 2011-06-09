@@ -305,6 +305,15 @@ public class HttpManagerImpl implements HttpManager {
 	}
 
 	/**
+	 * Save a cookie in the cookies map.
+	 * @param id the key in cookies map
+	 * @param cookie the cookie to save
+	 */
+	public void saveSingleCookie(String id, String cookie) {
+		cookiesManager.saveSingleCookie(id, cookie);
+	}
+	
+	/**
 	 * Propagate the add of cache entry.
 	 * @param id the possibly given id (in the case of a private cache)
 	 * @param request the key that will be used to retrieve the response
@@ -329,4 +338,5 @@ public class HttpManagerImpl implements HttpManager {
 		cacheManager.cleanPublicCache();
 		cacheManager.cleanEntirePrivateCache();
 	}
+	
 }
