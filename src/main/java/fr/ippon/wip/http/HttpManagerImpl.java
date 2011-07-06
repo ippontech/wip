@@ -99,9 +99,8 @@ public class HttpManagerImpl implements HttpManager {
 		if (wipResponse != null && wipResponse.isFresh(id, wipRequest))
 			return wipResponse; 
 			
-		// TMP
-		System.out.println("\t"+wipRequest.getUrl());
-		//////
+		// TODO: set up log4j
+		// System.out.println("\t"+wipRequest.getUrl());
 		
 		if (wipRequest.getMethodType().equals("POST"))
 			wipResponse = doPostRequest(id, wipRequest, wipResponse, instance);

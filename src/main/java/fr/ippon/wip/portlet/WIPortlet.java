@@ -236,6 +236,9 @@ public class WIPortlet extends GenericPortlet {
 					wipResponse.transformJS(request, response, wipRequest.getUrl());
 				} else if (wipResponse.getContentType().equals("application/json")) {
 					wipResponse.transformJSON();
+				} else if (wipResponse.getContentType().equals("application/xml")
+						|| wipResponse.getContentType().equals("text/xml")) {
+					// TODO: handle xml rewriting
 				}
 			}
 		}
@@ -284,9 +287,6 @@ public class WIPortlet extends GenericPortlet {
 			PrintWriter pw = response.getWriter();
 			pw.print(ret.replaceAll("<", "&lt;").replaceAll(">", "&gt;<br />"));
 			pw.close();
-	 	} else if (session.getAttribute("back") != null) {
-	 		session.removeAttribute("back");
-	 		doView(request, response);
 	 	} else {
 	 		PortletRequestDispatcher portletRequestDispatcher = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/generalsettings.jsp");
 			portletRequestDispatcher.include(request, response);

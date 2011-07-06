@@ -79,17 +79,8 @@ public class Clipper implements WIPTransformer {
 	 * @throws TransformerException 
 	 */
 	public String transform(String input) throws SAXException, IOException, TransformerException {
-		
 		// Parsing the content into XHTML
 		input = HTMLTransformer.htmlToXhtml(input);
-
-//		try {
-//			File f = new File("C:/Users/aluce/Documents/clipper.html");
-//			FileWriter writer = new FileWriter(f);
-//			BufferedWriter out = new BufferedWriter(writer);
-//			out.write(input);
-//			out.close();
-//		} catch (IOException e) { }
 		
 		// Performing the XSLT transformation
 		InputSource xhtml = new InputSource(new ByteArrayInputStream(input.getBytes()));

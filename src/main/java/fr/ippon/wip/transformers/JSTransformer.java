@@ -93,78 +93,6 @@ public class JSTransformer implements WIPTransformer {
 	 */
 	public String transform(String input) throws SAXException, IOException {
 		String url = null;
-		
-		// CUSTOM ------------------------------------------------------------------
-		
-		// Rewrite constants
-		if (input.contains("window.location.protocol + \"//\" + window.location.host + ")) {
-			int index = 0;
-			while (index >= 0) {
-				index = input.indexOf("window.location.protocol + \"//\" + window.location.host + ");
-				if (index != -1) {
-					input = input.substring(0, index) + input.substring(index + 57);
-				}
-			}
-		}
-		if (input.contains("Alfresco.constants.URL_CONTEXT = ")) {
-			int index = input.indexOf("Alfresco.constants.URL_CONTEXT = ");
-			if (index != -1) {
-				input = input.substring(0, index) + "Alfresco.constants.URL_CONTEXT = \"" + jsRewriter.toAbsolute("/share/") + "\";" + input.substring(index + 43);
-			}
-		}
-
-		// Rewrite control links
-		if (input.contains("Alfresco.constants.PROXY_URI + recordData.contentUrl")) {
-			int index = 0;
-			while (index >= 0) {
-				index = input.indexOf("Alfresco.constants.PROXY_URI + recordData.contentUrl");
-				if (index != -1) {
-					input = input.substring(0, index)
-							+ "\"http://ged.ippon-technologies.net\" + "
-							+ input.substring(index + 30);
-				}
-			}
-		}
-		
-		int i = input.indexOf("document-details?");
-		while (i > -1) {
-			input = input.substring(0, i)+"/share/page/"+input.substring(i);
-			i = input.indexOf("document-details?", i+30);
-		}
-		
-		i = input.indexOf("edit-metadata?");
-		if (i > -1)
-			input = input.substring(0, i)+"/share/page/"+input.substring(i);
-		
-		i = input.indexOf("inline-edit?");
-		if (i > -1)
-			input = input.substring(0, i)+"/share/page/"+input.substring(i);
-		
-		i = input.indexOf("manage-permissions?");
-		if (i > -1)
-			input = input.substring(0, i)+"/share/page/"+input.substring(i);
-		
-		// TMP: modify authorizations
-		if (input.contains("if (aTag.rel !== \"\")")) {
-			int start = input.indexOf("if (aTag.rel !== \"\")");
-			if (start > -1) {
-				int end = input.indexOf("// Need the \"More >\" container?", start);
-				if (end > -1)
-					input = input.substring(0, start) + "}" + input.substring(end);
-			}
-		}
-
-		if (input.contains("if (aTag.rel !== \"\")")) {
-			int start = input.indexOf("if (aTag.rel !== \"\")");
-			if (start > -1) {
-				int end = input.indexOf("Dom.setStyle", start);
-				if (end > -1)
-					input = input.substring(0, start) + input.substring(end);
-			}
-		}
-		//////
-		
-		//---------------------------------------------------------------------------
 
 		ResourceURL rUrl = null;
 		if (response instanceof RenderResponse)
@@ -172,24 +100,35 @@ public class JSTransformer implements WIPTransformer {
 		else if (response instanceof ResourceResponse)
 			rUrl = ((ResourceResponse)response).createResourceURL();
 		
+		// CUSTOM ------------------------------------------------------------------
+
+		//---------------------------------------------------------------------------
+
 		Map<String, URLTypes> jsUrls = wipConfig.getJavascriptUrls();
 		for(String jsUrl : jsUrls.keySet()) {
 			url = jsUrl;
+			// Add \\ for regex characters like "?"
+			if (url.contains("?")) 
+				url = url.replace("?", "\\?");
+			// Rewrite accoding to the URL type
 			switch(jsUrls.get(jsUrl)) {
 				case AJAX : 
-					input = input.replaceAll(url, jsRewriter.rewriteAjax(url, rUrl)); 
+					input = input.replaceAll(url, jsRewriter.rewriteAjax(jsUrl, rUrl, false)); 
 					break;
+				case AJAXPOST : 
+					input = input.replaceAll(url, jsRewriter.rewriteAjax(jsUrl, rUrl, true)); 
+					break;					
 				case LINK : 
-					input = input.replaceAll(url, htmlRewriter.rewriteLink(url, response));
+					input = input.replaceAll(url, htmlRewriter.rewriteLink(jsUrl, response));
 					break;
 				case FORM :
-					input = input.replaceAll(url, htmlRewriter.rewriteForm(url, response, "POST")); 
+					input = input.replaceAll(url, htmlRewriter.rewriteForm(jsUrl, response, "POST")); 
 					break;
 				case REGULAR :  
 					if (authenticated) 
-						input = input.replaceAll(url, jsRewriter.rewriteResource(url, response, "other"));
+						input = input.replaceAll(url, jsRewriter.rewriteResource(jsUrl, response, "other"));
 					else 
-						input = input.replaceAll(url, jsRewriter.rewriteUrl(url));
+						input = input.replaceAll(url, jsRewriter.rewriteUrl(jsUrl));
 					break;
 			}
 		}

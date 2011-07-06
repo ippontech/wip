@@ -56,15 +56,18 @@ public class JSRewriter extends WIPRewriter {
 	 * @param resourceURL An empty ResourceURL
 	 * @return The given ResourceURL to which a parameter was added : the given URL transformed into an absolute URL if needed
 	 */
-	public String rewriteAjax(String url, ResourceURL resourceURL) {
+	public String rewriteAjax(String url, ResourceURL resourceURL, boolean post) {
 		// Setting parameter
 		Map<String, String[]> parameters = new HashMap<String, String[]>();
 		String[] tab = {toAbsolute(url)};
 		parameters.put(WIPortlet.AJAX_URL_KEY, tab);
 		resourceURL.setParameters(parameters);
-		
+		String ret = resourceURL.toString();
+		// If POST method, add the method type parameter
+		if (post)
+			ret += "&"+WIPortlet.METHOD_TYPE+"=POST";
 		// URL_CONCATENATION: to concatenate the end of the URL in case the URL is a String concatenation
-		String ret = resourceURL.toString()+"&"+WIPortlet.URL_CONCATENATION_KEY+"=";
+		ret += "&"+WIPortlet.URL_CONCATENATION_KEY+"=";
 		// Delete unused parameters
 		int i = ret.indexOf("WIP_RESOURCE_URL");
 		int j = ret.indexOf("WIP_RESOURCE_TYPE");
@@ -74,7 +77,6 @@ public class JSRewriter extends WIPRewriter {
 			else 
 				ret = ret.substring(0, j) + ret.substring(i); 
 		}
-		
 		return ret;
 	}
 	

@@ -18,8 +18,10 @@
 
 package fr.ippon.wip.transformers;
 
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.MalformedURLException;
@@ -122,9 +124,7 @@ public class HTMLTransformer implements WIPTransformer {
 		
 		// Parsing html content to xhtml
 		input = htmlToXhtml(input);		 
-
 		InputSource xhtml = new InputSource(new ByteArrayInputStream(input.getBytes()));
-		ByteArrayOutputStream resultOutputStream = new ByteArrayOutputStream();
 			
 		// Parsing the xhtml
 		DocumentBuilder db = null;
@@ -160,6 +160,7 @@ public class HTMLTransformer implements WIPTransformer {
 			transformer.setParameter("rewriteUrl", "false");
 		
 		// Processing the transformation
+		ByteArrayOutputStream resultOutputStream = new ByteArrayOutputStream();
 		transformer.transform(new DOMSource(doc), new StreamResult(resultOutputStream));
 		
 		return resultOutputStream.toString();
@@ -202,4 +203,16 @@ public class HTMLTransformer implements WIPTransformer {
 		parser.setProperty("http://cyberneko.org/html/properties/default-encoding","UTF-8");
 	}
 
+	public static void fileLog(String input, String filename) {
+		try{
+			// Create file 
+			FileWriter fstream = new FileWriter(filename);
+			BufferedWriter out = new BufferedWriter(fstream);
+			out.write(input);
+			// Close the output stream
+			out.close();
+		} catch (Exception e) {//Catch exception if any
+			System.err.println("Error: " + e.getMessage());
+		}
+	}
 }

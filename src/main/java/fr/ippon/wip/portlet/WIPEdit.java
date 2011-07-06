@@ -28,6 +28,8 @@ import java.util.ResourceBundle;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
+import javax.portlet.PortletMode;
+import javax.portlet.PortletModeException;
 import javax.portlet.PortletSession;
 
 import fr.ippon.wip.config.WIPConfiguration;
@@ -82,7 +84,11 @@ public class WIPEdit {
 				url = WIPConfigurationManager.getInstance().getConfiguration(response.getNamespace()).getInitUrlAsString();
 			request.getPortletSession().setAttribute("source", url);
 		} else if (request.getParameter("back") != null) {
-			request.getPortletSession().setAttribute("back", request.getParameter("back"));
+			try {
+				response.setPortletMode(PortletMode.VIEW);
+			} catch (PortletModeException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

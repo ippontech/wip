@@ -27,6 +27,7 @@ public enum URLTypes {
 	
 	LINK,
 	AJAX,
+	AJAXPOST,
 	FORM,
 	REGULAR;
 
