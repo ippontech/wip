@@ -83,6 +83,18 @@ public interface WIPConfiguration {
 	public List<URL> getDomainsToProxy();
 
 	/**
+	 * Set the portlet title.
+	 * @param title the portlet title
+	 */
+	public void setPortletTitle(String title);
+	
+	/**
+	 * Get the portlet title.
+	 * @return the portlet title
+	 */
+	public String getPortletTitle();
+	
+	/**
 	 * Set the regular expression used to rewrite javascript code 
 	 * @param jsRegex The regular expression
 	 */

@@ -92,6 +92,7 @@ public class WIPortlet extends GenericPortlet {
 		
 		// Getting WIP config
 		WIPConfiguration wipConfig = wipConfigurationManager.getConfiguration(response.getNamespace());
+		response.setTitle(wipConfig.getPortletTitle());
 		
 		// The response is set only if processAction have been executed before
 		if (wipResponse == null) {

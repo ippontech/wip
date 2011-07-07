@@ -235,7 +235,14 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 		return list;
 	}
 	
-
+	public void setPortletTitle(String title) {
+		config.setProperty(instance+".portletTitle", title);
+	}
+	
+	public String getPortletTitle() {
+		return config.getString(instance+".portletTitle");
+	}
+	
 	// CSS REWRITING CONFIG
 	
 	public void setCssRegex(String cssRegex) {

@@ -115,12 +115,16 @@ public class WIPEdit {
 		boolean enableUrlRewriting = true;
 		if (tmpEnableUrlRewriting == null) enableUrlRewriting = false;
 		
+		String portletTitle = request.getParameter("portletTitle");
+		
 		// Saving the new configuration
 		try {
 			if (initUrl != null)
 				wipConfig.setInitUrl(initUrl);
 			if (domainsToProxy != null) 
 				wipConfig.setDomainsToProxy(domainsToProxy);
+			if (portletTitle != null)
+				wipConfig.setPortletTitle(portletTitle);
 			wipConfig.setEnableUrlRewriting(enableUrlRewriting);
 			wipConfig.save();
 		} catch (Exception e) {

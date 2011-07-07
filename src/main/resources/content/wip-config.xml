@@ -10,6 +10,8 @@
         
         <domainsToProxy></domainsToProxy>
 		
+		<portletTitle>Blog Ippon</portletTitle>
+		
 		<cssRegex>(?:url\((?:'|")?(.*?)(?:'|")?\))|(?:@import\s+[^url](?:'|")?(.*?)(?:'|")|;|\s+|$)</cssRegex>
 		
 		<jsRegex>open\('([^']*)'|open\("([^\"]*)"</jsRegex>

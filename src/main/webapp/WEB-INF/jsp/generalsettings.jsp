@@ -38,17 +38,22 @@
             <%= printHelp(rb.getString("wip.help.initurl")) %>
             <%= printError("initUrl", errors) %>
         </p>		
-		<p class="line">
-			<label for="enableUrlRewriting"><fmt:message key="wip.config.enableurlrewriting" /> :</label>
-			<input type="checkbox" name="enableUrlRewriting" id="enableUrlRewriting" <% if (wipConf.getEnableUrlRewriting()) out.print("checked"); %> />
-			<%= printHelp(rb.getString("wip.help.enableurlrewriting")) %>
-		</p>
 		<p class="line" id="domainstoproxydiv" <% if (!wipConf.getEnableUrlRewriting()) out.print("style=\"display:none;\""); %>>
 			<label for="domainsToProxy"><fmt:message key="wip.config.domainstoproxy" /> :</label>
 			<input type="text" name="domainsToProxy" id="domainsToProxy" value="<%= wipConf.getDomainsAsString(wipConf.getDomainsToProxy()) %>" />
 			<%= printHelp(rb.getString("wip.help.domainstoproxy")) %>
 			<%= printError("domainsToProxy", errors) %>
 		</p>
+	    <p class="line">
+            <label for="enableUrlRewriting"><fmt:message key="wip.config.enableurlrewriting" /> :</label>
+            <input type="checkbox" name="enableUrlRewriting" id="enableUrlRewriting" <% if (wipConf.getEnableUrlRewriting()) out.print("checked"); %> />
+            <%= printHelp(rb.getString("wip.help.enableurlrewriting")) %>
+        </p>
+        <p class="line">
+            <label for="portletTitle"><fmt:message key="wip.config.portlettitle" /> :</label>
+            <input type="text" name="portletTitle" id="portletTitle" value="<%= wipConf.getPortletTitle() %>" />
+            <%= printHelp(rb.getString("wip.help.portlettitle")) %>
+        </p>    
 		<p class="submit">
 			<input type="submit" value="<fmt:message key='wip.config.save' />" />
 		</p>
