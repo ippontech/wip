@@ -288,16 +288,22 @@ public class WIPEdit {
 		List<String> javascriptUrls = new ArrayList<String>(); 
 		for (int i=0; i<l1.length; i++) javascriptUrls.add(l1[i]);
 		
-		String tmpScriptsToIgnore = request.getParameter("scriptUrls");
+		String tmpScriptsToIgnore = request.getParameter("scriptIgnoredUrls");
 		String[] l3 = tmpScriptsToIgnore.split(";");
 		List<String> scriptsToIgnore = new ArrayList<String>(); 
 		for (int i=0; i<l3.length; i++) scriptsToIgnore.add(l3[i]);
+		
+		String tmpScriptsToDelete = request.getParameter("scriptDeletedUrls");
+		String[] l4 = tmpScriptsToDelete.split(";");
+		List<String> scriptsToDelete = new ArrayList<String>(); 
+		for (int i=0; i<l4.length; i++) scriptsToDelete.add(l4[i]);
 		
 		// Saving the new configuration
 		try {
 			wipConfig.setJsRegex(jsRegex);
 			wipConfig.setJavascriptUrls(javascriptUrls);
 			wipConfig.setScriptsToIgnore(scriptsToIgnore);
+			wipConfig.setScriptsToDelete(scriptsToDelete);
 			wipConfig.save();
 		} catch (Exception e) {
 			e.printStackTrace();

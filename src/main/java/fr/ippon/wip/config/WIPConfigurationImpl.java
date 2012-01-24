@@ -326,6 +326,17 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 		config.setProperty(instance+".scriptsToIgnore", urls);
 	}
 
+	public void setScriptsToDelete(List<String> urls) {
+		config.setProperty(instance+".scriptsToDelete", urls);
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<String> getScriptsToDelete() {
+		List<String> l = config.getList(instance+".scriptsToDelete");
+		if (l.size() == 1 && l.get(0).equals("")) l = new ArrayList<String>();
+		return l;
+	}
+
 	
 	// CLIPPING CONFIG
 	

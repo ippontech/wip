@@ -244,7 +244,7 @@ public interface WIPConfiguration {
 	public Map<String, URLTypes> getJavascriptUrls();
 	
 	/**
-	 * Set the URLs of the scripts that will not be transsformed
+	 * Set the URLs of the scripts that will not be transformed
 	 * @param urls the list of URLs
 	 */
 	public void setScriptsToIgnore(List<String> urls);
@@ -254,6 +254,18 @@ public interface WIPConfiguration {
 	 * @return the list of URLs
 	 */
 	public List<String> getScriptsToIgnore();
+	
+	/**
+	 * Set the URLs of the scripts that will be deleted
+	 * @param urls the list of URLs
+	 */
+	public void setScriptsToDelete(List<String> urls);
+
+	/**
+	 * Get the URLs of the scripts that will be deleted
+	 * @return the list of URLs
+	 */
+	public List<String> getScriptsToDelete();
 	
 	/**
 	 * Enable or disable URLs rewriting.

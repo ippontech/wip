@@ -19,7 +19,7 @@
 			</form>
 		</div>
 	</div>
-	<form method="POST" action="<portlet:actionURL/>" class="wip_form" onsubmit="saveJavascriptUrls(); saveScriptUrls();">
+	<form method="POST" action="<portlet:actionURL/>" class="wip_form" onsubmit="saveJavascriptUrls(); saveScriptIgnoredUrls(); saveScriptDeletedUrls();">
 		<input type="hidden" name="form" value="5"/>
 		<p style="margin-left:15px; margin-bottom: 25px;">
 			<label for="jsRegex"><fmt:message key="wip.config.jsregex" /> :</label>
@@ -28,7 +28,7 @@
 		</p>
 		<table>
 			<tr>
-				<td width="50%">
+				<td>
 					<label><fmt:message key="wip.config.ajaxurls" /></label>
 					<%= printHelp(rb.getString("wip.help.urllistajax")) %>
 					<ul id="javascriptUrlList">
@@ -57,16 +57,18 @@
 						<fmt:message key="wip.config.add" />
 					</a>
 				</td>
+			</tr>
+			<tr>
 				<td width="50%">
-					<label><fmt:message key="wip.config.scripturls" /></label>
+					<label><fmt:message key="wip.config.scriptignoredurls" /></label>
 					<%= printHelp(rb.getString("wip.help.ignorelist")) %>
-					<ul id="scriptUrlList">
+					<ul id="scriptIgnoredUrlList">
 						<%
 							List<String> l3 = wipConf.getScriptsToIgnore();
 							for (String s : l3) {
 								out.println(
-									"<li id=\"scriptUrl"+s+"\">"
-									+ 	"<a href=\"JavaScript:removeUrl('scriptUrl"+s+"')\">"
+									"<li id=\"scriptIgnoredUrl"+s+"\">"
+									+ 	"<a href=\"JavaScript:removeUrl('scriptIgnoredUrl"+s+"')\">"
  									+ 		"<img src=\""+src+"\" alt=\"remove\" />"
 									+ 	"</a>"
 									+	"<span>" + s + "</span>"
@@ -75,8 +77,31 @@
 							}
 						%>
 					</ul>
-					<input type="text" name="scriptUrlToAdd" id="scriptUrlToAdd" />
-					<a href="JavaScript:addUrl('scriptUrl')">
+					<input type="text" name="scriptIgnoredUrlToAdd" id="scriptIgnoredUrlToAdd" />
+					<a href="JavaScript:addUrl('scriptIgnoredUrl')">
+						<fmt:message key="wip.config.add" />
+					</a>
+				</td>
+				<td width="50%">
+					<label><fmt:message key="wip.config.scriptdeletedurls" /></label>
+					<%= printHelp(rb.getString("wip.help.deletelist")) %>
+					<ul id="scriptDeletedUrlList">
+						<%
+							List<String> l4 = wipConf.getScriptsToDelete();
+							for (String s : l4) {
+								out.println(
+									"<li id=\"scriptDeletedUrl"+s+"\">"
+									+ 	"<a href=\"JavaScript:removeUrl('scriptDeletedUrl"+s+"')\">"
+ 									+ 		"<img src=\""+src+"\" alt=\"remove\" />"
+									+ 	"</a>"
+									+	"<span>" + s + "</span>"
+									+ "</li>"
+								);
+							}
+						%>
+					</ul>
+					<input type="text" name="scriptDeletedUrlToAdd" id="scriptDeletedUrlToAdd" />
+					<a href="JavaScript:addUrl('scriptDeletedUrl')">
 						<fmt:message key="wip.config.add" />
 					</a>
 				</td>
@@ -84,7 +109,8 @@
 		</table>
 		<p class="submit">
 			<input type="hidden" name="javascriptUrls" id="javascriptUrlToSave" />
-			<input type="hidden" name="scriptUrls" id="scriptUrlToSave" />
+			<input type="hidden" name="scriptIgnoredUrls" id="scriptIgnoredUrlToSave" />
+			<input type="hidden" name="scriptDeletedUrls" id="scriptDeletedUrlToSave" />
 			<input type="submit" value="<fmt:message key='wip.config.save' />" />
 		</p>
 	</form>
@@ -94,15 +120,26 @@
 
 <script type="text/javascript">
 
-	function saveScriptUrls() {
-		var list = document.getElementById("scriptUrlList");
+	function saveScriptIgnoredUrls() {
+		var list = document.getElementById("scriptIgnoredUrlList");
 		var urls = list.getElementsByTagName("li");
 		var s = "";
 		for (var i=0; i<urls.length; i++) {
 			s += urls[i].getElementsByTagName("span")[0].innerHTML;
 			if (i != urls.length - 1) s += ";";
 		}
-		document.getElementById("scriptUrlToSave").value = s;
+		document.getElementById("scriptIgnoredUrlToSave").value = s;
+	}
+	
+	function saveScriptDeletedUrls() {
+		var list = document.getElementById("scriptDeletedUrlList");
+		var urls = list.getElementsByTagName("li");
+		var s = "";
+		for (var i=0; i<urls.length; i++) {
+			s += urls[i].getElementsByTagName("span")[0].innerHTML;
+			if (i != urls.length - 1) s += ";";
+		}
+		document.getElementById("scriptDeletedUrlToSave").value = s;
 	}
 
 	function saveJavascriptUrls() {

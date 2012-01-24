@@ -62,20 +62,24 @@ public class CSSRewriter extends WIPRewriter {
         Matcher matcher = pattern.matcher(input);
         StringBuffer sb = new StringBuffer();
         while(matcher.find()) {
-            int group = extractGroup(matcher);
-            if(group > 0) {
-                String before = input.substring(matcher.start(), matcher.start(group));
-                String url = matcher.group(group);
-                String after = input.substring(matcher.end(group), matcher.end());
-                if (before.startsWith("@import") || before.startsWith("@CHARSET")) {
-                	matcher.appendReplacement(sb, before + rewriteResource(url, response, "CSS") + after);
-                } else {
-                	if (authenticated)
-	                	matcher.appendReplacement(sb, before + rewriteResource(url, response, "other") + after);
-	                else
-	                	matcher.appendReplacement(sb, before + rewriteUrl(url) + after);
-                }
-            }
+        	try{
+	            int group = extractGroup(matcher);
+	            if(group > 0) {
+	                String before = input.substring(matcher.start(), matcher.start(group));
+	                String url = matcher.group(group);
+	                String after = input.substring(matcher.end(group), matcher.end());
+	                if (before.startsWith("@import") || before.startsWith("@CHARSET")) {
+	                	matcher.appendReplacement(sb, before + rewriteResource(url, response, "CSS") + after);
+	                } else {
+	                	if (authenticated)
+		                	matcher.appendReplacement(sb, before + rewriteResource(url, response, "other") + after);
+		                else
+		                	matcher.appendReplacement(sb, before + rewriteUrl(url) + after);
+	                }
+	            }
+        	}catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			}
         }
         matcher.appendTail(sb);
         return sb.toString();

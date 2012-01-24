@@ -20,6 +20,9 @@ package fr.ippon.wip.transformers;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import javax.portlet.PortletResponse;
 import javax.portlet.RenderResponse;
@@ -146,10 +149,35 @@ public class JSTransformer implements WIPTransformer {
 	 * @return a boolean indicating if the script has to be rewritten
 	 */
 	public boolean isIgnoredScript(String url) {
-		if (wipConfig.getScriptsToIgnore().contains(url))
-			return true;
-		else
-			return false;
+		for(String regex : wipConfig.getScriptsToIgnore()){
+			try{
+				Pattern p = Pattern.compile(regex);
+				Matcher m = p.matcher(url);
+				if(m.find())return true;
+			}catch (PatternSyntaxException e) {
+				System.err.println("Error IngoredScript syntax :" + e.getMessage());
+			}
+		}
+		
+		return false;
 	}
 	
+	/**
+	 * Check if the script from the given URL has to be deleted
+	 * @param url the script URL
+	 * @return a boolean indicating if the script has to be deleted
+	 */
+	public boolean isDeletedScript(String url) {
+		for(String regex : wipConfig.getScriptsToDelete()){
+			try{
+				Pattern p = Pattern.compile(regex);
+				Matcher m = p.matcher(url);
+				if(m.find())return true;
+			}catch (PatternSyntaxException e) {
+				System.err.println("Error DeletedScript syntax :" + e.getMessage());
+			}
+		}
+		
+		return false;
+	}
 }

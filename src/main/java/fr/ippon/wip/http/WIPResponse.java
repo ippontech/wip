@@ -179,7 +179,9 @@ public class WIPResponse implements java.io.Serializable {
 		PortletSession session = request.getPortletSession();
 		boolean authenticated = (session.getAttribute("authType")!=null) ? true : false;
 		JSTransformer transformer = new JSTransformer(response, url, authenticated);
-		if (!((JSTransformer) transformer).isIgnoredScript(url)) {
+		if (transformer.isDeletedScript(url)) {
+			remoteResponse = "";
+		}else if (!transformer.isIgnoredScript(url)) {
 			try {
 				remoteResponse = transformer.transform(remoteResponse);
 				transformedResponse = true;

@@ -32,6 +32,8 @@
 		
 		<scriptsToIgnore></scriptsToIgnore>
 		
+		<scriptsToDelete>js/jquery/jquery.js</scriptsToDelete>
+		
 		<clippingType>none</clippingType>
 		
 		<xPath></xPath>
