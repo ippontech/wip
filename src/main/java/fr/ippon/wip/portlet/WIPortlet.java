@@ -263,20 +263,20 @@ public class WIPortlet extends GenericPortlet {
 		PortletSession session = request.getPortletSession();
 		if (session.getAttribute("editPage") != null && !session.getAttribute("editPage").equals("")) {
 			String location = "/WEB-INF/jsp/" + session.getAttribute("editPage") + ".jsp";
-			session.removeAttribute("editPage");
+			//session.removeAttribute("editPage");
 			PortletRequestDispatcher portletRequestDispatcher = getPortletContext().getRequestDispatcher(location);
 			portletRequestDispatcher.include(request, response);
 		} else if (session.getAttribute("configPage") != null) {
 			PortletRequestDispatcher portletRequestDispatcher = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/existingconfig.jsp?configPage"+session.getAttribute("configPage"));
-			session.removeAttribute("configPage");
+			//session.removeAttribute("configPage");
 			portletRequestDispatcher.include(request, response);
 		} else if (session.getAttribute("saveConfig") != null) {
 			PortletRequestDispatcher portletRequestDispatcher = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/saveconfig.jsp");
-			session.removeAttribute("saveConfig");
+			//session.removeAttribute("saveConfig");
 			portletRequestDispatcher.include(request, response);
 		} else if (session.getAttribute("source") != null) {
 			String url = (String) session.getAttribute("source");
-			session.removeAttribute("source");
+			//session.removeAttribute("source");
 			WIPRequest wipRequest = new WIPRequest(url, request, false);
 			WIPResponse wipResponse = httpManager.doRequest(session.getId(), wipRequest, response.getNamespace());
 			String ret = "";

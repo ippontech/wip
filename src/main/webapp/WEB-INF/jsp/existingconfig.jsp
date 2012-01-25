@@ -1,7 +1,7 @@
 <%@include file="/WEB-INF/jsp/header.jsp" %>
 
 <% 
-	String sconf = request.getParameter("configPage");
+	String sconf = (String)pReq.getPortletSession().getAttribute("configPage");
 	if (sconf != null) {
 		if (sconf.equals("all")) { 
 %>

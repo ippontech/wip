@@ -51,8 +51,15 @@ public class WIPEdit {
 	 * @param response The ActionResponse sent to WIPortlet in edit mode
 	 */
 	public static void processAction(ActionRequest request, ActionResponse response) {
+		//removing session parameter
+		PortletSession session = request.getPortletSession();
+		session.removeAttribute("editPage");
+		session.removeAttribute("configPage");
+		session.removeAttribute("saveConfig");
+		session.removeAttribute("source");
+		
 		if (request.getParameter("editPage") != null && !request.getParameter("editPage").equals("")) {
-			request.getPortletSession().setAttribute("editPage", request.getParameter("editPage"));
+			session.setAttribute("editPage", request.getParameter("editPage"));
 		} else if (request.getParameter("form") != null) {
 			switch (Integer.valueOf(request.getParameter("form"))) {
 				case 1 : handleGeneralSettings(request, response); break;
@@ -64,14 +71,14 @@ public class WIPEdit {
 				case 7 : handleLTPAAuthentication(request, response); break;
 			}
 			// Removing the portlet's current url attribute to take the config changes in consideration
-			request.getPortletSession().removeAttribute(WIPortlet.WIP_REQUEST_KEY);
+			session.removeAttribute(WIPortlet.WIP_REQUEST_KEY);
 		} else if (request.getParameter("configPage") != null) {
-			request.getPortletSession().setAttribute("configPage", request.getParameter("configPage"));
+			session.setAttribute("configPage", request.getParameter("configPage"));
 		} else if (request.getParameter("changeConfig") != null) {
 			WIPConfigurationManager.getInstance().loadConfiguration(request.getParameter("changeConfig"), response.getNamespace());
 		} else if (request.getParameter("saveConfig") != null) {
-			if (request.getParameter("saveConfig").equals("")) {
-				request.getPortletSession().setAttribute("saveConfig", "");
+			if (request.getParameter("saveConfig").equals("all") || request.getParameter("saveConfig").equals("") ) {
+				session.setAttribute("saveConfig", "");
 			} else {
 				WIPConfigurationManager.getInstance().saveConfiguration(request.getParameter("saveConfig"), response.getNamespace());
 			}
@@ -82,7 +89,7 @@ public class WIPEdit {
 				url = request.getParameter("url");
 			if (url.equals(""))
 				url = WIPConfigurationManager.getInstance().getConfiguration(response.getNamespace()).getInitUrlAsString();
-			request.getPortletSession().setAttribute("source", url);
+			session.setAttribute("source", url);
 		} else if (request.getParameter("back") != null) {
 			try {
 				response.setPortletMode(PortletMode.VIEW);

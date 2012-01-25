@@ -33,6 +33,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 /**
  * The WIPConfiguration manager stores the WIPConfiguration object 
  * associated with the different portlet instances. It also manages 
@@ -74,6 +80,23 @@ public class WIPConfigurationManager {
 	private WIPConfigurationManager() {
 		wipConfigurations = new HashMap<String, WIPConfiguration>();
 		savedConfigurations = new ArrayList<String>();
+		
+		//get existing config name
+		URL url = getClass().getResource("/content/saved-config.xml");
+		try {
+			URI uri = url.toURI();
+			File f = new File(uri);
+			Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(f);
+			NodeList lst = doc.getFirstChild().getChildNodes();
+			
+			for(int i = 0; i < lst.getLength(); i++){
+				Node n = lst.item(i);
+				if(n.getNodeType() == Node.ELEMENT_NODE)
+					savedConfigurations.add(n.getNodeName());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**

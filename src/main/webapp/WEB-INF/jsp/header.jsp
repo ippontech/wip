@@ -62,10 +62,10 @@
 	<a href="<portlet:actionURL><portlet:param name="configPage" value="all"/></portlet:actionURL>" title="Saved config">
 		<fmt:message key="wip.config.existing" />
 	</a>
-	<a href="<portlet:actionURL><portlet:param name="saveConfig" value=""/></portlet:actionURL>">
+	<a href="<portlet:actionURL><portlet:param name="saveConfig" value="all"/></portlet:actionURL>" title="Saving config">
 		<fmt:message key="wip.config.savecurrent" /> 
 	</a>
-	<a href="<portlet:actionURL><portlet:param name="back" value=""/></portlet:actionURL>" title="Back">
+	<a href="<portlet:actionURL><portlet:param name="back" value="back"/></portlet:actionURL>" title="Back">
 	   <fmt:message key="wip.config.back"/>
 	</a>
 </div>
