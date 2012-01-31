@@ -126,7 +126,7 @@ public class WIPResponse implements java.io.Serializable {
 	private Map<String, String> setHeaders(Header[] headersList) {
 		Map<String, String> m = new HashMap<String, String>();
 		for (int i=0; i<headersList.length; i++)
-			m.put(headersList[i].getName(), headersList[i].getValue());
+			m.put(headersList[i].getName().toLowerCase(), headersList[i].getValue());
 		return m;
 	}
 
@@ -223,7 +223,7 @@ public class WIPResponse implements java.io.Serializable {
 	 * @return the header corresponding to the given key
 	 */
 	public String getHeader(String key) {
-		return headers.get(key);
+		return headers.get(key.toLowerCase());
 	}
 
 	/**
@@ -285,7 +285,7 @@ public class WIPResponse implements java.io.Serializable {
 	public void setAuthType(String authType) {
 		this.authType = authType;
 		if (!authType.equals("none"))
-			headers.put("Cache-Control", "no-cache");
+			headers.put("cache-control", "no-cache");
 	}
 	
 	/**
