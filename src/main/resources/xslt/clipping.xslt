@@ -26,16 +26,16 @@
 					<xsl:value-of select="."/>    
 				</xsl:attribute>
 			</xsl:for-each>
-			<xsl:apply-templates select="//STYLE" />
-			<xsl:choose>
-				<xsl:when test="$type = 'xpath'">
-					<xsl:copy-of select=" dyn:evaluate( $xpath )"/>
-				</xsl:when>
-				<xsl:otherwise>
-				<!-- Insert code here for xslt clipping -->
-				</xsl:otherwise>
-			</xsl:choose>
         </xsl:copy>
+		<xsl:apply-templates select="//STYLE" />
+		<xsl:choose>
+			<xsl:when test="$type = 'xpath'">
+				<xsl:copy-of select=" dyn:evaluate( $xpath )"/>
+			</xsl:when>
+			<xsl:otherwise>
+			<!-- Insert code here for xslt clipping -->
+			</xsl:otherwise>
+		</xsl:choose>
 	</xsl:template>
 	
 	<xsl:template match="//STYLE">
