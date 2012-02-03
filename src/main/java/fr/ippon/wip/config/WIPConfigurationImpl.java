@@ -51,7 +51,11 @@ import fr.ippon.wip.transformers.URLTypes;
  * @author Quentin Thierry
  */
 public class WIPConfigurationImpl implements WIPConfiguration {
-
+	/**
+	 * File to save configuration
+	 */
+	private File configFile;
+	
 	/**
 	 * Apache commons configuration object to manager XML configuration.
 	 */
@@ -65,14 +69,13 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 	/**
 	 * Initialize the XMLConfiguration object and save the instance name.
 	 */
-	public WIPConfigurationImpl(String instance) {
-		try {
-			URL url = getClass().getResource("/content/wip-config.xml");
-			try {
-				URI uri = url.toURI();
-				File f = new File(uri);
-				
-				InputStream is = new FileInputStream(f);
+	public WIPConfigurationImpl(File configFile, String instance) {
+		URL defaultUrl = null;
+		this.configFile = configFile;
+		
+		if(configFile != null && configFile.exists()){
+			try{
+				InputStream is = new FileInputStream(configFile);
 				InputStreamReader isr = new InputStreamReader(is);
 				BufferedReader br = new BufferedReader(isr);
 				StringWriter sw = new StringWriter();
@@ -89,31 +92,40 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 							+ s.substring(defaultStart, defaultEnd)
 							+ "</"+instance+">"
 							+ "</configuration>";
-					FileWriter w = new FileWriter(f);
+					FileWriter w = new FileWriter(configFile);
 					BufferedWriter bw = new BufferedWriter(w);
 					bw.write(s);
 					bw.close();
 				}
-			} catch (Exception e) {
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			
 			this.instance = instance;
-			this.config = new XMLConfiguration(url);
+		}else{
+			this.configFile = null;
+			defaultUrl = getClass().getResource("/content/wip-config.xml");
+			this.instance = "wipDefault";
+		}
+		
+		try {
+			if(defaultUrl == null)
+				this.config = new XMLConfiguration(configFile);
+			else
+				this.config = new XMLConfiguration(defaultUrl);
 			this.config.setDelimiterParsingDisabled(true);
-		} catch (ConfigurationException e1) {
-			e1.printStackTrace();
+		} catch (ConfigurationException e) {
+			e.printStackTrace();
 		}
 	}
 	
-	public WIPConfigurationImpl(String instance, String conf) {
-		try {
-			URL url = getClass().getResource("/content/wip-config.xml");
-			try {
-				URI uri = url.toURI();
-				File f = new File(uri);
-				
-				InputStream is = new FileInputStream(f);
+	public WIPConfigurationImpl(File configFile, String instance, String conf) {
+		URL defaultUrl = null;
+		this.configFile = configFile;
+		
+		if(configFile != null && configFile.exists()){
+			try{
+				InputStream is = new FileInputStream(configFile);
 				InputStreamReader isr = new InputStreamReader(is);
 				BufferedReader br = new BufferedReader(isr);
 				StringWriter sw = new StringWriter();
@@ -126,25 +138,37 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 				int end = s.indexOf("</"+instance);
 				s = s.substring(0, start)+conf+s.substring(end);
 				
-				FileWriter w = new FileWriter(f);
+				FileWriter w = new FileWriter(configFile);
 				BufferedWriter bw = new BufferedWriter(w);
 				bw.write(s);
 				bw.close();
-			} catch (Exception e) {
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			
 			this.instance = instance;
-			this.config = new XMLConfiguration(url);
+		}else{
+			this.configFile = null;
+			defaultUrl = getClass().getResource("/content/wip-config.xml");
+			
+			this.instance = "wipDefault";
+		}
+		
+		try {
+			if(defaultUrl == null)
+				this.config = new XMLConfiguration(configFile);
+			else
+				this.config = new XMLConfiguration(defaultUrl);
 			this.config.setDelimiterParsingDisabled(true);
-		} catch (ConfigurationException e1) {
-			e1.printStackTrace();
+		} catch (ConfigurationException e) {
+			e.printStackTrace();
 		}
 	}
 
 	public void save() {
 		try {
-			config.save();
+			if(configFile != null)
+				config.save();
 		} catch (ConfigurationException e) {
 			e.printStackTrace();
 		}
@@ -156,25 +180,24 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 	
 	public String getConfigAsString() {
 		String ret = "";
-		URL url = getClass().getResource("/content/wip-config.xml");
-		try {
-			URI uri = url.toURI();
-			File f = new File(uri);
-			InputStream is = new FileInputStream(f);
-			InputStreamReader isr = new InputStreamReader(is);
-			BufferedReader br = new BufferedReader(isr);
-			StringWriter sw = new StringWriter();
-			String line = "";
-			while ((line = br.readLine()) != null) sw.write(line);
-			String s = sw.toString();
-			if (s.contains(instance)) {
-				int start = s.indexOf("<"+instance);
-				start = s.indexOf("<initUrl>", start);
-				int end = s.indexOf("</"+instance);
-				ret = s.substring(start, end);
+		if(configFile != null){
+			try {
+				InputStream is = new FileInputStream(configFile);
+				InputStreamReader isr = new InputStreamReader(is);
+				BufferedReader br = new BufferedReader(isr);
+				StringWriter sw = new StringWriter();
+				String line = "";
+				while ((line = br.readLine()) != null) sw.write(line);
+				String s = sw.toString();
+				if (s.contains(instance)) {
+					int start = s.indexOf("<"+instance);
+					start = s.indexOf("<initUrl>", start);
+					int end = s.indexOf("</"+instance);
+					ret = s.substring(start, end);
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-		} catch (Exception e1) {
-			e1.printStackTrace();
 		}
 		return ret;
 	}

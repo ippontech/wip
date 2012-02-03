@@ -77,6 +77,9 @@ public class WIPortlet extends GenericPortlet {
 		super.init(config);
 		wipConfigurationManager = WIPConfigurationManager.getInstance();
 		httpManager = HttpManagerImpl.getInstance();
+		
+		String pathConfigFiles = config.getPortletContext().getRealPath(config.getInitParameter("config-path"));
+		wipConfigurationManager.load(pathConfigFiles);
 	}
 	
 	@Override

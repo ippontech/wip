@@ -11,6 +11,11 @@
 
 		<portlet-class>fr.ippon.wip.portlet.WIPortlet</portlet-class>
 
+		<init-param>
+			<name>config-path</name>
+			<value>/../../conf/</value>
+		</init-param>
+
 		<supports>
 			<mime-type>text/html</mime-type>
 			<portlet-mode>VIEW</portlet-mode>

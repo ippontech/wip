@@ -22,9 +22,12 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URL;
@@ -65,6 +68,16 @@ public class WIPConfigurationManager {
 	private List<String> savedConfigurations;
 	
 	/**
+	 * Location to save the configuration files
+	 */
+	private String pathConfigFiles;
+	
+	/**
+	 * File to save current configuration
+	 */
+	private File wipConfigFile;
+	
+	/**
 	 * Get the WIPConfigurationManager singleton.
 	 * @return the class singleton
 	 */
@@ -80,22 +93,82 @@ public class WIPConfigurationManager {
 	private WIPConfigurationManager() {
 		wipConfigurations = new HashMap<String, WIPConfiguration>();
 		savedConfigurations = new ArrayList<String>();
+	}
+	
+	/**
+	 * check and load the configuration files
+	 */
+	public void load(String pathConfigFiles){
+		this.pathConfigFiles = pathConfigFiles;
+		System.out.println("Path config = " + pathConfigFiles);
 		
-		//get existing config name
-		URL url = getClass().getResource("/content/saved-config.xml");
-		try {
-			URI uri = url.toURI();
-			File f = new File(uri);
-			Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(f);
-			NodeList lst = doc.getFirstChild().getChildNodes();
-			
-			for(int i = 0; i < lst.getLength(); i++){
-				Node n = lst.item(i);
-				if(n.getNodeType() == Node.ELEMENT_NODE)
-					savedConfigurations.add(n.getNodeName());
+		//check if the saved-config.xml exist
+		File saveConfigFile = new File(pathConfigFiles + "/saved-config.xml");
+		if(!saveConfigFile.exists()){
+			//create saved-config.xml with default value
+			try{
+				saveConfigFile.createNewFile();
+				
+				URL url = getClass().getResource("/content/saved-config.xml");
+				URI uri = url.toURI();
+				File saveConfigDefaultFile = new File(uri);
+				
+				InputStream in = new FileInputStream(saveConfigDefaultFile);
+				OutputStream out = new FileOutputStream(saveConfigFile);
+
+				byte[] buf = new byte[1024];
+				int len;
+				while ((len = in.read(buf)) > 0){
+					out.write(buf, 0, len);
+				}
+				
+				in.close();
+				out.close();
+			}catch (Exception e) {
+				e.printStackTrace();
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		}else{
+			//load config
+			try{
+				Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(saveConfigFile);
+				NodeList lst = doc.getFirstChild().getChildNodes();
+				
+				for(int i = 0; i < lst.getLength(); i++){
+					Node n = lst.item(i);
+					if(n.getNodeType() == Node.ELEMENT_NODE)
+						savedConfigurations.add(n.getNodeName());
+				}
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		//check if the wip-config.xml exist
+		wipConfigFile = new File(pathConfigFiles + "/wip-config.xml");
+		if(!wipConfigFile.exists()){
+			//create wip-config.xml with default value
+			try{
+				wipConfigFile.createNewFile();
+				
+				URL url = getClass().getResource("/content/wip-config.xml");
+				URI uri = url.toURI();
+				File wipConfigDefaultFile = new File(uri);
+				
+				InputStream in = new FileInputStream(wipConfigDefaultFile);
+				OutputStream out = new FileOutputStream(wipConfigFile);
+
+				byte[] buf = new byte[1024];
+				int len;
+				while ((len = in.read(buf)) > 0){
+					out.write(buf, 0, len);
+				}
+				
+				in.close();
+				out.close();
+			}catch (Exception e) {
+				wipConfigFile = null;
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -107,7 +180,7 @@ public class WIPConfigurationManager {
 	public WIPConfiguration getConfiguration(String instance) {
 		WIPConfiguration config = wipConfigurations.get(instance);
 		if (config == null) { 
-			config = new WIPConfigurationImpl(instance);
+			config = new WIPConfigurationImpl(wipConfigFile, instance);
 			wipConfigurations.put(instance, config);
 		}
 		return config;
@@ -167,7 +240,7 @@ public class WIPConfigurationManager {
 		start = s.indexOf("<init", start);
 		int end = s.indexOf("</"+name);
 		s = s.substring(start, end);
-		WIPConfiguration c = new WIPConfigurationImpl(instance, s);
+		WIPConfiguration c = new WIPConfigurationImpl(wipConfigFile, instance, s);
 		wipConfigurations.put(instance, c);
 	}
 	
@@ -177,19 +250,21 @@ public class WIPConfigurationManager {
 	 */
 	private String readSavedConfigXML() {
 		String ret = "";
-		URL url = getClass().getResource("/content/saved-config.xml");
-		try {
-			URI uri = url.toURI();
-			File f = new File(uri);
-			InputStream is = new FileInputStream(f);
-			InputStreamReader isr = new InputStreamReader(is);
-			BufferedReader br = new BufferedReader(isr);
-			StringWriter sw = new StringWriter();
-			String line = "";
-			while ((line = br.readLine()) != null) sw.write(line);
-			ret = sw.toString();
-		} catch (Exception e) {
-			e.printStackTrace();
+		File f = new File(pathConfigFiles + "/saved-config.xml");
+		if(f.exists()){
+			try {
+				InputStream is = new FileInputStream(f);
+				InputStreamReader isr = new InputStreamReader(is);
+				BufferedReader br = new BufferedReader(isr);
+				StringWriter sw = new StringWriter();
+				String line = "";
+				while ((line = br.readLine()) != null) sw.write(line);
+				ret = sw.toString();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}else{
+			System.err.println("the save config file does not exist !");
 		}
 		return ret;
 	}
@@ -199,18 +274,23 @@ public class WIPConfigurationManager {
 	 * @param s the string to write.
 	 */
 	private void writeSavedConfigXML(String s) {
-		URL url = getClass().getResource("/content/saved-config.xml");
-		try {
-			URI uri = url.toURI();
-			File f = new File(uri);
-			FileWriter w = new FileWriter(f);
-			BufferedWriter bw = new BufferedWriter(w);
-			bw.write(s);
-			bw.close();
-		} catch (Exception e) {
-			e.printStackTrace();
+		File f = new File(pathConfigFiles + "/saved-config.xml");
+		if(f.exists()){
+			try {
+				FileWriter w = new FileWriter(f);
+				BufferedWriter bw = new BufferedWriter(w);
+				bw.write(s);
+				bw.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}else{
+			System.err.println("the save config file does not exist !");
 		}
 	}
 	
+	public boolean saveConfigEnable(){
+		return wipConfigFile != null;
+	}
 }
 

@@ -55,6 +55,12 @@
 
 <fmt:setBundle basename="content.Language"/>
 
+<% if(!WIPConfigurationManager.getInstance().saveConfigEnable()){ %>
+<div id="wipconfig_error">
+	<fmt:message key="wip.config.error" />
+</div>
+<% } %>
+
 <div class="config_menu">
 	<a href="<portlet:actionURL></portlet:actionURL>" title="Current config">
 		<fmt:message key="wip.config.current" />
@@ -71,6 +77,16 @@
 </div>
 
 <style>
+	#wipconfig_error {
+		background: url(<%= request.getContextPath() + "/img/alert.png" %>) no-repeat scroll 6px 50% #FFC;
+	    border: 1px solid #FC0;
+	    color: #B83A1B;
+	    display: block;
+	    font-weight: bold;
+	    margin: 2px auto 14px;
+	    padding: 6px 6px 6px 30px;
+	    text-align: left;
+	}
 
 	#editHeader {
 		height:55px;
