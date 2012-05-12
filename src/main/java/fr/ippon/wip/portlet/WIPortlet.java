@@ -18,36 +18,18 @@
 
 package fr.ippon.wip.portlet;
 
+import fr.ippon.wip.config.WIPConfiguration;
+import fr.ippon.wip.config.WIPConfigurationManager;
+import fr.ippon.wip.http.*;
+import fr.ippon.wip.ltpa.LtpaCookieUtil;
+import fr.ippon.wip.transformers.HTMLTransformer;
+import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
+import org.xml.sax.SAXException;
+
+import javax.portlet.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-
-import javax.portlet.ActionRequest;
-import javax.portlet.ActionResponse;
-import javax.portlet.GenericPortlet;
-import javax.portlet.PortletConfig;
-import javax.portlet.PortletException;
-import javax.portlet.PortletMode;
-import javax.portlet.PortletRequestDispatcher;
-import javax.portlet.PortletSession;
-import javax.portlet.PortletURL;
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
-import javax.portlet.ResourceRequest;
-import javax.portlet.ResourceResponse;
-
-import org.xml.sax.SAXException;
-
-import fr.ippon.wip.config.WIPConfiguration;
-import fr.ippon.wip.config.WIPConfigurationManager;
-import fr.ippon.wip.http.HttpManager;
-import fr.ippon.wip.http.HttpManagerImpl;
-import fr.ippon.wip.http.StatusCode;
-import fr.ippon.wip.http.WIPDownloader;
-import fr.ippon.wip.http.WIPRequest;
-import fr.ippon.wip.http.WIPResponse;
-import fr.ippon.wip.ltpa.LtpaCookieUtil;
-import fr.ippon.wip.transformers.HTMLTransformer;
 
 /**
  * WIPortlet enables simple web application integration within a portlet. It
@@ -300,6 +282,7 @@ public class WIPortlet extends GenericPortlet {
 	@Override
 	public void destroy() {
 		httpManager.destroy();
+        MultiThreadedHttpConnectionManager.shutdownAll();
 		super.destroy();
 	}
 	
