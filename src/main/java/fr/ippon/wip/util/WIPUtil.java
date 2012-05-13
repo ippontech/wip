@@ -24,6 +24,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.httpclient.Cookie;
 
@@ -35,8 +37,10 @@ import org.apache.commons.httpclient.Cookie;
  */
 
 public class WIPUtil {
-	
-	public static String getTmpPath(URL url) {
+
+    private static final Logger LOG = Logger.getLogger(WIPUtil.class.getName());
+
+    public static String getTmpPath(URL url) {
 		String surl = url.toExternalForm();
 		if (!surl.startsWith("/")) {
 			String[] aux = surl.split(":");
@@ -54,7 +58,7 @@ public class WIPUtil {
 				try {
 					date = (new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US)).parse(s);
 				} catch (ParseException e1) {
-					e1.printStackTrace();
+                    LOG.log(Level.FINE, "Error parsing date " + s, e1);
 				}
 			}
 		}

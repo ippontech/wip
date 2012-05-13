@@ -20,6 +20,8 @@ package fr.ippon.wip.transformers;
 
 import javax.xml.transform.ErrorListener;
 import javax.xml.transform.TransformerException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * An error listener for the HTMLTransformer used to display custom error messages
@@ -29,28 +31,27 @@ import javax.xml.transform.TransformerException;
  */
 public class ParserErrorListener implements ErrorListener {
 
-	/**
+    private static final Logger LOG = Logger.getLogger(ParserErrorListener.class.getName());
+
+    /**
 	 * Error message
 	 */
-	public void error(TransformerException arg0) throws TransformerException {
-		System.out.print("[WIP] Parser error : " + arg0.getLocationAsString() + " : ");
-		arg0.printStackTrace();
+	public void error(TransformerException ex) throws TransformerException {
+        LOG.log(Level.INFO, "Error parsing HTML: ", ex);
 	}
 
 	/**
 	 * Fatal error message
 	 */
-	public void fatalError(TransformerException arg0) throws TransformerException {
-		System.out.print("[WIP] Parser fatal : " + arg0.getLocationAsString() + " : ");
-		arg0.printStackTrace();
-	}
+	public void fatalError(TransformerException ex) throws TransformerException {
+        LOG.log(Level.WARNING, "Error parsing HTML: ", ex);
+    }
 
 	/**
 	 * Warning message
 	 */
-	public void warning(TransformerException arg0) throws TransformerException {
-		System.out.print("[WIP] Parser warning : " + arg0.getLocationAsString() + " : ");
-		arg0.printStackTrace();
-	}
+	public void warning(TransformerException ex) throws TransformerException {
+        LOG.log(Level.FINE, "Error parsing HTML: ", ex);
+    }
 
 }

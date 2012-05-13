@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
@@ -48,8 +50,10 @@ import fr.ippon.wip.util.WIPUtil;
  * @author Quentin Thierry
  */
 public class WIPResponse implements java.io.Serializable {
-	
-	private static final long serialVersionUID = 1L;
+
+    private static final Logger LOG = Logger.getLogger(WIPResponse.class.getName());
+
+    private static final long serialVersionUID = 1L;
 	
 	/**
 	 * A reference to the WIP configuration.
@@ -134,7 +138,7 @@ public class WIPResponse implements java.io.Serializable {
 	 * Process HTML transformation.
 	 * @param request the portlet request used to get the session
 	 * @param response the portlet response used to create a portlet URL.
-	 * @param currentURL the current URL used as a reference to rewrite URLs
+	 * @param currentUrl the current URL used as a reference to rewrite URLs
 	 * @throws IOException
 	 */
 	public void transformHTML(PortletRequest request, PortletResponse response, String currentUrl) throws IOException {
@@ -145,7 +149,7 @@ public class WIPResponse implements java.io.Serializable {
 			remoteResponse = transformer.transform(remoteResponse);
 			transformedResponse = true;
 		} catch (Exception e) {
-			e.printStackTrace();
+            LOG.log(Level.INFO, "Error transforming HTML content", e);
 		}
 	}
 	
@@ -153,7 +157,7 @@ public class WIPResponse implements java.io.Serializable {
 	 * Process CSS transformation.
 	 * @param request the portlet request used to get the session
 	 * @param response the portlet response used to create a portlet URL.
-	 * @param currentURL the current URL used as a reference to rewrite URLs
+	 * @param currentUrl the current URL used as a reference to rewrite URLs
 	 * @throws IOException
 	 */
 	public void transformCSS(PortletRequest request, PortletResponse response, String currentUrl) throws IOException {
@@ -164,7 +168,7 @@ public class WIPResponse implements java.io.Serializable {
 			remoteResponse = transformer.transform(remoteResponse);
 			transformedResponse = true;
 		} catch (SAXException e) {
-			e.printStackTrace();
+            LOG.log(Level.INFO, "Error transforming CSS content", e);
 		}
 	}
 	
@@ -172,7 +176,7 @@ public class WIPResponse implements java.io.Serializable {
 	 * Process JS transformation.
 	 * @param request the portlet request used to get the session
 	 * @param response the portlet response used to create a portlet URL.
-	 * @param currentURL the current URL used as a reference to rewrite URLs
+	 * @param url the current URL used as a reference to rewrite URLs
 	 * @throws IOException
 	 */
 	public void transformJS(PortletRequest request, PortletResponse response, String url) throws IOException {
@@ -186,7 +190,7 @@ public class WIPResponse implements java.io.Serializable {
 				remoteResponse = transformer.transform(remoteResponse);
 				transformedResponse = true;
 			} catch (SAXException e) {
-				e.printStackTrace();
+                LOG.log(Level.INFO, "Error transforming JS content", e);
 			}
 		}
 	}
@@ -196,7 +200,7 @@ public class WIPResponse implements java.io.Serializable {
 		try {
 			remoteResponse = transformer.transform(remoteResponse);
 		} catch (SAXException e) {
-			e.printStackTrace();
+            LOG.log(Level.INFO, "Error transforming JSON content", e);
 		}
 	}
 

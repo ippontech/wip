@@ -23,6 +23,8 @@ import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.portlet.PortletResponse;
 import javax.portlet.RenderResponse;
@@ -40,7 +42,9 @@ import fr.ippon.wip.portlet.WIPortlet;
  */
 public class WIPRewriter {
 
-	/**
+    private static final Logger LOG = Logger.getLogger(WIPRewriter.class.getName());
+
+    /**
 	 * The URI of the page of the distant application displayed in the portlet,
 	 * used to resolve relative URLs
 	 */
@@ -56,7 +60,7 @@ public class WIPRewriter {
 		try {
 			currentUri = new URI(currentUrl);
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.info("Invalid URI: " + currentUrl);
 		}
 	}
 

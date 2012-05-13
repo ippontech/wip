@@ -20,6 +20,8 @@ package fr.ippon.wip.transformers;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -46,7 +48,9 @@ import fr.ippon.wip.rewriters.JSRewriter;
  */
 public class JSTransformer implements WIPTransformer {
 
-	/**
+    private static final Logger LOG = Logger.getLogger(JSTransformer.class.getName());
+
+    /**
 	 * The rewriter used to rewrite JS-specific parts of code
 	 */
 	private JSRewriter jsRewriter;
@@ -155,7 +159,7 @@ public class JSTransformer implements WIPTransformer {
 				Matcher m = p.matcher(url);
 				if(m.find())return true;
 			}catch (PatternSyntaxException e) {
-				System.err.println("Error IngoredScript syntax :" + e.getMessage());
+                LOG.log(Level.WARNING, "Could not parse ignoredScript regex: ", e);
 			}
 		}
 		
@@ -174,7 +178,7 @@ public class JSTransformer implements WIPTransformer {
 				Matcher m = p.matcher(url);
 				if(m.find())return true;
 			}catch (PatternSyntaxException e) {
-				System.err.println("Error DeletedScript syntax :" + e.getMessage());
+                LOG.log(Level.WARNING, "Could not parse deletedScript regex: ", e);
 			}
 		}
 		

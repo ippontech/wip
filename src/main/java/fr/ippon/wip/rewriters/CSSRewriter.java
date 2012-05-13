@@ -18,6 +18,8 @@
 
 package fr.ippon.wip.rewriters;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,8 +32,10 @@ import javax.portlet.PortletResponse;
  * @author Quentin Thierry
  */
 public class CSSRewriter extends WIPRewriter {
-	
-	/**
+
+    private static final Logger LOG = Logger.getLogger(CSSRewriter.class.getName());
+
+    /**
 	 * A boolean value used to know wheter the user is authenticated or not to the distant application
 	 */
 	private boolean authenticated;
@@ -78,7 +82,7 @@ public class CSSRewriter extends WIPRewriter {
 	                }
 	            }
         	}catch (IllegalArgumentException e) {
-				e.printStackTrace();
+				LOG.log(Level.INFO, "Error parsing URL in CSS", e);
 			}
         }
         matcher.appendTail(sb);

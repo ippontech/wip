@@ -35,6 +35,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -51,6 +53,8 @@ import org.w3c.dom.NodeList;
  * @author Quentin Thierry
  */
 public class WIPConfigurationManager {
+
+    private static final Logger LOG = Logger.getLogger(WIPConfigurationManager.class.getName());
 
 	/**
 	 * The WIPConfigurationManager singleton.
@@ -100,7 +104,7 @@ public class WIPConfigurationManager {
 	 */
 	public void load(String pathConfigFiles){
 		this.pathConfigFiles = pathConfigFiles;
-		System.out.println("Path config = " + pathConfigFiles);
+        LOG.info("Path config = " + pathConfigFiles);
 		
 		//check if the saved-config.xml exist
 		File saveConfigFile = new File(pathConfigFiles + "/saved-config.xml");
@@ -125,7 +129,8 @@ public class WIPConfigurationManager {
 				in.close();
 				out.close();
 			}catch (Exception e) {
-				e.printStackTrace();
+                LOG.log(Level.SEVERE, "Could not create saved configuration file with default values at path: " +
+                        saveConfigFile.getPath(), e);
 			}
 		}else{
 			//load config
@@ -139,8 +144,9 @@ public class WIPConfigurationManager {
 						savedConfigurations.add(n.getNodeName());
 				}
 			}catch (Exception e) {
-				e.printStackTrace();
-			}
+                LOG.log(Level.SEVERE, "Could not load saved configuration file at path: " +
+                        saveConfigFile.getPath(), e);
+            }
 		}
 		
 		//check if the wip-config.xml exist
@@ -167,8 +173,9 @@ public class WIPConfigurationManager {
 				out.close();
 			}catch (Exception e) {
 				wipConfigFile = null;
-				e.printStackTrace();
-			}
+                LOG.log(Level.SEVERE, "Could not create WIP configuration file with default values at path: " +
+                        wipConfigFile.getPath(), e);
+            }
 		}
 	}
 	
@@ -261,10 +268,10 @@ public class WIPConfigurationManager {
 				while ((line = br.readLine()) != null) sw.write(line);
 				ret = sw.toString();
 			} catch (Exception e) {
-				e.printStackTrace();
-			}
+                LOG.log(Level.SEVERE, "Could not read save config file at path: " + f.getPath(), e);
+            }
 		}else{
-			System.err.println("the save config file does not exist !");
+            LOG.severe("The save config file does not exist at path: " + f.getPath());
 		}
 		return ret;
 	}
@@ -282,11 +289,11 @@ public class WIPConfigurationManager {
 				bw.write(s);
 				bw.close();
 			} catch (Exception e) {
-				e.printStackTrace();
-			}
+                LOG.log(Level.SEVERE, "Could not write save config file at path: " + f.getPath(), e);
+            }
 		}else{
-			System.err.println("the save config file does not exist !");
-		}
+            LOG.severe("The save config file does not exist at path: " + f.getPath());
+        }
 	}
 	
 	public boolean saveConfigEnable(){

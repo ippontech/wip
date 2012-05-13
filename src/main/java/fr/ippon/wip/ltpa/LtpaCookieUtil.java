@@ -4,19 +4,24 @@ import java.lang.reflect.Method;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.portlet.PortletRequest;
 
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.ltpa.exception.Base64DecodeException;
 import fr.ippon.wip.ltpa.token.LtpaLibrary;
+import sun.util.LocaleServiceProviderPool;
 
 /**
  * The LtpaCookieUtil class is used to generate a LtpaCookie
  * that enable a LTPA SSO authentication.
  */
 public class LtpaCookieUtil {
-	
+
+    private static final Logger LOG = Logger.getLogger(LtpaCookieUtil.class.getName());
+
 	/**
 	 * Generate LTPA cookie from credentials and LTPA secret.
 	 */
@@ -37,10 +42,8 @@ public class LtpaCookieUtil {
 				// Create token
 				ltpaToken = LtpaLibrary.createLtpaToken(credentials, calendar,
 						120, ltpaSecret);
-			} catch (NoSuchAlgorithmException e) {
-				e.printStackTrace();
-			} catch (Base64DecodeException e) {
-				e.printStackTrace();
+			} catch (Exception e) {
+                LOG.log(Level.WARNING, "Could not create LTPA token", e);
 			}
 			// Use Set-Cookie instead of javax.servlet.http.Cookie
 			// API cause some Tomcat version prepend the character '"'
@@ -65,7 +68,7 @@ public class LtpaCookieUtil {
 			Object o = clazz.newInstance();
 			ltpaSecret = (String[]) invokeMethod("getLtpaSecret", o, new Object[]{request});
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.log(Level.SEVERE, "Could not get LTPA secret with " + className, e);
 		}
 		return ltpaSecret;
 	}
@@ -81,7 +84,7 @@ public class LtpaCookieUtil {
 			Object o = clazz.newInstance();
 			credentials = (String) invokeMethod("getCredentials", o, new Object[]{request});
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.log(Level.SEVERE, "Could not get user credentials with" + className, e);
 		}
 		return credentials;
 	}

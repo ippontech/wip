@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -45,7 +47,9 @@ import fr.ippon.wip.config.WIPConfigurationManager;
  */
 public class WIPEdit {
 
-	/**
+    private static final Logger LOG = Logger.getLogger(WIPEdit.class.getName());
+
+    /**
 	 * A pseudo processAction method, replacing the WIPortlet's one in edit mode.
 	 * @param request The ActionRequest sent to WIPortlet in edit mode
 	 * @param response The ActionResponse sent to WIPortlet in edit mode
@@ -94,7 +98,7 @@ public class WIPEdit {
 			try {
 				response.setPortletMode(PortletMode.VIEW);
 			} catch (PortletModeException e) {
-				e.printStackTrace();
+				LOG.log(Level.SEVERE, "Could not set portlet mode to VIEW", e);
 			}
 		}
 	}
@@ -125,19 +129,15 @@ public class WIPEdit {
 		String portletTitle = request.getParameter("portletTitle");
 		
 		// Saving the new configuration
-		try {
-			if (initUrl != null)
-				wipConfig.setInitUrl(initUrl);
-			if (domainsToProxy != null) 
-				wipConfig.setDomainsToProxy(domainsToProxy);
-			if (portletTitle != null)
-				wipConfig.setPortletTitle(portletTitle);
-			wipConfig.setEnableUrlRewriting(enableUrlRewriting);
-			wipConfig.save();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
+        if (initUrl != null)
+            wipConfig.setInitUrl(initUrl);
+        if (domainsToProxy != null)
+            wipConfig.setDomainsToProxy(domainsToProxy);
+        if (portletTitle != null)
+            wipConfig.setPortletTitle(portletTitle);
+        wipConfig.setEnableUrlRewriting(enableUrlRewriting);
+        wipConfig.save();
+
 		// Sending errors to the portlet session
 		request.getPortletSession().setAttribute("errors", errors, PortletSession.APPLICATION_SCOPE);
 		
@@ -165,30 +165,19 @@ public class WIPEdit {
 			if (xPath.equals("")) {
 				errors.put("xPath", rb.getString("wip.errors.xpath.empty"));
 			} else {
-				try {
-					wipConfig.setXPath(xPath);
-					wipConfig.setClippingType(clippingType);
-					wipConfig.save();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+                wipConfig.setXPath(xPath);
+                wipConfig.setClippingType(clippingType);
+                wipConfig.save();
 			}
 		} else if (clippingType.equals("xslt")) {
 			String xsltClipping = request.getParameter("xsltClipping");
-			try {
-				wipConfig.setXsltClipping(xsltClipping);
-				wipConfig.setClippingType(clippingType);
-				wipConfig.save();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+            wipConfig.setXsltClipping(xsltClipping);
+            wipConfig.setClippingType(clippingType);
+            wipConfig.save();
+
 		} else {
-			try {
-				wipConfig.setClippingType(clippingType);
-				wipConfig.save();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+            wipConfig.setClippingType(clippingType);
+            wipConfig.save();
 		}
 
 		// Sending errors to the portlet session
@@ -212,13 +201,9 @@ public class WIPEdit {
 		String xsltTransform = request.getParameter("xsltTransform");
 		
 		// Saving the new configuration
-		try {
-			wipConfig.setXsltTransform(xsltTransform);
-			wipConfig.save();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
+        wipConfig.setXsltTransform(xsltTransform);
+        wipConfig.save();
+
 		// Sending the page to display to the portlet session
 		request.getPortletSession().setAttribute("editPage", "htmlrewriting");
 	}
@@ -256,18 +241,15 @@ public class WIPEdit {
 		if (tmpEnableCssRewriting == null) enableCssRewriting = false;
 
 		// Saving the new configuration
-		try {
-			wipConfig.setCssRegex(cssRegex);
-			wipConfig.setAbsolutePositioning(absolutePositioning);
-			wipConfig.setAddPrefix(addPrefix);
-			wipConfig.setPortletDivId(portletDivId);
-			wipConfig.setEnableCssRetrieving(enableCssRetrieving);
-			wipConfig.setEnableCssRewriting(enableCssRewriting);
-			wipConfig.setCustomCss(customCss);
-			wipConfig.save();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+        wipConfig.setCssRegex(cssRegex);
+        wipConfig.setAbsolutePositioning(absolutePositioning);
+        wipConfig.setAddPrefix(addPrefix);
+        wipConfig.setPortletDivId(portletDivId);
+        wipConfig.setEnableCssRetrieving(enableCssRetrieving);
+        wipConfig.setEnableCssRewriting(enableCssRewriting);
+        wipConfig.setCustomCss(customCss);
+        wipConfig.save();
+
 		
 		// Sending errors to the portlet session
 		request.getPortletSession().setAttribute("errors", errors, PortletSession.APPLICATION_SCOPE);
@@ -306,15 +288,11 @@ public class WIPEdit {
 		for (int i=0; i<l4.length; i++) scriptsToDelete.add(l4[i]);
 		
 		// Saving the new configuration
-		try {
-			wipConfig.setJsRegex(jsRegex);
-			wipConfig.setJavascriptUrls(javascriptUrls);
-			wipConfig.setScriptsToIgnore(scriptsToIgnore);
-			wipConfig.setScriptsToDelete(scriptsToDelete);
-			wipConfig.save();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+        wipConfig.setJsRegex(jsRegex);
+        wipConfig.setJavascriptUrls(javascriptUrls);
+        wipConfig.setScriptsToIgnore(scriptsToIgnore);
+        wipConfig.setScriptsToDelete(scriptsToDelete);
+        wipConfig.save();
 		
 		// Sending errors to the portlet session
 		request.getPortletSession().setAttribute("errors", errors, PortletSession.APPLICATION_SCOPE);
@@ -332,13 +310,9 @@ public class WIPEdit {
 		String tmpEnableCache = request.getParameter("enableCache");
 		boolean enableCache = true;
 		if (tmpEnableCache == null) enableCache = false;
-		
-		try {
-			wipConfig.setEnableCache(enableCache);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
+
+		wipConfig.setEnableCache(enableCache);
+
 		if (enableCache) {
 			String tmpPageCachePrivate = request.getParameter("pageCachePrivate");
 			boolean pageCachePrivate = true;
@@ -364,16 +338,14 @@ public class WIPEdit {
 			int resourceCacheTimeout = 0;
 			if (tmpResourceCacheTimeout != null) resourceCacheTimeout = Integer.parseInt(tmpResourceCacheTimeout);
 			
-			try {
-				wipConfig.setPageCachePrivate(pageCachePrivate);
-				wipConfig.setResourceCachePublic(resourceCachePublic);
-				wipConfig.setForcePageCaching(forcePageCaching);
-				wipConfig.setForceResourceCaching(forceResourceCaching);
-				wipConfig.setPageCacheTimeout(pageCacheTimeout);
-				wipConfig.setResourceCacheTimeout(resourceCacheTimeout);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+
+            wipConfig.setPageCachePrivate(pageCachePrivate);
+            wipConfig.setResourceCachePublic(resourceCachePublic);
+            wipConfig.setForcePageCaching(forcePageCaching);
+            wipConfig.setForceResourceCaching(forceResourceCaching);
+            wipConfig.setPageCacheTimeout(pageCacheTimeout);
+            wipConfig.setResourceCacheTimeout(resourceCacheTimeout);
+
 		}
 		
 		// Sending errors to the portlet session
@@ -396,14 +368,11 @@ public class WIPEdit {
 		String credentialProviderClassName = request.getParameter("credentialProviderClassName");
 		
 		// Saving the new configuration
-		try {
-			wipConfig.setLtpaSsoAuthentication(ltpaSsoAuthentication);
-			wipConfig.setLtpaSecretProviderClassName(ltpaSecretProviderClassName);
-			wipConfig.setCredentialProviderClassName(credentialProviderClassName);
-			wipConfig.save();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+        wipConfig.setLtpaSsoAuthentication(ltpaSsoAuthentication);
+        wipConfig.setLtpaSecretProviderClassName(ltpaSecretProviderClassName);
+        wipConfig.setCredentialProviderClassName(credentialProviderClassName);
+        wipConfig.save();
+
 		
 		// Sending errors to the portlet session
 		request.getPortletSession().setAttribute("errors", errors, PortletSession.APPLICATION_SCOPE);

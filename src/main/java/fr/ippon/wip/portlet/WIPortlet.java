@@ -25,11 +25,14 @@ import fr.ippon.wip.ltpa.LtpaCookieUtil;
 import fr.ippon.wip.transformers.HTMLTransformer;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.xml.sax.SAXException;
+import sun.util.LocaleServiceProviderPool;
 
 import javax.portlet.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * WIPortlet enables simple web application integration within a portlet. It
@@ -40,7 +43,9 @@ import java.io.PrintWriter;
  */
 public class WIPortlet extends GenericPortlet {
 
-	// Session attribute and request parameter keys
+    private static final Logger LOG = Logger.getLogger(WIPortlet.class.getName());
+
+    // Session attribute and request parameter keys
 	public static final String WIP_REQUEST_KEY = "WIP_REQUEST";
 	public static final String WIP_RESPONSE_KEY = "WIP_RESPONSE";
 	public static final String LINK_URL_KEY = "WIP_LINK_URL";
@@ -268,7 +273,7 @@ public class WIPortlet extends GenericPortlet {
 			try {
 				ret = HTMLTransformer.htmlToXhtml(wipResponse.getRemoteResponse());
 			} catch (SAXException e) {
-				e.printStackTrace();
+                LOG.log(Level.INFO, "Could not parse URL content: " + url, e);
 			}
 			PrintWriter pw = response.getWriter();
 			pw.print(ret.replaceAll("<", "&lt;").replaceAll(">", "&gt;<br />"));

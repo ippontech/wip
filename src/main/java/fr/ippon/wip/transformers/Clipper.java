@@ -22,6 +22,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.portlet.PortletResponse;
 import javax.xml.parsers.DocumentBuilder;
@@ -53,7 +55,9 @@ import fr.ippon.wip.util.CachedDTD;
  */
 public class Clipper implements WIPTransformer {
 
-	/**
+    private static final Logger LOG = Logger.getLogger(Clipper.class.getName());
+
+    /**
 	 * The XSLT stylesheet used to process the clipping
 	 */
 	private String xsltClipping;
@@ -94,10 +98,8 @@ public class Clipper implements WIPTransformer {
 		try {
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			db = dbf.newDocumentBuilder();
-		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
-		} catch (FactoryConfigurationError e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			LOG.log(Level.SEVERE, "Could not create XML document builder", e);
 		}
 		db.setEntityResolver(new CachedDTD());
 		Document doc = db.parse(xhtml);

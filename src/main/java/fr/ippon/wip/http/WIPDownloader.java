@@ -19,6 +19,8 @@
 package fr.ippon.wip.http;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.URIException;
@@ -32,7 +34,9 @@ import org.apache.commons.httpclient.URIException;
  */
 public class WIPDownloader extends Thread {
 
-	/**
+    private static final Logger LOG = Logger.getLogger(WIPDownloader.class.getName());
+
+    /**
 	 * The id of the downloader, used by the ResourceHandler servlet to find it
 	 * in the register
 	 */
@@ -79,7 +83,7 @@ public class WIPDownloader extends Thread {
 				setResponse(method.getResponseBodyAsString());
 				getFileName();
 			} catch (IOException e) {
-				e.printStackTrace();
+                LOG.log(Level.FINE, "Error while fetching response", e);
 			}
 		}
 	}
@@ -161,7 +165,7 @@ public class WIPDownloader extends Thread {
 			if (index2 > -1)
 				result = result.substring(0, index2);
 		} catch (URIException e) {
-			e.printStackTrace();
+            LOG.log(Level.FINE, "Invalid URI", e);
 		}
 		return result;
 	}

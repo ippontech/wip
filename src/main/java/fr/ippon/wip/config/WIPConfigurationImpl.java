@@ -35,11 +35,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 
 import fr.ippon.wip.transformers.URLTypes;
+import sun.util.LocaleServiceProviderPool;
 
 /**
  * TODO
@@ -50,8 +53,11 @@ import fr.ippon.wip.transformers.URLTypes;
  * @author Anthony Luce
  * @author Quentin Thierry
  */
-public class WIPConfigurationImpl implements WIPConfiguration {
-	/**
+public class        WIPConfigurationImpl implements WIPConfiguration {
+
+    private static final Logger LOG = Logger.getLogger(WIPConfigurationImpl.class.getName());
+
+    /**
 	 * File to save configuration
 	 */
 	private File configFile;
@@ -98,7 +104,7 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 					bw.close();
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+                LOG.log(Level.SEVERE, "Unable to read configuration" ,e);
 			}
 			
 			this.instance = instance;
@@ -115,11 +121,14 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 				this.config = new XMLConfiguration(defaultUrl);
 			this.config.setDelimiterParsingDisabled(true);
 		} catch (ConfigurationException e) {
-			e.printStackTrace();
+            LOG.log(Level.SEVERE, "Could not instanciate XMLConfiguration", e);
 		}
 	}
-	
-	public WIPConfigurationImpl(File configFile, String instance, String conf) {
+
+    /**
+     * Overwrite the "instance" configuration block from "configFile" with "conf"
+     */
+    public WIPConfigurationImpl(File configFile, String instance, String conf) {
 		URL defaultUrl = null;
 		this.configFile = configFile;
 		
@@ -143,7 +152,7 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 				bw.write(s);
 				bw.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+                LOG.log(Level.SEVERE, "Could not write configuration " + instance, e);
 			}
 			
 			this.instance = instance;
@@ -161,7 +170,7 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 				this.config = new XMLConfiguration(defaultUrl);
 			this.config.setDelimiterParsingDisabled(true);
 		} catch (ConfigurationException e) {
-			e.printStackTrace();
+            LOG.log(Level.SEVERE, "Could not instanciate XMLConfiguration", e);
 		}
 	}
 
@@ -170,7 +179,7 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 			if(configFile != null)
 				config.save();
 		} catch (ConfigurationException e) {
-			e.printStackTrace();
+            LOG.log(Level.SEVERE, "Could not save XMLConfiguration", e);
 		}
 	}
 	
@@ -196,7 +205,7 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 					ret = s.substring(start, end);
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+                LOG.log(Level.SEVERE, "Could not read configuration for instance " + instance, e);
 			}
 		}
 		return ret;
@@ -210,10 +219,11 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 
 	public URL getInitUrl() {
 		URL url = null;
-		try {
-			url = new URL(config.getString(instance+".initUrl"));
+        String path = config.getString(instance+".initUrl");
+        try {
+			url = new URL(path);
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
+            LOG.warning("Malformed init URL: " + path);
 		}
 		return url;
 	}
@@ -228,12 +238,8 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 
 	public List<URL> getDomainsToProxy() {
 		List<URL> list = null;
-		try {
-			list = setDomainsFromString(config.getString(instance+".domainsToProxy"));
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		}
-		return list;
+        list = setDomainsFromString(config.getString(instance+".domainsToProxy"));
+        return list;
 	}
 	
 	public String getDomainsAsString(List<URL> domains) {
@@ -245,15 +251,25 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 		return domainsAsString;
 	}
 
-	public List<URL> setDomainsFromString(String string) throws MalformedURLException {
+	public List<URL> setDomainsFromString(String string) {
 		ArrayList<URL> list = new ArrayList<URL>();
 		if (!string.equals("")) {
 			for (String s : string.split(";")) {
-				list.add(new URL(s));
-			}
+                try {
+                    list.add(new URL(s));
+                } catch (MalformedURLException e) {
+                    LOG.warning("Malformed URL for domain to proxy: " + s);
+                }
+            }
 		} else if (!getInitUrl().equals("")) {
-			URL init = new URL(getInitUrl().getProtocol() + "://" + getInitUrl().getHost());
-			list.add(init);
+            URL init = null;
+            String path = getInitUrl().getProtocol() + "://" + getInitUrl().getHost();
+            try {
+                init = new URL(path);
+            } catch (MalformedURLException e) {
+                LOG.warning("Malformed URL for domain to proxy: " + path);
+            }
+            list.add(init);
 		}
 		return list;
 	}
@@ -395,7 +411,7 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 				}
 				result = writer.toString();
 			} catch (IOException e) {
-				e.printStackTrace();
+                LOG.log(Level.SEVERE, "Could not load default XSLT file for clipping", e);
 			}
 		}
 		return result;
@@ -421,8 +437,8 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 				}
 				result = writer.toString();
 			} catch (IOException e) {
-				e.printStackTrace();
-			}
+                LOG.log(Level.SEVERE, "Could not load default XSLT file", e);
+            }
 		}
 		return result;
 	}

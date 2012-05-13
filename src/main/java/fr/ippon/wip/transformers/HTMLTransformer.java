@@ -25,6 +25,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.MalformedURLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.portlet.PortletResponse;
 import javax.xml.parsers.DocumentBuilder;
@@ -59,8 +61,10 @@ import fr.ippon.wip.util.CachedDTD;
  * @author Quentin Thierry
  */
 public class HTMLTransformer implements WIPTransformer {
-	
-	/**
+
+    private static final Logger LOG = Logger.getLogger(HTMLTransformer.class.getName());
+
+    /**
 	 * The parser used to parse content from html to xhtml
 	 */
 	private static final String parserClassName = "org.cyberneko.html.parsers.SAXParser";
@@ -118,7 +122,7 @@ public class HTMLTransformer implements WIPTransformer {
 			try {
 				input = clipper.transform(input);
 			} catch (SAXException e) {
-				e.printStackTrace();
+				LOG.log(Level.INFO, "Error in clipping transform", e);
 			}
 		}
 		
@@ -131,10 +135,8 @@ public class HTMLTransformer implements WIPTransformer {
 		try {
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			db = dbf.newDocumentBuilder();
-		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
-		} catch (FactoryConfigurationError e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			LOG.log(Level.SEVERE, "Could not create XML document builder", e);
 		}
 		db.setEntityResolver(new CachedDTD());
 		Document doc = db.parse(xhtml);
@@ -212,7 +214,7 @@ public class HTMLTransformer implements WIPTransformer {
 			// Close the output stream
 			out.close();
 		} catch (Exception e) {//Catch exception if any
-			System.err.println("Error: " + e.getMessage());
+			LOG.log(Level.WARNING, "Could not write to log file: ", e);
 		}
 	}
 }

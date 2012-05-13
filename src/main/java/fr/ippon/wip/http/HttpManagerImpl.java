@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 import javax.portlet.PortletSession;
 
@@ -51,7 +52,9 @@ import fr.ippon.wip.cookies.CookiesManagerImpl;
  */
 public class HttpManagerImpl implements HttpManager {
 
-	private static HttpManager instance = null; 
+    private static final Logger LOG = Logger.getLogger(HttpManagerImpl.class.getName());
+
+    private static HttpManager instance = null;
 	private HttpClient httpClient;
 	private MultiThreadedHttpConnectionManager connectionManager;
 	private CacheManager cacheManager;
@@ -97,10 +100,9 @@ public class HttpManagerImpl implements HttpManager {
 		
 		WIPResponse wipResponse = cacheManager.getCacheEntry(id, wipRequest, instance);
 		if (wipResponse != null && wipResponse.isFresh(id, wipRequest))
-			return wipResponse; 
-			
-		// TODO: set up log4j
-		// System.out.println("\t"+wipRequest.getUrl());
+			return wipResponse;
+
+        LOG.fine ("Processing WIP request: " + wipRequest.getUrl());
 		
 		if (wipRequest.getMethodType().equals("POST"))
 			wipResponse = doPostRequest(id, wipRequest, wipResponse, instance);
@@ -315,8 +317,8 @@ public class HttpManagerImpl implements HttpManager {
 	/**
 	 * Propagate the add of cache entry.
 	 * @param id the possibly given id (in the case of a private cache)
-	 * @param request the key that will be used to retrieve the response
-	 * @param response the response to cache
+	 * @param wipRequest the key that will be used to retrieve the response
+	 * @param wipResponse the response to cache
 	 */
 	public void setCacheEntry(String id, WIPRequest wipRequest, WIPResponse wipResponse, String instance) {
 		cacheManager.setCacheEntry(id, wipRequest, wipResponse, instance);
