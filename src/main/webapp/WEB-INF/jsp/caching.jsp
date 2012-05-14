@@ -22,41 +22,41 @@
 		<p class="line">
 			<label for="enableCache"><fmt:message key="wip.config.enablecache" /> :</label>
 			<input type="checkbox" name="enableCache" id="enableCache" onclick="javascript:checkCache();" <% if (wipConf.getEnableCache()) out.print("checked"); %> />
-			<%= printHelp(rb.getString("wip.help.enablecache")) %>
+			<%= printHelp("wip.help.enablecache", locale) %>
 		</p>
 		<div id="enableCacheDiv" <% if (!wipConf.getEnableCache()) out.print("style=\"display:none;\""); %>>
 			<h5><fmt:message key="wip.config.pagecache" /></h5>
 			<p class="line" >
 				<label for="pageCachePrivate"><fmt:message key="wip.config.pagecacheprivate" /> :</label>
 				<input type="checkbox" name="pageCachePrivate" id="pageCachePrivate" <% if (wipConf.getPageCachePrivate()) out.print("checked"); %> />
-				<%= printHelp(rb.getString("wip.help.pagecacheprivate")) %>
+				<%= printHelp("wip.help.pagecacheprivate", locale) %>
 			</p>
 			<p class="line" >
 				<label for="forcePageCaching"><fmt:message key="wip.config.forcepagecaching" /> :</label>
 				<input type="checkbox" name="forcePageCaching" id="forcePageCaching" onclick="javascript:checkForcePageCaching();" <% if (wipConf.getForcePageCaching()) out.print("checked"); %> />
-				<%= printHelp(rb.getString("wip.help.forcepagecaching")) %>
+				<%= printHelp("wip.help.forcepagecaching", locale) %>
 			</p>
 			<p class="line" id="pageCacheTimeoutBloc" <% if (!wipConf.getForcePageCaching()) out.print("style=\"display:none;\""); %>>
 				<label for="pageCacheTimeout"><fmt:message key="wip.config.pagecachetimeout" /> :</label>
 				<input type="text" name="pageCacheTimeout" id="pageCacheTimeout" value="<%= wipConf.getPageCacheTimeout() %>" size="10" />
-				<%= printHelp(rb.getString("wip.help.pagecachetimeout")) %>
+				<%= printHelp("wip.help.pagecachetimeout", locale) %>
 			</p>
 			
 			<h5><fmt:message key="wip.config.resourcecache" /></h5>
 			<p class="line" >
 				<label for="resourceCachePublic"><fmt:message key="wip.config.resourcecachepublic" /> :</label>
 				<input type="checkbox" name="resourceCachePublic" id="resourceCachePublic" <% if (wipConf.getResourceCachePublic()) out.print("checked"); %> />
-				<%= printHelp(rb.getString("wip.help.resourcecachepublic")) %>
+				<%= printHelp("wip.help.resourcecachepublic", locale) %>
 			</p>
 			<p class="line" >
 				<label for="forceResourceCaching"><fmt:message key="wip.config.forceresourcecaching" /> :</label>
 				<input type="checkbox" name="forceResourceCaching" id="forceResourceCaching" onclick="javascript:checkForceResourceCaching();" <% if (wipConf.getForceResourceCaching()) out.print("checked"); %> />
-				<%= printHelp(rb.getString("wip.help.forceresourcecaching")) %>
+				<%= printHelp("wip.help.forceresourcecaching", locale) %>
 			</p>
 			<p class="line" id="resourceCacheTimeoutBloc" <% if (!wipConf.getForceResourceCaching()) out.print("style=\"display:none;\""); %>>
 				<label for="resourceCacheTimeout"><fmt:message key="wip.config.resourcecachetimeout" /> :</label>
 				<input type="text" name="resourceCacheTimeout" id="resourceCacheTimeout" value="<%= wipConf.getResourceCacheTimeout() %>" size="10" />
-				<%= printHelp(rb.getString("wip.help.resourcecachetimeout")) %>
+				<%= printHelp("wip.help.resourcecachetimeout", locale) %>
 			</p>
 		</div>
 		<p class="submit">

@@ -29,7 +29,7 @@
 		<p class="line">
 			<label for="xsltTransform"><fmt:message key="wip.config.xslttransform" /> : (<a href="#" onclick="javascript:reset();">reset</a>)</label>
 			<textarea name="xsltTransform" id="xsltTransform"><%= wipConf.getXsltTransform() %></textarea>
-			<%= printHelp(rb.getString("wip.help.xslttransform")) %>
+			<%= printHelp("wip.help.xslttransform", locale) %>
 			<br/>
 		</p>
 		<p class="submit">

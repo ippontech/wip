@@ -24,18 +24,18 @@
         <p class="line">
             <label for="ltpaSsoAuthentication"><fmt:message key="wip.config.ltpassoauthentication" /> :</label>
             <input type="checkbox" name="ltpaSsoAuthentication" id="ltpaSsoAuthentication" <% if (wipConf.getLtpaSsoAuthentication()) out.print("checked"); %> />
-            <%= printHelp(rb.getString("wip.help.ltpassoauthentication")) %>
+            <%= printHelp("wip.help.ltpassoauthentication", locale) %>
         </p>
         <p class="line">
             <label for="credentialProviderClassName"><fmt:message key="wip.config.credentialproviderclassname" /> :</label>
             <input type="text" name="credentialProviderClassName" id="credentialProviderClassName" value="<%= wipConf.getCredentialProviderClassName() %>" />
-            <%= printHelp(rb.getString("wip.help.credentialproviderclassname")) %>
+            <%= printHelp("wip.help.credentialproviderclassname", locale) %>
             <%= printError("credentialProviderClassName", errors) %>
         </p>              
         <p class="line">
             <label for="ltpaSecretProviderClassName"><fmt:message key="wip.config.ltpasecretproviderclassname" /> :</label>
             <input type="text" name="ltpaSecretProviderClassName" id="ltpaSecretProviderClassName" value="<%= wipConf.getLtpaSecretProviderClassName() %>" />
-            <%= printHelp(rb.getString("wip.help.ltpasecretproviderclassname")) %>
+            <%= printHelp("wip.help.ltpasecretproviderclassname", locale) %>
             <%= printError("ltpaSecretProviderClassName", errors) %>
         </p>          
         <p class="submit">

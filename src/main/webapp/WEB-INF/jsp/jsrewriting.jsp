@@ -24,13 +24,13 @@
 		<p style="margin-left:15px; margin-bottom: 25px;">
 			<label for="jsRegex"><fmt:message key="wip.config.jsregex" /> :</label>
 			<input type="text" name="jsRegex" id="jsRegex" value="<%= wipConf.getJsRegex() %>" size="60" />
-			<%= printHelp(rb.getString("wip.help.jsregex")) %>
+			<%= printHelp("wip.help.jsregex", locale) %>
 		</p>
 		<table>
 			<tr>
 				<td>
 					<label><fmt:message key="wip.config.ajaxurls" /></label>
-					<%= printHelp(rb.getString("wip.help.urllistajax")) %>
+					<%= printHelp("wip.help.urllistajax", locale) %>
 					<ul id="javascriptUrlList">
 						<%
 							Map<String, URLTypes> l = wipConf.getJavascriptUrls();
@@ -61,7 +61,7 @@
 			<tr>
 				<td width="50%">
 					<label><fmt:message key="wip.config.scriptignoredurls" /></label>
-					<%= printHelp(rb.getString("wip.help.ignorelist")) %>
+					<%= printHelp("wip.help.ignorelist", locale) %>
 					<ul id="scriptIgnoredUrlList">
 						<%
 							List<String> l3 = wipConf.getScriptsToIgnore();
@@ -84,7 +84,7 @@
 				</td>
 				<td width="50%">
 					<label><fmt:message key="wip.config.scriptdeletedurls" /></label>
-					<%= printHelp(rb.getString("wip.help.deletelist")) %>
+					<%= printHelp("wip.help.deletelist", locale) %>
 					<ul id="scriptDeletedUrlList">
 						<%
 							List<String> l4 = wipConf.getScriptsToDelete();

@@ -1,18 +1,14 @@
 package fr.ippon.wip.ltpa;
 
+import fr.ippon.wip.config.WIPConfiguration;
+import fr.ippon.wip.ltpa.token.LtpaLibrary;
+
+import javax.portlet.PortletRequest;
 import java.lang.reflect.Method;
-import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.portlet.PortletRequest;
-
-import fr.ippon.wip.config.WIPConfiguration;
-import fr.ippon.wip.ltpa.exception.Base64DecodeException;
-import fr.ippon.wip.ltpa.token.LtpaLibrary;
-import sun.util.LocaleServiceProviderPool;
 
 /**
  * The LtpaCookieUtil class is used to generate a LtpaCookie

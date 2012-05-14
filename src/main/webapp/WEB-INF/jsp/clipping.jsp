@@ -69,7 +69,7 @@
 						<input type="radio" name="clippingType" value="none" id="none" onclick="javascript:display('none');" 
 						<% if (!errors.containsKey("xPath")&&wipConf.getClippingType().equals("none")) { %> checked <% } %> /><label for="none"> None </label>
 					</td>
-					<td><%= printHelp(rb.getString("wip.help.clippingtype")) %></td>
+					<td><%= printHelp("wip.help.clippingtype", locale) %></td>
 				</tr>
 				<tr>
 					<td align="left" width="50%">
@@ -91,7 +91,7 @@
 			<p class="line">
 				<label><fmt:message key="wip.config.xpath" /></label>
 				<input type="text" name="xPath" value="<%= wipConf.getXPath() %>"/>	
-				<%= printHelp(rb.getString("wip.help.xpath")) %>
+				<%= printHelp("wip.help.xpath", locale) %>
 				<%= printError("xPath", errors) %>
 			</p>
 		</div>
@@ -99,7 +99,7 @@
 			<p class="line">
 				<label for="xsltClipping"><fmt:message key="wip.config.xsltclipping" /> : (<a href="#" onclick="javascript:reset();">reset</a>)</label>
 				<textarea name="xsltClipping" id="xsltClipping"><%= wipConf.getXsltClipping() %></textarea>
-				<%= printHelp(rb.getString("wip.help.xsltclipping")) %>
+				<%= printHelp("wip.help.xsltclipping", locale) %>
 				<br/>
 			</p>
 		</div>

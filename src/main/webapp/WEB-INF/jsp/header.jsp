@@ -22,13 +22,13 @@
 <%@ page import="java.util.Locale" %>
 <%@ page import="java.util.Iterator" %>
 <%@ page import="java.util.Map.Entry" %>
+<%@ page import="fr.ippon.wip.util.WIPUtil" %>
 
 <portlet:defineObjects/>
-
-<% 
+<%
 	Locale locale = request.getLocale();
-	RenderRequest pReq = (RenderRequest)request.getAttribute("javax.portlet.request");
-	ResourceBundle rb = ResourceBundle.getBundle("content.Language", locale);
+    request.setAttribute("localeCode", locale.getLanguage());
+    RenderRequest pReq = (RenderRequest)request.getAttribute("javax.portlet.request");
 	PortletResponse pRsp = (PortletResponse) request.getAttribute("javax.portlet.response");
 	WIPConfiguration wipConf = WIPConfigurationManager.getInstance().getConfiguration(pRsp.getNamespace());
 	Map<String, String> errors = (Map<String, String>) session.getAttribute("errors");
@@ -43,16 +43,17 @@
 		return r;
 	}
 
-	String printHelp(String mess) {
+	String printHelp(String key, Locale locale) {
 		String r = "";
 		r += "<span class=\"wip_help\" onmouseover=\"showHelp(this)\" onmouseout=\"hideHelp(this)\" >";
-		r += "<a>help</a>";
-		r += "<span style=\"display:none\">"+mess+"</span>";
+		r += "<a>" + WIPUtil.getMessage("wip.help", locale) + "</a>";
+		r += "<span style=\"display:none\">"+ WIPUtil.getMessage(key, locale) +"</span>";
 		r += "</span>";
 		return r;
 	}
 %>
 
+<fmt:setLocale value="${localeCode}" scope="session"  />
 <fmt:setBundle basename="content.Language"/>
 
 <% if(!WIPConfigurationManager.getInstance().saveConfigEnable()){ %>

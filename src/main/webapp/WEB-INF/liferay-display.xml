@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
 <display>
-    <category name="category.tools">
+    <category name="category.integration">
         <portlet id="WIP" />
     </category>
 </display>

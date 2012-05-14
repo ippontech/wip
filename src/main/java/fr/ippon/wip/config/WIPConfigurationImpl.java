@@ -42,7 +42,6 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 
 import fr.ippon.wip.transformers.URLTypes;
-import sun.util.LocaleServiceProviderPool;
 
 /**
  * TODO

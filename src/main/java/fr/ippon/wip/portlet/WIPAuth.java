@@ -54,10 +54,7 @@ public class WIPAuth {
 			session.removeAttribute("userPassword");
 			session.removeAttribute("authType");
 			httpManager.cleanPrivateCache(session.getId());
-		} else if (request.getParameter("auth").equals("clearCookies")) {
-			CookiesManagerImpl.getInstance().clearCookies(session.getId());
 		}
-		
 	}
 	
 }

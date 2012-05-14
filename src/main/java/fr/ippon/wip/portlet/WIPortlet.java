@@ -23,14 +23,15 @@ import fr.ippon.wip.config.WIPConfigurationManager;
 import fr.ippon.wip.http.*;
 import fr.ippon.wip.ltpa.LtpaCookieUtil;
 import fr.ippon.wip.transformers.HTMLTransformer;
+import fr.ippon.wip.util.WIPUtil;
 import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.xml.sax.SAXException;
-import sun.util.LocaleServiceProviderPool;
 
 import javax.portlet.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -293,15 +294,11 @@ public class WIPortlet extends GenericPortlet {
 	
 	private String getLogoutButton(PortletSession session, RenderResponse response) {
 		String ret = "";
-//		String id = session.getId();
 		if (session.getAttribute("authType") != null) {
 			PortletURL logout = response.createActionURL();
 			logout.setParameter("auth", "logout");
-			ret = "Logged in through the portal. Clic <a href=\""+logout.toString()+"\"> here </a> to log out.";
-//		} else if (CookiesManagerImpl.getInstance().hasCookies(id)) {
-//			PortletURL clearCookiesURL = response.createActionURL();
-//			clearCookiesURL.setParameter("auth", "clearCookies");
-//			ret = "Clic <a href=\""+clearCookiesURL.toString()+"\"> here </a> to clear cookies from current session.";
+            String message = WIPUtil.getMessage("wip.auth.logout", response.getLocale());
+            return MessageFormat.format(message, logout.toString());
 		}
 		return ret;
 	}

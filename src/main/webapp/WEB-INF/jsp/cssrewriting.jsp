@@ -55,37 +55,37 @@
 		<p class="line" id="enablecssretrieving">
 			<label for="enableCssRetrieving"><fmt:message key="wip.config.enablecssretrieving" /> :</label>
 			<input type="checkbox" name="enableCssRetrieving" id="enableCssRetrieving" onclick="javascript:check();" <% if (wipConf.getEnableCssRetrieving()) out.print("checked"); %> />
-			<%= printHelp(rb.getString("wip.help.enablecssretrieving")) %>
+			<%= printHelp("wip.help.enablecssretrieving", locale) %>
 		</p>
 		<p class="line" id="enablecssrewriting" <% if (!wipConf.getEnableCssRetrieving()) out.print("style=\"display:none;\""); %>>
 			<label for="enableCssRewriting"><fmt:message key="wip.config.enablecssrewriting" /> :</label>
 			<input type="checkbox" name="enableCssRewriting" id="enableCssRewriting" onclick="javascript:check();" <% if (wipConf.getEnableCssRewriting()) out.print("checked"); %> />
-			<%= printHelp(rb.getString("wip.help.enablecssrewriting")) %>
+			<%= printHelp("wip.help.enablecssrewriting", locale) %>
 		</p>
 		<p class="line" id="cssregex" <% if (!wipConf.getEnableCssRetrieving()||!wipConf.getEnableCssRewriting()) out.print("style=\"display:none;\""); %>>
 			<label for="cssRegex"><fmt:message key="wip.config.cssregex" /> :</label>
 			<input type="text" name="cssRegex" id="cssRegex" value="<%= StringEscapeUtils.escapeHtml(wipConf.getCssRegex()) %>" />
-			<%= printHelp(rb.getString("wip.help.cssregex")) %>
+			<%= printHelp("wip.help.cssregex", locale) %>
 		</p>
 		<p class="line" id="absolutepositioning" <% if (!wipConf.getEnableCssRetrieving()||!wipConf.getEnableCssRewriting()) out.print("style=\"display:none;\""); %>>
 			<label for="absolutePositioning"><fmt:message key="wip.config.absolutepositioning" /> :</label>
 			<input type="checkbox" name="absolutePositioning" id="absolutepositioning" onclick="javascript:check();" <% if (wipConf.getAbsolutePositioning()) out.print("checked"); %> />
-			<%= printHelp(rb.getString("wip.help.absolutepositioning")) %>
+			<%= printHelp("wip.help.absolutepositioning", locale) %>
 		</p>
 		<p class="line" id="addprefix" <% if (!wipConf.getEnableCssRetrieving()||!wipConf.getEnableCssRewriting()) out.print("style=\"display:none;\""); %>>
 			<label for="addPrefix"><fmt:message key="wip.config.addprefix" /> :</label>
 			<input type="checkbox" name="addPrefix" id="addprefix" onclick="javascript:check();" <% if (wipConf.getAddPrefix()) out.print("checked"); %> />
-			<%= printHelp(rb.getString("wip.help.addprefix")) %>
+			<%= printHelp("wip.help.addprefix", locale) %>
 		</p>
 		<p class="line" id="portletdivid" <% if (!wipConf.getEnableCssRetrieving()||!wipConf.getEnableCssRewriting()||!wipConf.getAddPrefix()) out.print("style=\"display:none;\""); %>>
 			<label for="portletDivId"><fmt:message key="wip.config.portletdivid" /> :</label>
 			<input type="text" name="portletDivId" id="portletDivId" value="<%= wipConf.getPortletDivId() %>" />
-			<%= printHelp(rb.getString("wip.help.portletdivid")) %>
+			<%= printHelp("wip.help.portletdivid", locale) %>
 		</p>
 		<p class="line">
 			<label for="customCss"><fmt:message key="wip.config.customcss" /> :</label>
 			<textarea name="customCss" id="customCss"><%= wipConf.getCustomCss() %></textarea>
-			<%= printHelp(rb.getString("wip.help.customcss")) %>
+			<%= printHelp("wip.help.customcss", locale) %>
 			<%= printError("customCss", errors) %>
 		</p>
 		<p class="submit">
