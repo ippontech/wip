@@ -145,7 +145,7 @@ public class CookiesManagerImpl implements CookiesManager {
 
 	public void clearCookies(String id) {
 		if (cookiesMap.get(id) != null) {
-			cookiesMap.get(id).clear();
+			cookiesMap.remove(id);
 		}		
 	}
 

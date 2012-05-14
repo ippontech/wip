@@ -26,4 +26,8 @@
 		<servlet-name>ResourceHandler</servlet-name>
 		<url-pattern>/ResourceHandler/*</url-pattern>
 	</servlet-mapping>
+
+    <listener>
+        <listener-class>fr.ippon.wip.cookies.CookiesCleanupListener</listener-class>
+    </listener>
 </web-app>
