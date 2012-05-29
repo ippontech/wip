@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.URIException;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpResponse;
 
 /**
  * This class is used to process the downloading of a file. The file will then
@@ -46,12 +46,14 @@ public class WIPDownloader extends Thread {
 	 * A HttpMethod object, resulting from the execution of the request who lead
 	 * to the download launched by this downloader
 	 */
-	private HttpMethod method;
+	private HttpResponse httpResponse;
 
 	/**
 	 * The content of the file downloaded by this downloader, as a String
 	 */
 	private String response;
+
+    private String fileName;
 
 	/**
 	 * This object is a lock to make sure that the ResourceHandler servlet will
@@ -62,12 +64,13 @@ public class WIPDownloader extends Thread {
 	/**
 	 * Instanciate a new WIPDownloader from a HttpMethod object
 	 * 
-	 * @param method
+	 * @param response
 	 *            The HttpMethod after execution of its request
 	 */
-	public WIPDownloader(HttpMethod method) {
+	public WIPDownloader(HttpResponse response, String fileName) {
+        this.fileName = fileName;
 		setDownloadId(System.currentTimeMillis());
-		this.method = method;
+		this.httpResponse = response;
 		setResponse("");
 		lock = new Object();
 	}
@@ -80,7 +83,7 @@ public class WIPDownloader extends Thread {
 	public void run() {
 		synchronized (lock) {
 			try {
-				setResponse(method.getResponseBodyAsString());
+				setResponse(IOUtils.toString(httpResponse.getEntity().getContent()));
 				getFileName();
 			} catch (IOException e) {
                 LOG.log(Level.FINE, "Error while fetching response", e);
@@ -156,18 +159,7 @@ public class WIPDownloader extends Thread {
 	 * 			The name of the file
 	 */
 	public String getFileName() {
-		String result = "";
-		try {
-			result =  method.getURI().toString();
-			int index = result.lastIndexOf('/');
-			result = result.substring(index + 1);
-			int index2 = result.indexOf('?');
-			if (index2 > -1)
-				result = result.substring(0, index2);
-		} catch (URIException e) {
-            LOG.log(Level.FINE, "Invalid URI", e);
-		}
-		return result;
+		return fileName;
 	}
 
 }

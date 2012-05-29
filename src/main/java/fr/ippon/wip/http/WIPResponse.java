@@ -19,6 +19,7 @@
 package fr.ippon.wip.http;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,8 +30,9 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.portlet.PortletSession;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
 import org.xml.sax.SAXException;
 
 import fr.ippon.wip.cache.CacheManagerImpl;
@@ -63,7 +65,7 @@ public class WIPResponse implements java.io.Serializable {
 	/**
 	 * The HTTP method previously created to do the request.
 	 */
-	private transient HttpMethod httpMethod;
+	private transient HttpResponse httpResponse;
 	
 	/**
 	 * A map containing the response headers.
@@ -79,7 +81,7 @@ public class WIPResponse implements java.io.Serializable {
 	 * The remote response body as a string.
 	 */
 	private String remoteResponse;
-	
+
 	/**
 	 * The remote response body as a byte array.
 	 */
@@ -107,14 +109,14 @@ public class WIPResponse implements java.io.Serializable {
 	
 	/**
 	 * Create a WIPResponse object from the given HTTP method (after execution)
-	 * @param method the given HTTP method
+	 * @param response the given HTTP response
 	 * @throws IOException
 	 */
-	public WIPResponse(HttpMethod method, String instance) throws IOException {
-		httpMethod = method;
-		statusCode = method.getStatusCode();
-		remoteResponse = method.getResponseBodyAsString();
-		headers = setHeaders(method.getResponseHeaders());
+	public WIPResponse(HttpResponse response, String instance) throws IOException {
+		httpResponse = response;
+		statusCode = response.getStatusLine().getStatusCode();
+		remoteResponse = null;
+		headers = setHeaders(response.getAllHeaders());
 		transformedResponse = false;
 		privateResponse = false;
 		authType = "none";
@@ -146,7 +148,7 @@ public class WIPResponse implements java.io.Serializable {
 		boolean authenticated = (session.getAttribute("authType")!=null) ? true : false;
 		HTMLTransformer transformer = new HTMLTransformer(response, currentUrl, authenticated);
 		try {
-			remoteResponse = transformer.transform(remoteResponse);
+			remoteResponse = transformer.transform(getRemoteResponse());
 			transformedResponse = true;
 		} catch (Exception e) {
             LOG.log(Level.INFO, "Error transforming HTML content", e);
@@ -165,7 +167,7 @@ public class WIPResponse implements java.io.Serializable {
 		boolean authenticated = (session.getAttribute("authType")!=null) ? true : false;
 		CSSTransformer transformer = new CSSTransformer(response, currentUrl, authenticated);
 		try {
-			remoteResponse = transformer.transform(remoteResponse);
+			remoteResponse = transformer.transform(getRemoteResponse());
 			transformedResponse = true;
 		} catch (SAXException e) {
             LOG.log(Level.INFO, "Error transforming CSS content", e);
@@ -187,7 +189,7 @@ public class WIPResponse implements java.io.Serializable {
 			remoteResponse = "";
 		}else if (!transformer.isIgnoredScript(url)) {
 			try {
-				remoteResponse = transformer.transform(remoteResponse);
+				remoteResponse = transformer.transform(getRemoteResponse());
 				transformedResponse = true;
 			} catch (SAXException e) {
                 LOG.log(Level.INFO, "Error transforming JS content", e);
@@ -198,7 +200,7 @@ public class WIPResponse implements java.io.Serializable {
 	public void transformJSON() throws IOException {
 		JSONTransformer transformer = new JSONTransformer();
 		try {
-			remoteResponse = transformer.transform(remoteResponse);
+			remoteResponse = transformer.transform(getRemoteResponse());
 		} catch (SAXException e) {
             LOG.log(Level.INFO, "Error transforming JSON content", e);
 		}
@@ -210,8 +212,11 @@ public class WIPResponse implements java.io.Serializable {
 	 * @throws IOException
 	 */
 	public String getRemoteResponse() throws IOException {
-		return remoteResponse;
-	}
+        if (remoteResponse == null) {
+            remoteResponse = IOUtils.toString(httpResponse.getEntity().getContent());
+        }
+        return remoteResponse;
+    }
 	
 	/**
 	 * Get the response status code.
@@ -234,8 +239,8 @@ public class WIPResponse implements java.io.Serializable {
 	 * Get the HTTP method object.
 	 * @return the HTTP method
 	 */
-	public HttpMethod getHttpMethod() {
-		return httpMethod;
+	public HttpResponse getHttpResponse() {
+		return httpResponse;
 	}
 
 	/**
@@ -403,6 +408,6 @@ public class WIPResponse implements java.io.Serializable {
 
 	
 	public byte[] getBinaryContent() throws IOException {
-		return httpMethod.getResponseBody();
+		return IOUtils.toByteArray(httpResponse.getEntity().getContent());
 	}
 }

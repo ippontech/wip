@@ -25,8 +25,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.httpclient.Cookie;
-
 /**
  * Wip Utility Class
  * 
@@ -65,13 +63,6 @@ public class WIPUtil {
 			}
 		}
 		return date;
-	}
-	
-	public static Cookie[] toArray(List<Cookie> l) {
-		Cookie[] c = new Cookie[l.size()];
-		for (int i=0; i<l.size(); i++)
-			c[i] = l.get(i);
-		return c;
 	}
 
     public static String getMessage (String key, Locale locale) {

@@ -85,11 +85,15 @@ public class CSSTransformer implements WIPTransformer {
 			
 			 // Removing comments
 			int idx1 = input.indexOf("/*", 0);
-			int idx2 = input.indexOf("*/", 0);
-			while (idx1 > -1) {
+			int idx2 = input.indexOf("*/", idx1+2);
+			while (idx2 > -1) {
 				input = input.substring(0, idx1) + input.substring(idx2+2);
 				idx1 = input.indexOf("/*", 0);
-				idx2 = input.indexOf("*/", 0);
+                if (idx1 > -1) {
+				    idx2 = input.indexOf("*/", idx1+2);
+                } else {
+                    break;
+                }
 			}
 			
 			// Parsing the file to add the wip prefix before selectors

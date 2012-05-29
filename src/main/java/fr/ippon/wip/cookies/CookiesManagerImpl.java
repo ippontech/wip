@@ -26,11 +26,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.httpclient.Cookie;
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpMethod;
-
 import fr.ippon.wip.util.WIPUtil;
+import org.apache.http.Header;
+import org.apache.http.HeaderElement;
+import org.apache.http.HttpRequest;
+import org.apache.http.NameValuePair;
+import org.apache.http.cookie.Cookie;
+import org.apache.http.cookie.SM;
+import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.http.impl.cookie.NetscapeDraftHeaderParser;
 
 /**
  * Implementation of the CookiesManager interface. It is a singleton that
@@ -65,38 +69,40 @@ public class CookiesManagerImpl implements CookiesManager {
 		cookiesMap = new HashMap<String, List<Cookie>>();
 	}
 
-	public void saveCookies(String id, Header[] h) {
-		if (cookiesMap.get(id) == null) {
-			cookiesMap.put(id, new ArrayList<Cookie>());
+	public void saveCookies(String id, Header[] headers) {
+        List<Cookie> cookies = cookiesMap.get(id);
+		if (cookies == null) {
+            cookies = new ArrayList<Cookie>();
+			cookiesMap.put(id, cookies);
 		}
-		for (int i=0; i<h.length; i++) {
-			if (h[i].getName().compareTo("Set-Cookie") == 0) {
-				String value = h[i].getValue();
-				String[] cookie = value.split(";");
-				Map<String, String> m = new HashMap<String, String>();
-				String[] aux = cookie[0].split("=");
-				m.put("name", aux[0]);
-				m.put("value", aux[1]);
-				m.put("secure", "false");
-				for (int j=1; j<cookie.length; j++) {
-					if (cookie[j].toUpperCase().equals("SECURE"))
-						m.put("secure", "true");
-					else if (!cookie[j].equals("")) {
-						aux = cookie[j].split("=");
-						if (aux.length>1) m.put(aux[0].toLowerCase(), aux[1]); else m.put(aux[0].toLowerCase(), "");
-					}
-				}
-				cookiesMap.get(id).add(new Cookie(m.get("domain"), m.get("name"), m.get("value"), m.get("path"), WIPUtil.getDate(m.get("expires")), Boolean.parseBoolean(m.get("secure"))));
+		for (Header header : headers) {
+			if (header.getName().compareToIgnoreCase(SM.SET_COOKIE) == 0) {
+                for (HeaderElement element : header.getElements()) {
+                    BasicClientCookie cookie = new BasicClientCookie(element.getName(), element.getValue());
+                    for (NameValuePair nvPair : element.getParameters()) {
+                          String attName = nvPair.getName();
+                          if (attName.compareToIgnoreCase("secure") == 0) {
+                              cookie.setSecure (true);
+                          } else if (attName.compareToIgnoreCase("expires") == 0) {
+                              cookie.setExpiryDate(WIPUtil.getDate(nvPair.getValue()));
+                          } else if (attName.compareToIgnoreCase("domain") == 0) {
+                              cookie.setDomain(nvPair.getValue());
+                          } else if (attName.compareToIgnoreCase("path") == 0) {
+                              cookie.setPath(nvPair.getValue());
+                          }
+                    }
+                    cookies.add(cookie);
+                }
 			}
 		}		
 	}
 
-	public void saveSingleCookie(String id, String cookie) {
+	public void saveSingleCookie(String id, String cookieString) {
 		if (cookiesMap.get(id) == null) {
 			cookiesMap.put(id, new ArrayList<Cookie>());
 		}
 		Map<String, String> m = new HashMap<String, String>();
-		String[] sCookie = cookie.split(";");
+		String[] sCookie = cookieString.split(";");
 		int index = sCookie[0].indexOf("=", 0);
 		if (index > 0) {
 			m.put("name", sCookie[0].substring(0, index));
@@ -113,34 +119,38 @@ public class CookiesManagerImpl implements CookiesManager {
 						m.put(aux[0].toLowerCase(), "");
 				}
 			}
-			cookiesMap.get(id).add(new Cookie(
-					m.get("domain"), m.get("name"), m.get("value"), m.get("path"), 
-					WIPUtil.getDate(m.get("expires")), Boolean.parseBoolean(m.get("secure"))));
+            BasicClientCookie cookie = new BasicClientCookie(m.get("name"), m.get("value"));
+            cookie.setDomain(m.get("domain"));
+            cookie.setPath(m.get("path"));
+            cookie.setExpiryDate(WIPUtil.getDate(m.get("expires")));
+            cookie.setSecure(Boolean.parseBoolean(m.get("secure")));
+			cookiesMap.get(id).add(cookie);
 		}
 	}
 	
-	public void setCookies(String id, String url, HttpMethod method) throws MalformedURLException {
-		List<Cookie> c = cookiesMap.get(id);
-		if (c != null) {
-			for (int i=0; i<c.size(); i++) {
-				// Checking expiration date
-				Date date = c.get(i).getExpiryDate();
-				if (date != null && date.before(new Date())) {
-					c.remove(i);
-				} else {
-					// Checking path
-					String path = c.get(i).getPath();
-					if (path == null) {
-						method.setRequestHeader("Cookie", c.get(i).getName()+"="+c.get(i).getValue());
-					} else {
-						URL u = new URL(url);
-						String baseUrl = u.getProtocol() + "://" + u.getHost() + path;
-						if (url.startsWith(baseUrl)) 
-							method.setRequestHeader("Cookie", c.get(i).getName()+"="+c.get(i).getValue());
-					}
-				}
-			}
-		}		
+	public void setCookies(String id, String url, HttpRequest request) throws MalformedURLException {
+        List<Cookie> cookies = cookiesMap.get(id);
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                // Check expiry date
+                if (cookie.getExpiryDate() != null && cookie.getExpiryDate().before(new Date())) {
+                    cookies.remove(cookie);
+                    continue;
+                }
+                // Check path
+                if (cookie.getPath() != null) {
+                    URL u = new URL(url);
+                    String baseUrl = u.getProtocol() + "://" + u.getHost() + cookie.getPath();
+                    if (!url.startsWith(baseUrl))
+                        continue;
+                }
+                // Check secure
+                if (cookie.isSecure() && !url.startsWith("https")) {
+                    continue;
+                }
+                request.addHeader(SM.COOKIE, cookie.getName() + "=" + cookie.getValue());
+            }
+        }
 	}
 
 	public void clearCookies(String id) {

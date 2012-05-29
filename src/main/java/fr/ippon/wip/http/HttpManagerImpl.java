@@ -19,6 +19,10 @@
 package fr.ippon.wip.http;
 
 import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
@@ -27,21 +31,34 @@ import java.util.logging.Logger;
 
 import javax.portlet.PortletSession;
 
-import org.apache.commons.httpclient.Credentials;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
-import org.apache.commons.httpclient.NTCredentials;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.params.HttpClientParams;
-
 import fr.ippon.wip.cache.CacheManager;
 import fr.ippon.wip.cache.CacheManagerImpl;
 import fr.ippon.wip.cookies.CookiesManager;
 import fr.ippon.wip.cookies.CookiesManagerImpl;
+import fr.ippon.wip.portlet.WIPortlet;
+import org.apache.http.Header;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.auth.*;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.params.ClientPNames;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
+import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.auth.NTLMScheme;
+import org.apache.http.impl.client.AbstractHttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 
 /**
  * This class defines useful method for http management like doing
@@ -55,12 +72,12 @@ public class HttpManagerImpl implements HttpManager {
     private static final Logger LOG = Logger.getLogger(HttpManagerImpl.class.getName());
 
     private static HttpManager instance = null;
-	private HttpClient httpClient;
-	private MultiThreadedHttpConnectionManager connectionManager;
+	private AbstractHttpClient httpClient;
+	private PoolingClientConnectionManager connectionManager;
 	private CacheManager cacheManager;
 	private CookiesManager cookiesManager;
-	
-	/**
+
+    /**
 	 * Get HttpManager singleton instance.
 	 * @return instance
 	 */
@@ -74,11 +91,17 @@ public class HttpManagerImpl implements HttpManager {
 	 * Initialize the connection manager and the httpClient object.
 	 */
 	private HttpManagerImpl() {
-		connectionManager = new MultiThreadedHttpConnectionManager();
-		httpClient = new HttpClient(connectionManager);
-		HttpClientParams params = new HttpClientParams();
-		params.setParameter(HttpClientParams.ALLOW_CIRCULAR_REDIRECTS, true);
-		httpClient.setParams(params);
+        try {
+            SSLSocketFactory ssf = new SSLSocketFactory (new TrustSelfSignedStrategy(), new AllowAllHostnameVerifier());
+            Scheme scheme = new Scheme("https", 443, ssf);
+            SchemeRegistry registry = new SchemeRegistry ();
+            registry.register(scheme);
+            connectionManager = new PoolingClientConnectionManager(registry);
+        } catch (Exception e) {
+            throw new RuntimeException("Could not initialize HTTPS", e);
+        }
+		httpClient = new DefaultHttpClient(connectionManager);
+        httpClient.getParams().setParameter(ClientPNames.ALLOW_CIRCULAR_REDIRECTS, true);
 		cacheManager = CacheManagerImpl.getInstance();
 		cookiesManager = CookiesManagerImpl.getInstance();
 	}
@@ -92,22 +115,30 @@ public class HttpManagerImpl implements HttpManager {
 	 * @throws IOException
 	 */
 	public WIPResponse doRequest(String id, WIPRequest wipRequest, String instance) throws IOException {
-		PortletSession session = null;
-		if (wipRequest.getRequest() != null) {
-			session = wipRequest.getRequest().getPortletSession();
+
+        // Get HttpContext from portlet session
+        PortletSession session = wipRequest.getRequest().getPortletSession();
+        HttpContext context  = (HttpContext)session.getAttribute("wip.http.context");
+        if (context == null) {
+            context = new BasicHttpContext();
+            session.setAttribute("wip.http.context", context);
+        }
+
+        if (wipRequest.getRequest() != null) {
 			processAuthentication(session);
 		}
-		
-		WIPResponse wipResponse = cacheManager.getCacheEntry(id, wipRequest, instance);
+
+
+        WIPResponse wipResponse = cacheManager.getCacheEntry(id, wipRequest, instance);
 		if (wipResponse != null && wipResponse.isFresh(id, wipRequest))
 			return wipResponse;
 
         LOG.fine ("Processing WIP request: " + wipRequest.getUrl());
 		
 		if (wipRequest.getMethodType().equals("POST"))
-			wipResponse = doPostRequest(id, wipRequest, wipResponse, instance);
+			wipResponse = doPostRequest(id, wipRequest, wipResponse, instance, context);
 		else
-			wipResponse = doGetRequest(id, wipRequest, wipResponse, instance);
+			wipResponse = doGetRequest(id, wipRequest, wipResponse, instance, context);
 		
 		if (session != null) {
 			Object authType = wipRequest.getRequest().getPortletSession().getAttribute("authType");
@@ -122,19 +153,21 @@ public class HttpManagerImpl implements HttpManager {
 	 * @param id the string session id
 	 * @param wipRequest the WIPRequest containing the targeted URL
 	 * @param wipResponse if set, it may contain useful headers to send
+     * @param context, maintains HttpClient execution context
 	 * @return the WIPResponse object resulting from the request
 	 * @throws IOException
 	 */
-	private WIPResponse doGetRequest(String id, WIPRequest wipRequest, WIPResponse wipResponse, String instance) throws IOException {
+	private WIPResponse doGetRequest(String id, WIPRequest wipRequest, WIPResponse wipResponse, String instance, HttpContext context) throws IOException {
 		String url = setGetParams(wipRequest.getUrl().replaceAll("\\{", "%7B").replaceAll("\\}", "%7D").replaceAll(" ", "%20"), wipRequest.getParameters());
-		HttpMethod method = new GetMethod(url);
-		setRequestHeaders(wipRequest, wipResponse, method);
-		cookiesManager.setCookies(id, url, method);
+        HttpUriRequest request = new HttpGet(url);
+		setRequestHeaders(wipRequest, wipResponse, request);
+		cookiesManager.setCookies(id, url, request);
+        HttpResponse response = null;
 		try {
-			httpClient.executeMethod(method);
+            response = httpClient.execute(request, context);
 		} finally {	}
-		cookiesManager.saveCookies(id, method.getResponseHeaders());
-		return handleStatusCode(id, method, wipResponse, instance);
+		cookiesManager.saveCookies(id, response.getAllHeaders());
+		return handleStatusCode(id, response, wipRequest, wipResponse, instance);
 	}
 	
 	/**
@@ -142,19 +175,21 @@ public class HttpManagerImpl implements HttpManager {
 	 * @param id the string session id
 	 * @param wipRequest the WIPRequest containing the targeted URL
 	 * @param wipResponse if set, it may contain useful headers to send
+     * @param context, maintains HttpClient execution context
 	 * @return the WIPResponse object resulting from the request
 	 * @throws IOException
 	 */
-	private WIPResponse doPostRequest(String id, WIPRequest wipRequest, WIPResponse wipResponse, String instance) throws IOException {
-		HttpMethod method = new PostMethod(wipRequest.getUrl().replaceAll("\\{", "%7B").replaceAll("\\}", "%7D").replaceAll(" ", "%20"));
-		method = setPostParams((PostMethod) method, wipRequest.getParameters());
-		setRequestHeaders(wipRequest, wipResponse, method);
-		cookiesManager.setCookies(id, wipRequest.getUrl(), method);
+	private WIPResponse doPostRequest(String id, WIPRequest wipRequest, WIPResponse wipResponse, String instance, HttpContext context) throws IOException {
+        HttpPost postRequest = new HttpPost(wipRequest.getUrl().replaceAll("\\{", "%7B").replaceAll("\\}", "%7D").replaceAll(" ", "%20"));
+		setPostParams(postRequest, wipRequest.getParameters());
+		setRequestHeaders(wipRequest, wipResponse, postRequest);
+		cookiesManager.setCookies(id, wipRequest.getUrl(), postRequest);
+        HttpResponse response = null;
 		try {
-			httpClient.executeMethod(method);
+            response = httpClient.execute(postRequest, context);
 		} finally {	}
-		cookiesManager.saveCookies(id, method.getResponseHeaders());
-		return handleStatusCode(id, method, wipResponse, instance);
+		cookiesManager.saveCookies(id, response.getAllHeaders());
+		return handleStatusCode(id, response, wipRequest, wipResponse, instance);
 	}
 	
 	/**
@@ -189,21 +224,20 @@ public class HttpManagerImpl implements HttpManager {
 	
 	/**
 	 * Set request parameters in case of a POST method.
-	 * @param method the POST method on which parameters have to be set
+	 * @param postRequest the POST request on which parameters have to be set
 	 * @param params the parameters map
 	 * @return the POST method on which parameters have been set
 	 */
 	@SuppressWarnings("rawtypes")
-	private HttpMethod setPostParams(PostMethod method, Map<String, String[]> params) {
+	private void setPostParams(HttpPost postRequest, Map<String, String[]> params) {
 		if (params != null) {
 			Iterator it = params.entrySet().iterator();
 			while (it.hasNext()) {
 				Entry e = (Entry) it.next();
 				if (!isWipParameter((String) e.getKey()))
-					method.setParameter((String) e.getKey(), ((String[]) e.getValue())[0]);
+                    postRequest.getParams().setParameter((String) e.getKey(), ((String[]) e.getValue())[0]);
 			}
 		}
-		return method;
 	}
 
 	/**
@@ -223,43 +257,43 @@ public class HttpManagerImpl implements HttpManager {
 	 * previously cached response that contain the information to send
 	 * @param wipRequest the WIPRequest object 
 	 * @param wipResponse if set, the previously cached wipResponse
-	 * @param method the method on which request headers are added
+	 * @param request the method on which request headers are added
 	 */
-	private void setRequestHeaders(WIPRequest wipRequest, WIPResponse wipResponse, HttpMethod method) {
+	private void setRequestHeaders(WIPRequest wipRequest, WIPResponse wipResponse, HttpRequest request) {
 		// Accept-Language
 		if (wipRequest.getRequest() != null) {
 			Locale locale = wipRequest.getRequest().getLocale();
 			if (locale != null)
-				method.addRequestHeader("Accept-Language", locale.toString());
+				request.addHeader(HttpHeaders.ACCEPT_LANGUAGE, locale.toString());
 			else
-				method.addRequestHeader("Accept-Language", "en");
+                request.addHeader(HttpHeaders.ACCEPT_LANGUAGE, "en");
 		} else
-			method.addRequestHeader("Accept-Language", "en");
+            request.addHeader(HttpHeaders.ACCEPT_LANGUAGE, "en");
 		
 		// Accept-Charset
-		method.addRequestHeader("Accept-Charset", "ISO-8859-1,utf-8");	
+        request.addHeader(HttpHeaders.ACCEPT_CHARSET, "ISO-8859-1,utf-8");
 		
 		// Caching headers
 		if (wipResponse != null) {
 			String etag = wipResponse.getHeader("Etag"); 
 			if (etag != null)
-				method.addRequestHeader("If-None-Match", etag);
+                request.addHeader(HttpHeaders.IF_NONE_MATCH, etag);
 			String lastModified = wipResponse.getHeader("Last-Modified");
-			if (lastModified != null) 
-				method.addRequestHeader("If-Modified-Since", lastModified);
+			if (lastModified != null)
+                request.addHeader(HttpHeaders.IF_MODIFIED_SINCE, lastModified);
 		}
 	}
 	
 	/**
 	 * Handle response status code.
 	 * @param id the user id
-	 * @param method the HTTP method previously executed
+	 * @param response the HTTP response previously executed
 	 * @param wipResponse if set, the previously cached response
 	 * @return the resulting WIP response 
 	 * @throws IOException
 	 */
-	private WIPResponse handleStatusCode(String id, HttpMethod method, WIPResponse wipResponse, String instance) throws IOException {
-		WIPResponse ret = new WIPResponse(method, instance);
+	private WIPResponse handleStatusCode(String id, HttpResponse response, WIPRequest wipRequest, WIPResponse wipResponse, String instance) throws IOException {
+		WIPResponse ret = new WIPResponse(response, instance);
 		int statusCode = ret.getStatusCode();
 		if (statusCode == StatusCode.NOT_MODIFIED) {
 			// Return the previously cached response
@@ -267,15 +301,24 @@ public class HttpManagerImpl implements HttpManager {
 		} else if (StatusCode.isRedirectionCode(statusCode)) {
 			// Processing redirection
 			String location = ret.getHeader("Location");
-			if (location != null)
-				ret = this.doRequest(id, new WIPRequest(location, null, false), instance);
+			if (location != null) {
+				ret = this.doRequest(id, new WIPRequest(wipRequest, location), instance);
+            }
 		} else if (statusCode == StatusCode.UNAUTHORIZED) {
 			// An authentication is required
-			String tmpHeader = ret.getHeader("WWW-Authenticate"); 
-			String header = (tmpHeader != null) ? tmpHeader.toLowerCase() : "";
-			if (header.contains("basic")) ret.setAuthType("basic");
-			else if (header.contains("ntlm")) ret.setAuthType("ntlm");
-			else ret.setAuthType("unknown");
+			Header[] authHeaders = ret.getHttpResponse().getHeaders("WWW-Authenticate");
+            for (Header authHeader : authHeaders) {
+                String authString = authHeader.getValue().toLowerCase();
+			    if (authString.contains("ntlm")) {
+                    ret.setAuthType("ntlm");
+                    return ret;
+                }
+			    else if (authString.contains("basic")) {
+                    ret.setAuthType("basic");
+                    return ret;
+                }
+            }
+			ret.setAuthType("unknown");
 		}
 		return ret;
 	}
@@ -285,11 +328,10 @@ public class HttpManagerImpl implements HttpManager {
 	 * @param session The PortletSession containing authentication informations
 	 */
 	private void processAuthentication(PortletSession session) {
-		// Clearing credentials
-		httpClient.getState().clearCredentials();
 		// Checking if an authentication is required
 		if (session.getAttribute("authType") != null) {
-			// Getting login and password from session
+            // Getting login and password from session
+            AuthScheme scheme = null;
 			String login = (String)session.getAttribute("userLogin");
 			String pwd = (String)session.getAttribute("userPassword");
 			Credentials creds = null;
@@ -300,9 +342,14 @@ public class HttpManagerImpl implements HttpManager {
 				// Creating ntlm credentials
 				creds = new NTCredentials( login, pwd, "", "" );
 			}
+
 			// Setting the credentials
-			httpClient.getState().setCredentials(AuthScope.ANY, creds);
-		}
+            httpClient.getCredentialsProvider().setCredentials(AuthScope.ANY, creds);
+            session.removeAttribute("authType");
+		} else {
+            // Clear credentials
+            httpClient.getCredentialsProvider().clear();
+        }
 	}
 
 	/**

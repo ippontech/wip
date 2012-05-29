@@ -20,8 +20,8 @@ package fr.ippon.wip.cookies;
 
 import java.net.MalformedURLException;
 
-import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpMethod;
+import org.apache.http.Header;
+import org.apache.http.HttpRequest;
 
 /**
  * Interface to manage WIP cookie mechanisms.
@@ -37,10 +37,10 @@ public interface CookiesManager {
 	 * add it.
 	 * @param id the user id
 	 * @param url the targeted URL
-	 * @param method the HTTP method
+	 * @param request the HTTP request
 	 * @throws MalformedURLException
 	 */
-	public void setCookies(String id, String url, HttpMethod method) throws MalformedURLException;
+	public void setCookies(String id, String url, HttpRequest request) throws MalformedURLException;
 
 	/**
 	 * Save cookies after executing the method. Look for Set-Cookie header, get

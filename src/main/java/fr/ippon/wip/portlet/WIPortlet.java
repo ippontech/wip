@@ -24,7 +24,6 @@ import fr.ippon.wip.http.*;
 import fr.ippon.wip.ltpa.LtpaCookieUtil;
 import fr.ippon.wip.transformers.HTMLTransformer;
 import fr.ippon.wip.util.WIPUtil;
-import org.apache.commons.httpclient.MultiThreadedHttpConnectionManager;
 import org.xml.sax.SAXException;
 
 import javax.portlet.*;
@@ -158,7 +157,15 @@ public class WIPortlet extends GenericPortlet {
 			// Redirect to the resource handler or let the doView do the work
 			if (statusCode == StatusCode.OK && contentType.compareTo("text/html") != 0) {
 				// Creating a new WIPDownloader, registering, starting
-				WIPDownloader downloader = new WIPDownloader(wipResponse.getHttpMethod());
+                String fileName =  wipRequest.getUrl();
+                int index = fileName.lastIndexOf('/');
+                fileName = fileName.substring(index + 1);
+                int index2 = fileName.indexOf('?');
+                if (index2 > -1) {
+                    fileName = fileName.substring(0, index2);
+                }
+
+                WIPDownloader downloader = new WIPDownloader(wipResponse.getHttpResponse(), fileName);
 				downloader.register();
 				downloader.start();
 				// Redirecting to ResourceHandler servlet
@@ -288,7 +295,6 @@ public class WIPortlet extends GenericPortlet {
 	@Override
 	public void destroy() {
 		httpManager.destroy();
-        MultiThreadedHttpConnectionManager.shutdownAll();
 		super.destroy();
 	}
 	

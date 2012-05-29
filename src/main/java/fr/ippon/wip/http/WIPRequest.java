@@ -69,8 +69,8 @@ public class WIPRequest implements java.io.Serializable {
 
 	/**
 	 * Create a WIPRequest object from URL, method type and request parameters.
-	 * @param _url the targeted URL as a string
-	 * @param _params a map containing the request parameters 
+	 * @param url the targeted URL as a string
+	 * @param request a map containing the request parameters
 	 */
 	public WIPRequest(String url, PortletRequest request, boolean isResource) {
 		this.url = url;
@@ -85,6 +85,17 @@ public class WIPRequest implements java.io.Serializable {
 		else 
 			this.methodType = "GET";
 	}
+
+    public WIPRequest (WIPRequest originalRequest, String location) {
+        this.url = location;
+        this.request = originalRequest.getRequest();
+        this.isResource = originalRequest.isResource();
+
+        if (request != null)
+            this.parameters = request.getParameterMap();
+
+        this.methodType = "GET";
+    }
 	
 	/**
 	 * Return true if the request is associated to a resource

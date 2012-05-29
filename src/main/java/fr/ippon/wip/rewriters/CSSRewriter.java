@@ -82,7 +82,7 @@ public class CSSRewriter extends WIPRewriter {
 	                }
 	            }
         	}catch (IllegalArgumentException e) {
-				LOG.log(Level.INFO, "Error parsing URL in CSS", e);
+				LOG.log(Level.INFO, "Error parsing URL in CSS: " + e.getMessage());
 			}
         }
         matcher.appendTail(sb);
