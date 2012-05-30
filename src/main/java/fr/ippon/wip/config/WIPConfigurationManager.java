@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -32,9 +31,11 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -100,6 +101,20 @@ public class WIPConfigurationManager {
 	}
 	
 	/**
+	 * Delete the configuration associated to the given name.
+	 * @param name the name of the configuration to delete
+	 */
+	public void deleteConfiguration(String name) {
+		savedConfigurations.remove(name);
+		
+		String s = readSavedConfigXML();
+		int start = s.indexOf("<"+name+">");
+		int end = s.indexOf("</"+name+">", start) + name.length() + "</>".length();
+		s = s.substring(0, start) + s.substring(end);
+		writeSavedConfigXML(s);
+	}
+	
+	/**
 	 * check and load the configuration files
 	 */
 	public void load(String pathConfigFiles){
@@ -143,6 +158,9 @@ public class WIPConfigurationManager {
 					if(n.getNodeType() == Node.ELEMENT_NODE)
 						savedConfigurations.add(n.getNodeName());
 				}
+				
+				Collections.sort(savedConfigurations);
+				
 			}catch (Exception e) {
                 LOG.log(Level.SEVERE, "Could not load saved configuration file at path: " +
                         saveConfigFile.getPath(), e);
@@ -223,7 +241,13 @@ public class WIPConfigurationManager {
 	 * @param instance the instance to save
 	 */
 	public void saveConfiguration(String name, String instance) {
+		// correct the configuration name if it is already used
+		if(savedConfigurations.contains(name))
+			name = correctConfigurationName(name, 2);
+		
 		savedConfigurations.add(name);
+		Collections.sort(savedConfigurations);
+		
 		WIPConfiguration config = wipConfigurations.get(instance);
 		String s = readSavedConfigXML();
 		int index = s.indexOf("</configuration>");
@@ -232,7 +256,17 @@ public class WIPConfigurationManager {
 				+ config.getConfigAsString()
 				+"</"+name+">"
 				+ s.substring(index);
-		writeSavedConfigXML(s);
+		writeSavedConfigXML(s);	
+	}
+	
+	/*
+	 * return "name_x+1" while "name_x" exists
+	 */
+	private String correctConfigurationName(String name, int increment) {
+		String incrementName = name + "_" + increment;
+		
+		boolean alreadyExists = savedConfigurations.contains(incrementName);
+		return alreadyExists ? correctConfigurationName(name, increment + 1) : incrementName;
 	}
 	
 	/**
