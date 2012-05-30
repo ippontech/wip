@@ -5,8 +5,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-import fr.ippon.wip.ltpa.exception.Base64DecodeException;
-import fr.ippon.wip.ltpa.helpers.HttpUtils;
+import org.apache.commons.codec.binary.Base64;
 
 public class LtpaLibrary {
 
@@ -25,11 +24,10 @@ public class LtpaLibrary {
 	 * @return The contents of the cookie. If the cookie is invalid (the hash - or some other - test fails), this method returns 
 	 * <tt>null</tt>.
 	 * @throws NoSuchAlgorithmException
-	 * @throws Base64DecodeException 
 	 */
-	public static TokenData parseLtpaToken( String ltpaToken, String ltpaSecretStr ) throws NoSuchAlgorithmException,
-			Base64DecodeException {
-		byte[] data = HttpUtils.base64Decode( ltpaToken );
+	public static TokenData parseLtpaToken( String ltpaToken, String ltpaSecretStr ) throws NoSuchAlgorithmException {
+		
+		byte[] data = Base64.decodeBase64(ltpaToken.getBytes());
 
 		int variableLength = data.length - hashLength;
 		/* Compare to 20 to since variableLength must be at least (preUserDataLength + 1) [21] character long:
@@ -40,7 +38,7 @@ public class LtpaLibrary {
 		 */
 		if( variableLength <= preUserDataLength ) return null;
 
-		byte[] ltpaSecret = HttpUtils.base64Decode( ltpaSecretStr );
+		byte[] ltpaSecret = Base64.decodeBase64(ltpaSecretStr.getBytes());;
 
 		if( !validateSHA( data, variableLength, ltpaSecret ) ) return null;
 
@@ -109,10 +107,8 @@ public class LtpaLibrary {
 	 * @param ltpaSecretStr - the LTPA Domino Secret to use to create the token.
 	 * @return - base64 encoded LTPA token, ready for the cookie.
 	 * @throws NoSuchAlgorithmException
-	 * @throws Base64DecodeException 
 	 */
-	public static String createLtpaToken( String username, int durationMinutes, String ltpaSecretStr ) throws NoSuchAlgorithmException,
-			Base64DecodeException {
+	public static String createLtpaToken( String username, int durationMinutes, String ltpaSecretStr ) throws NoSuchAlgorithmException {
 		return createLtpaToken( username, new GregorianCalendar(), durationMinutes, ltpaSecretStr );
 	}
 
@@ -123,12 +119,11 @@ public class LtpaLibrary {
 	 * @param ltpaSecretStr - the LTPA Domino Secret to use to create the token.
 	 * @return - base64 encoded LTPA token, ready for the cookie.
 	 * @throws NoSuchAlgorithmException
-	 * @throws Base64DecodeException 
 	 */
 	public static String createLtpaToken( String username, GregorianCalendar creationTime, int durationMinutes, String ltpaSecretStr )
-			throws NoSuchAlgorithmException, Base64DecodeException {
+			throws NoSuchAlgorithmException {
 		// create byte array buffers for both strings
-		byte[] ltpaSecret = HttpUtils.base64Decode( ltpaSecretStr );
+		byte[] ltpaSecret = Base64.decodeBase64(ltpaSecretStr.getBytes() );
 		byte[] usernameArray = username.getBytes();
 
 		byte[] workingBuffer = new byte[ preUserDataLength + usernameArray.length + ltpaSecret.length ];
@@ -163,7 +158,7 @@ public class LtpaLibrary {
 		System.arraycopy( workingBuffer, 0, outputBuffer, 0, preUserDataLength + usernameArray.length );
 		System.arraycopy( hash, 0, outputBuffer, preUserDataLength + usernameArray.length, hashLength );
 
-		return HttpUtils.base64Encode( outputBuffer );
+		return new String(Base64.encodeBase64(outputBuffer));
 	}
 
 	private static byte[] createHash( byte[] buffer ) throws NoSuchAlgorithmException {

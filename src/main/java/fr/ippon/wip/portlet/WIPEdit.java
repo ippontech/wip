@@ -60,6 +60,7 @@ public class WIPEdit {
 		session.removeAttribute("editPage");
 		session.removeAttribute("configPage");
 		session.removeAttribute("saveConfig");
+		session.removeAttribute("deleteConfig");
 		session.removeAttribute("source");
 		
 		if (request.getParameter("editPage") != null && !request.getParameter("editPage").equals("")) {
@@ -86,6 +87,8 @@ public class WIPEdit {
 			} else {
 				WIPConfigurationManager.getInstance().saveConfiguration(request.getParameter("saveConfig"), response.getNamespace());
 			}
+		} else if(request.getParameter("deleteConfig") != null) {
+			WIPConfigurationManager.getInstance().deleteConfiguration(request.getParameter("deleteConfig"));
 		} else if (request.getParameter("source") != null) {
 			String source = request.getParameter("source");
 			String url = "";
