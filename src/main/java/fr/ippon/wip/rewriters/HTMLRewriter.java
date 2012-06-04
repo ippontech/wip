@@ -24,14 +24,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.portlet.MimeResponse;
+import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
-import javax.portlet.RenderResponse;
-import javax.portlet.ResourceResponse;
 
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.WIPConfigurationManager;
+import fr.ippon.wip.http.UrlFactory;
 import fr.ippon.wip.portlet.WIPortlet;
+import fr.ippon.wip.http.Request;
 
 /**
  * A rewriter used to rewrite html content
@@ -41,6 +42,7 @@ import fr.ippon.wip.portlet.WIPortlet;
  * 
  */
 public class HTMLRewriter extends WIPRewriter {
+
 
 	/**
 	 * This constructor only calls the super class's constructor
@@ -59,13 +61,13 @@ public class HTMLRewriter extends WIPRewriter {
 	 * 		absolute form if no rewriting should be performed, as specified
 	 *      in the configuration
 	 */
-	public String rewriteLink(String link, PortletResponse response) {
+	public String rewriteLink(String link, PortletRequest request, PortletResponse response) {
 		// CUSTOM --------------------------------------------------------------------------
 		if (link.contains("{") && !link.contains("downloadUrl") && !link.contains("viewUrl"))
 			return link;
 		// ---------------------------------------------------------------------------------
 		
-		WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(response.getNamespace());
+		WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
 		
 		boolean toRewrite = true;
 		try {
@@ -84,16 +86,25 @@ public class HTMLRewriter extends WIPRewriter {
 		}
 		if (wipConfig.getEnableUrlRewriting()) {
 			if (toRewrite) {
-				// Creating an ActionURL and setting parameters
-				PortletURL pUrl = ((MimeResponse) response).createActionURL();
-				// Setting parameters
-				Map<String, String[]> parameters = new HashMap<String, String[]>();
-				String[] tab1 = {"GET"};
-				String[] tab2 = {toAbsolute(link)};
-				parameters.put(WIPortlet.METHOD_TYPE, tab1);
-				parameters.put(WIPortlet.LINK_URL_KEY, tab2);
-				pUrl.setParameters(parameters);
-				return pUrl.toString();
+                if (response instanceof MimeResponse) {
+                    // Creating an ActionURL and setting parameters
+                    PortletURL pUrl = ((MimeResponse) response).createActionURL();
+                    // Setting parameters
+                    Map<String, String[]> parameters = new HashMap<String, String[]>();
+                    String[] tab1 = {"GET"};
+                    String[] tab2 = {toAbsolute(link)};
+                    parameters.put(WIPortlet.METHOD_TYPE, tab1);
+                    parameters.put(WIPortlet.LINK_URL_KEY, tab2);
+                    parameters.put(WIPortlet.RESOURCE_TYPE_KEY, new String[] {Request.ResourceType.HTML.name()});
+
+                    pUrl.setParameters(parameters);
+                    return pUrl.toString();
+                } else {
+                    String requestedUrl = toAbsolute(link);
+                    Request.HttpMethod httpMethod = Request.HttpMethod.GET;
+                    Request.ResourceType resourceType = Request.ResourceType.HTML;
+                    return UrlFactory.createTempUrl(requestedUrl, httpMethod, resourceType);
+                }
 			} else {
 				// Return a String to tell the XSLT stylesheet that this link should not be rewrited
 				return "external";
@@ -115,19 +126,25 @@ public class HTMLRewriter extends WIPRewriter {
 	 */
 	public String rewriteForm(String link, PortletResponse response,
 			String method) {
-		PortletURL pUrl;
-		if (response instanceof RenderResponse) 
-			pUrl = ((RenderResponse) response).createActionURL();
-		else
-			pUrl = ((ResourceResponse) response).createActionURL();
-		// Setting parameters
-		Map<String, String[]> parameters = new HashMap<String, String[]>();
-		String[] tab1 = {method};
-		String[] tab2 = {toAbsolute(link)};
-		parameters.put(WIPortlet.METHOD_TYPE, tab1);
-		parameters.put(WIPortlet.LINK_URL_KEY, tab2);
-		pUrl.setParameters(parameters);
-		return pUrl.toString();
+        String retUrl = null;
+		if (response instanceof MimeResponse) {
+            PortletURL pUrl = ((MimeResponse) response).createActionURL();
+            // Setting parameters
+            Map<String, String[]> parameters = new HashMap<String, String[]>();
+            String[] tab1 = {method};
+            String[] tab2 = {toAbsolute(link)};
+            parameters.put(WIPortlet.METHOD_TYPE, tab1);
+            parameters.put(WIPortlet.LINK_URL_KEY, tab2);
+            parameters.put(WIPortlet.RESOURCE_TYPE_KEY, new String[] {Request.ResourceType.HTML.name()});
+            pUrl.setParameters(parameters);
+            retUrl = pUrl.toString();
+        } else {
+            String requestedUrl = toAbsolute(link);
+            Request.HttpMethod httpMethod = Request.HttpMethod.valueOf(method.toUpperCase());
+            Request.ResourceType resourceType = Request.ResourceType.HTML;
+            return UrlFactory.createTempUrl(requestedUrl, httpMethod, resourceType);
+        }
+        return retUrl;
 	}
 
 }

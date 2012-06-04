@@ -19,7 +19,12 @@
 package fr.ippon.wip.transformers;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 
 import org.xml.sax.SAXException;
@@ -35,18 +40,15 @@ import fr.ippon.wip.rewriters.CSSRewriter;
  * @author Anthony Luce
  * @author Quentin Thierry
  */
-public class CSSTransformer implements WIPTransformer {
+public class CSSTransformer extends AbstractTransformer {
 
-	/**
+    private static final Logger LOG = Logger.getLogger(CSSTransformer.class.getName());
+
+    /**
 	 * The WIPConfiguration instance
 	 */
 	private WIPConfiguration wipConfig;
-	
-	/**
-	 * A CSSRewriter used to rewrite CSS-specific parts of code
-	 */
-	private CSSRewriter rewriter;
-	
+
 	/**
 	 * An empty PortletResponse used to create ResourceURLs
 	 */
@@ -55,15 +57,16 @@ public class CSSTransformer implements WIPTransformer {
 	/**
 	 * Create a new CSSTransformer by getting the portlet configuration, 
 	 * initializing the CSS rewriter and setting the PortletResponse.
-	 * @param portletResponse The empty PortletResponse used to build ResourceURLs
+     * @param request The PortletRequest used to get configuration
+     * @param response The PortletResponse used to build ResourceURLs
 	 * @param currentUrl The Url of the page of the distant application currently displayed in the portlet
 	 * @param authenticated A boolean to tell the rewriter wether the user is authenticated or not
 	 */
-	public CSSTransformer(PortletResponse portletResponse, String currentUrl, boolean authenticated) {
+	public CSSTransformer(PortletRequest request, PortletResponse response, String currentUrl, boolean authenticated) {
+        super (request);
 		WIPConfigurationManager w = WIPConfigurationManager.getInstance();
-		rewriter = new CSSRewriter(currentUrl, authenticated);
-		response = portletResponse;
-		wipConfig = w.getConfiguration(response.getNamespace());
+		this.response = response;
+		wipConfig = w.getConfiguration(request.getWindowID());
 	}
 	
 	/**
@@ -140,7 +143,7 @@ public class CSSTransformer implements WIPTransformer {
 			
 			// Rewriting URLs
 			String regex = wipConfig.getCssRegex();
-			input = rewriter.rewrite(regex, input, response);
+			input = rewrite(regex, input, response);
 	
 			// Removing position: absolute;
 			if (!wipConfig.getAbsolutePositioning())
@@ -156,5 +159,41 @@ public class CSSTransformer implements WIPTransformer {
 	public String getCustomCss() {
 		return wipConfig.getCustomCss();
 	}
+
+    /**
+     * Rewrite every url found thanks to the given regex in the input
+     * String to ResourceURL if the user is authenticated, and to
+     * absolute URLs if he's not
+     *
+     * @param regex The regex used to find URLs in the CSS code
+     * @param input The CSS code that we want to rewrite
+     * @param response An empty PortletResponse used to create the ResourceURLs
+     * @return The CSS code, whose all URLs have been rewrited
+     */
+    public String rewrite(String regex, String input, PortletResponse response) {
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(input);
+        StringBuffer sb = new StringBuffer();
+        while(matcher.find()) {
+            try{
+                int group = extractGroup(matcher);
+                if(group > 0) {
+                    String before = input.substring(matcher.start(), matcher.start(group));
+                    String url = matcher.group(group);
+                    String after = input.substring(matcher.end(group), matcher.end());
+                    if (before.startsWith("@import") || before.startsWith("@CHARSET")) {
+                        matcher.appendReplacement(sb, before + urlFactory.createProxyUrl(url, "GET", "CSS", response) + after);
+                    } else {
+                        matcher.appendReplacement(sb, before + urlFactory.createProxyUrl(url, "GET", "RAW", response) + after);
+                    }
+                }
+            }catch (IllegalArgumentException e) {
+                LOG.log(Level.INFO, "Error parsing URL in CSS: " + e.getMessage());
+            }
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
+    }
+
 
 }

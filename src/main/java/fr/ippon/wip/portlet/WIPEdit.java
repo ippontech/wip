@@ -20,11 +20,7 @@ package fr.ippon.wip.portlet;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,6 +32,7 @@ import javax.portlet.PortletSession;
 
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.WIPConfigurationManager;
+import fr.ippon.wip.state.PortletWindow;
 
 /**
  * This class is a pseudo portlet whose aim is to save modifications of the
@@ -75,16 +72,16 @@ public class WIPEdit {
 				case 7 : handleLTPAAuthentication(request, response); break;
 			}
 			// Removing the portlet's current url attribute to take the config changes in consideration
-			session.removeAttribute(WIPortlet.WIP_REQUEST_KEY);
+            PortletWindow.clearInstance(request);
 		} else if (request.getParameter("configPage") != null) {
 			session.setAttribute("configPage", request.getParameter("configPage"));
 		} else if (request.getParameter("changeConfig") != null) {
-			WIPConfigurationManager.getInstance().loadConfiguration(request.getParameter("changeConfig"), response.getNamespace());
+			WIPConfigurationManager.getInstance().loadConfiguration(request.getParameter("changeConfig"), request.getWindowID());
 		} else if (request.getParameter("saveConfig") != null) {
 			if (request.getParameter("saveConfig").equals("all") || request.getParameter("saveConfig").equals("") ) {
 				session.setAttribute("saveConfig", "");
 			} else {
-				WIPConfigurationManager.getInstance().saveConfiguration(request.getParameter("saveConfig"), response.getNamespace());
+				WIPConfigurationManager.getInstance().saveConfiguration(request.getParameter("saveConfig"), request.getWindowID());
 			}
 		} else if (request.getParameter("source") != null) {
 			String source = request.getParameter("source");
@@ -92,7 +89,7 @@ public class WIPEdit {
 			if (source.equals("other"))
 				url = request.getParameter("url");
 			if (url.equals(""))
-				url = WIPConfigurationManager.getInstance().getConfiguration(response.getNamespace()).getInitUrlAsString();
+				url = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID()).getInitUrlAsString();
 			session.setAttribute("source", url);
 		} else if (request.getParameter("back") != null) {
 			try {
@@ -111,7 +108,7 @@ public class WIPEdit {
 	 */
 	private static void handleGeneralSettings(ActionRequest request, ActionResponse response) {
 		// Getting WIPConfig, resource bundle and a map to store errors
-		WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(response.getNamespace());
+		WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
 		ResourceBundle rb = ResourceBundle.getBundle("content.Language", request.getLocale());
 		Map<String, String> errors = new HashMap<String, String>();
 
@@ -153,7 +150,7 @@ public class WIPEdit {
 	 */
 	private static void handleClipping(ActionRequest request, ActionResponse response) {
 		// Getting WIPConfig, resource bundle and a map to store errors
-		WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(response.getNamespace());
+		WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
 		ResourceBundle rb = ResourceBundle.getBundle("content.Language", request.getLocale());
 		Map<String, String> errors = new HashMap<String, String>();
 
@@ -195,7 +192,7 @@ public class WIPEdit {
 	 */
 	private static void handleHtmlRewriting(ActionRequest request, ActionResponse response) {
 		// Getting WIPConfig, resource bundle and a map to store errors
-		WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(response.getNamespace());
+		WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
 
 		// Getting the parameters from the request
 		String xsltTransform = request.getParameter("xsltTransform");
@@ -216,7 +213,7 @@ public class WIPEdit {
 	 */
 	private static void handleCSSRewriting(ActionRequest request, ActionResponse response) {
 		// Getting WIPConfig, resource bundle and a map to store errors
-		WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(response.getNamespace());
+		WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
 		Map<String, String> errors = new HashMap<String, String>();
 
 		// Getting the parameters from the request
@@ -266,7 +263,7 @@ public class WIPEdit {
 	 */
 	private static void handleJSRewriting(ActionRequest request, ActionResponse response) {
 		// Getting WIPConfig, resource bundle and a map to store errors
-		WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(response.getNamespace());
+		WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
 		Map<String, String> errors = new HashMap<String, String>();
 
 		// Getting the parameters from the request
@@ -303,7 +300,7 @@ public class WIPEdit {
 
 	private static void handleCaching(ActionRequest request, ActionResponse response) {
 		// Getting WIPConfig, resource bundle and a map to store errors
-		WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(response.getNamespace());
+		WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
 		Map<String, String> errors = new HashMap<String, String>();
 
 		// Getting the parameters from the request
@@ -357,7 +354,7 @@ public class WIPEdit {
 	
 	private static void handleLTPAAuthentication(ActionRequest request, ActionResponse response) {
 		// Getting WIPConfig, resource bundle and a map to store errors
-		WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(response.getNamespace());
+		WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
 		Map<String, String> errors = new HashMap<String, String>();
 
 		// Getting the parameters from the request

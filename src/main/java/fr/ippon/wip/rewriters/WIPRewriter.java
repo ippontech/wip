@@ -23,15 +23,13 @@ import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.portlet.PortletResponse;
-import javax.portlet.RenderResponse;
-import javax.portlet.ResourceResponse;
-import javax.portlet.ResourceURL;
+import javax.portlet.*;
 
+import fr.ippon.wip.http.UrlFactory;
 import fr.ippon.wip.portlet.WIPortlet;
+import fr.ippon.wip.http.Request;
 
 /**
  * This class contains the commons methods of all WIP rewriters
@@ -119,24 +117,24 @@ public class WIPRewriter {
 		String ret;
 		
 		// Creating the ResourceURL
-		if (response instanceof RenderResponse)
-			rUrl = ((RenderResponse) response).createResourceURL();
-		else if (response instanceof ResourceResponse)
-			rUrl = ((ResourceResponse) response).createResourceURL();
-		
-		if (rUrl != null) {
-			// Setting parameters
-			Map<String, String[]> parameters = new HashMap<String, String[]>();
-			String[] tab1 = {type};
-			String[] tab2 = {toAbsolute(src)};
-			parameters.put(WIPortlet.RESOURCE_TYPE_KEY, tab1);
-			parameters.put(WIPortlet.RESOURCE_URL_KEY, tab2);
-			rUrl.setParameters(parameters);
-			ret = rUrl.toString();
-		} else {
-			ret = rewriteUrl(src);
-		}
-		return ret + "&"+WIPortlet.URL_CONCATENATION_KEY+"=";
+		if (response instanceof MimeResponse) {
+			rUrl = ((MimeResponse) response).createResourceURL();
+            // Setting parameters
+            Map<String, String[]> parameters = new HashMap<String, String[]>();
+            String[] tab1 = {type};
+            String[] tab2 = {toAbsolute(src)};
+            parameters.put(WIPortlet.RESOURCE_TYPE_KEY, tab1);
+            parameters.put(WIPortlet.RESOURCE_URL_KEY, tab2);
+            rUrl.setParameters(parameters);
+            ret = rUrl.toString() + "&" + WIPortlet.URL_CONCATENATION_KEY + "=";
+        }
+		else {
+            String requestedUrl = toAbsolute(src);
+            Request.HttpMethod httpMethod = Request.HttpMethod.GET;
+            Request.ResourceType resourceType = Request.ResourceType.valueOf(type);
+            ret = UrlFactory.createTempUrl(requestedUrl, httpMethod, resourceType);
+        }
+		return ret ;
 	}
 
 }

@@ -16,40 +16,47 @@ import java.util.logging.Logger;
  */
 public class LtpaCookieUtil {
 
+    public static final String COOKIE_NAME = "LtpaToken";
+
     private static final Logger LOG = Logger.getLogger(LtpaCookieUtil.class.getName());
+
+    public static String[] getCookieValueAndDomain (PortletRequest request, WIPConfiguration wipConfig) {
+        // Get credentials and LTPA secret
+        String credentials = getCredentials(request, wipConfig.getCredentialProviderClassName());
+        String[] ltpaTuple = getLtpaSecret(request, wipConfig.getLtpaSecretProviderClassName());
+
+        if (credentials != null && ltpaTuple != null && ltpaTuple.length == 2) {
+            String domain = ltpaTuple[0];
+            String ltpaSecret = ltpaTuple[1];
+            String ltpaToken = "";
+            try {
+                GregorianCalendar calendar = new GregorianCalendar();
+                calendar.add(Calendar.MINUTE, -10);
+                // Create token
+                ltpaToken = LtpaLibrary.createLtpaToken(credentials, calendar,
+                        120, ltpaSecret);
+            } catch (Exception e) {
+                throw new UnsupportedOperationException("Could not create LTPA token", e);
+            }
+
+            return new String[] {ltpaToken, domain};
+        }
+        throw new UnsupportedOperationException("Could not create LTPA token");
+    }
 
 	/**
 	 * Generate LTPA cookie from credentials and LTPA secret.
 	 */
 	public static String getLtpaCookie(PortletRequest request, WIPConfiguration wipConfig) {
 		String ltpaCookie = null;
-		
-		// Get credentials and LTPA secret
-		String credentials = getCredentials(request, wipConfig.getCredentialProviderClassName());
-		String[] ltpaTuple = getLtpaSecret(request, wipConfig.getLtpaSecretProviderClassName());
-		
-		if (credentials != null && ltpaTuple != null && ltpaTuple.length == 2) {
-			String domain = ltpaTuple[0];
-			String ltpaSecret = ltpaTuple[1];		
-			String ltpaToken = "";
-			try {
-				GregorianCalendar calendar = new GregorianCalendar();
-				calendar.add(Calendar.MINUTE, -10);
-				// Create token
-				ltpaToken = LtpaLibrary.createLtpaToken(credentials, calendar,
-						120, ltpaSecret);
-			} catch (Exception e) {
-                LOG.log(Level.WARNING, "Could not create LTPA token", e);
-			}
-			// Use Set-Cookie instead of javax.servlet.http.Cookie
-			// API cause some Tomcat version prepend the character '"'
-			// before and after cookie value if the value is not URI encoded
-			if (domain != null && domain.compareTo("") != 0)
-				ltpaCookie = String.format("LtpaToken=%s; domain=.%s; path=/",
-						ltpaToken, domain);
-			else
-				ltpaCookie = String.format("LtpaToken=%s; path=/", ltpaToken);
-		}
+
+        String[] valueAndDomain = getCookieValueAndDomain (request, wipConfig);
+		if (valueAndDomain[1] != null && valueAndDomain[1].compareTo("") != 0) {
+			ltpaCookie = String.format(COOKIE_NAME + "=%s; domain=.%s; path=/",	valueAndDomain[0], valueAndDomain[1]);
+        } else {
+			ltpaCookie = String.format(COOKIE_NAME + "=%s; path=/", valueAndDomain[0]);
+        }
+
 		return ltpaCookie;
 	}
 

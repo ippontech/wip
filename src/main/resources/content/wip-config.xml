@@ -8,7 +8,7 @@
         
         <enableUrlRewriting>true</enableUrlRewriting>
         
-        <domainsToProxy></domainsToProxy>
+        <domainsToProxy>http://blog.ippon.fr</domainsToProxy>
 		
 		<portletTitle>Blog Ippon</portletTitle>
 		

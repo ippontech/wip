@@ -29,19 +29,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import fr.ippon.wip.http.Request;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 
-import fr.ippon.wip.transformers.URLTypes;
 
 /**
  * TODO
@@ -334,15 +330,15 @@ public class        WIPConfigurationImpl implements WIPConfiguration {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public Map<String, URLTypes> getJavascriptUrls() {
-		Map<String, URLTypes> map = new HashMap<String, URLTypes>();
+	public Map<String, Request.ResourceType> getJavascriptUrls() {
+		Map<String, Request.ResourceType> map = new HashMap<String, Request.ResourceType>();
 		List<String> l = config.getList(instance+".javascriptUrls");
 		if (l.size() == 1 && l.get(0).equals("")) l = new ArrayList<String>();
 		for (int i = 0; i<l.size(); i++) {
 			String tmp[] = l.get(i).split("::::");
 			if (tmp.length == 2) {
 				String url = tmp[0];
-				URLTypes type = URLTypes.valueOf(tmp[1]);
+                Request.ResourceType type = Request.ResourceType.valueOf(tmp[1]);
 				map.put(url, type);
 			}
 		}
@@ -558,4 +554,12 @@ public class        WIPConfigurationImpl implements WIPConfiguration {
 		return config.getString(instance+".credentialProviderClassName");
 	}
 
+    public boolean isProxyURI (String uri) {
+        for (URL baseURL : getDomainsToProxy()) {
+            if (uri.startsWith(baseURL.toString())) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

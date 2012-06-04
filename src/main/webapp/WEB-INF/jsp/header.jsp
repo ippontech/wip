@@ -5,14 +5,9 @@
 <%@ taglib uri="/WEB-INF/tld/fmt.tld" prefix="fmt" %>
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
 
-<%@ page import="javax.portlet.PortletPreferences" %>
-<%@ page import="javax.portlet.PortletConfig" %>
-<%@ page import="javax.portlet.PortletSession" %>
-<%@ page import="javax.portlet.RenderRequest" %>
-<%@ page import="javax.portlet.PortletResponse" %>
 <%@ page import="fr.ippon.wip.config.WIPConfiguration" %>
 <%@ page import="fr.ippon.wip.config.WIPConfigurationManager" %>
-<%@ page import="fr.ippon.wip.transformers.URLTypes" %>
+<%@ page import="fr.ippon.wip.http.Request" %>
 <%@ page import="org.apache.commons.lang.StringEscapeUtils" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.HashMap" %>
@@ -23,6 +18,7 @@
 <%@ page import="java.util.Iterator" %>
 <%@ page import="java.util.Map.Entry" %>
 <%@ page import="fr.ippon.wip.util.WIPUtil" %>
+<%@ page import="javax.portlet.*" %>
 
 <portlet:defineObjects/>
 <%
@@ -30,7 +26,7 @@
     request.setAttribute("localeCode", locale.getLanguage());
     RenderRequest pReq = (RenderRequest)request.getAttribute("javax.portlet.request");
 	PortletResponse pRsp = (PortletResponse) request.getAttribute("javax.portlet.response");
-	WIPConfiguration wipConf = WIPConfigurationManager.getInstance().getConfiguration(pRsp.getNamespace());
+	WIPConfiguration wipConf = WIPConfigurationManager.getInstance().getConfiguration(pReq.getWindowID());
 	Map<String, String> errors = (Map<String, String>) session.getAttribute("errors");
 	if (errors == null) errors = new HashMap<String, String>();
 %>
@@ -62,6 +58,7 @@
 </div>
 <% } %>
 
+<% if (pReq.getPortletMode().equals(PortletMode.EDIT)) { %>
 <div class="config_menu">
 	<a href="<portlet:actionURL></portlet:actionURL>" title="Current config">
 		<fmt:message key="wip.config.current" />
@@ -76,6 +73,7 @@
 	   <fmt:message key="wip.config.back"/>
 	</a>
 </div>
+<% } %>
 
 <style>
 	#wipconfig_error {

@@ -25,6 +25,7 @@ import java.io.StringReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -70,8 +71,8 @@ public class Clipper implements WIPTransformer {
 	/**
 	 * A basic constructor, getting the WIPConfiguration instance and the stylesheet
 	 */
-	public Clipper(PortletResponse response) {
-		wipConfig = WIPConfigurationManager.getInstance().getConfiguration(response.getNamespace());
+	public Clipper(PortletRequest request, PortletResponse response) {
+		wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
 		xsltClipping = wipConfig.getXsltClipping();
 	}
 

@@ -28,6 +28,7 @@ import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -60,7 +61,7 @@ import fr.ippon.wip.util.CachedDTD;
  * @author Anthony Luce
  * @author Quentin Thierry
  */
-public class HTMLTransformer implements WIPTransformer {
+public class HTMLTransformer extends AbstractTransformer {
 
     private static final Logger LOG = Logger.getLogger(HTMLTransformer.class.getName());
 
@@ -89,22 +90,30 @@ public class HTMLTransformer implements WIPTransformer {
 	 */
 	private WIPConfiguration wipConfig;
 
-	/**
+    /**
+     * A portletRequest object
+     */
+    private PortletRequest request;
+
+    /**
 	 * A portletResponse object sent to the rewriters  to create PortletURLs when needed
 	 */
 	private PortletResponse response;
 
 	/**
 	 * A constructor who will create a HTMLTransformer using the given fields
-	 * @param response The response object used to build PortletURL when needed
+     * @param request The request object
+     * @param response The response object used to build PortletURL when needed
 	 * @param currentUrl The URL of the distant page currently displayed in the portlet
 	 * @param authenticated A boolean to tell the stylesheet wheter the user is authenticated or not to the distant application
 	 * @throws MalformedURLException
 	 */
-	public HTMLTransformer(PortletResponse response, String currentUrl, boolean authenticated) throws MalformedURLException {
-		this.wipConfig = WIPConfigurationManager.getInstance().getConfiguration(response.getNamespace());
+	public HTMLTransformer(PortletRequest request, PortletResponse response, String currentUrl, boolean authenticated) throws MalformedURLException {
+        super (request);
+		this.wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
 		this.currentUrl = currentUrl;
 		this.xsltTransform = wipConfig.getXsltTransform();
+        this.request = request;
 		this.response = response;
 		this.authenticated = authenticated;
 	}
@@ -116,9 +125,10 @@ public class HTMLTransformer implements WIPTransformer {
 	 * @throws TransformerException 
 	 */
 	public String transform(String input) throws SAXException, IOException, TransformerException {
+		//TODO : why process clipping before Html2Xhtml ?
 		// Processing clipping
 		if (!wipConfig.getClippingType().equals("none")) {
-			Clipper clipper = new Clipper(response);
+			Clipper clipper = new Clipper(request, response);
 			try {
 				input = clipper.transform(input);
 			} catch (SAXException e) {
@@ -148,7 +158,8 @@ public class HTMLTransformer implements WIPTransformer {
 		transformer.setErrorListener(new ParserErrorListener());
 		
 		// Sending parameters to the stylesheet
-		transformer.setParameter("response", response);
+        transformer.setParameter("request", request);
+        transformer.setParameter("response", response);
 		transformer.setParameter("wip_divClassName", wipConfig.getPortletDivId());
 		transformer.setParameter("currentUrl", currentUrl);			
 		transformer.setParameter("authenticated", authenticated);

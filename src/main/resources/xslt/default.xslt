@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <xsl:stylesheet version="1.0"
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:htmlrewriter="fr.ippon.wip.rewriters.HTMLRewriter"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:urlfactory="fr.ippon.wip.http.UrlFactory"
 	xmlns:jstransformer="fr.ippon.wip.transformers.JSTransformer"
 	xmlns:csstransformer="fr.ippon.wip.transformers.CSSTransformer"
-	extension-element-prefixes="htmlrewriter jstransformer csstransformer"
-	exclude-result-prefixes="htmlrewriter jstransformer csstransformer">
+	extension-element-prefixes="urlfactory jstransformer csstransformer"
+	exclude-result-prefixes="urlfactory jstransformer csstransformer">
 
 	<xsl:output method="html" encoding="UTF-8" indent="yes"
 		standalone="no" omit-xml-declaration="yes" />
 
-	<xsl:param name="response" />
+    <xsl:param name="request" />
+    <xsl:param name="response" />
 	<xsl:param name="wip_divClassName" />
 	<xsl:param name="retrieveCss" />
 	<xsl:param name="rewriteUrl" />
 	<xsl:param name="currentUrl" />
 	<xsl:param name="authenticated" />
 		
-	<xsl:variable name="htmlrew" select="htmlrewriter:new( $currentUrl )" />
-	<xsl:variable name="jstrans" select="jstransformer:new( $response, $currentUrl, $authenticated )" />
-	<xsl:variable name="csstrans" select="csstransformer:new( $response, $currentUrl, $authenticated )" />
+	<xsl:variable name="urlfact" select="urlfactory:new( $request )" />
+	<xsl:variable name="jstrans" select="jstransformer:new( $request, $response, $currentUrl, $authenticated )" />
+	<xsl:variable name="csstrans" select="csstransformer:new( $request, $response, $currentUrl, $authenticated )" />
 
 	
 
@@ -62,7 +63,7 @@
 					</xsl:attribute>
 					<xsl:attribute name="src">
 						<xsl:value-of
-						select="htmlrewriter:rewriteResource( $htmlrew, ./@src, $response, 'JS')" />
+						select="urlfactory:createProxyUrl( $urlfact, ./@src, 'GET', 'JS', $response)" />
 					</xsl:attribute>
 				</SCRIPT>
 			</xsl:when>
@@ -89,7 +90,7 @@
 				</xsl:attribute>
 				<xsl:attribute name="href">
 					<xsl:value-of
-					select="htmlrewriter:rewriteResource( $htmlrew, ./@href, $response, 'CSS')" />
+					select="urlfactory:createProxyUrl( $urlfact, ./@href, 'GET', 'CSS', $response)" />
 				</xsl:attribute>
 			</xsl:element>
 	</xsl:if>
@@ -135,7 +136,7 @@
 					</xsl:attribute>
 				</xsl:when>
 				<xsl:when test="contains( substring(./@href, 1, 12), '://')">
-					<xsl:variable name="tmplink"><xsl:value-of select="htmlrewriter:rewriteLink( $htmlrew, ./@href, $response)"/></xsl:variable>
+					<xsl:variable name="tmplink"><xsl:value-of select="urlfactory:createProxyUrl( $urlfact, ./@href, 'GET', 'HTML', $response)"/></xsl:variable>
 					<xsl:choose>
 						<xsl:when test="($tmplink = 'external') or ($rewriteUrl = 'false')">
 							<xsl:attribute name="href">
@@ -157,7 +158,7 @@
 				</xsl:when>
 				<xsl:otherwise>
 					<xsl:attribute name="href">
-						<xsl:value-of select="htmlrewriter:rewriteLink( $htmlrew, ./@href, $response)" />
+						<xsl:value-of select="urlfactory:createProxyUrl( $urlfact, ./@href, 'GET', 'HTML', $response)" />
 					</xsl:attribute>
 					<xsl:if test="$rewriteUrl = 'false'">
 						<xsl:attribute name="target">
@@ -181,12 +182,12 @@
 			<xsl:choose>
 				<xsl:when test="./@method='post' or ./@method='POST'">
 					<xsl:attribute name="action">
-						<xsl:value-of select="htmlrewriter:rewriteForm( $htmlrew, ./@action , $response, 'POST')" />
+						<xsl:value-of select="urlfactory:createProxyUrl( $urlfact, ./@action, 'POST', 'HTML', $response)" />
 					</xsl:attribute>
 				</xsl:when>
 				<xsl:when test="./@method='get' or ./@method='GET' or ./@method='' or not(./@method)">
 					<xsl:attribute name="action">
-						<xsl:value-of select="htmlrewriter:rewriteForm( $htmlrew, ./@action , $response, 'GET')" />
+						<xsl:value-of select="urlfactory:createProxyUrl( $urlfact, ./@action, 'GET', 'HTML', $response)" />
 					</xsl:attribute>
 					<xsl:attribute name="method">
 						<xsl:text>post</xsl:text>
@@ -200,56 +201,28 @@
 	<!-- Rewrite images -->
 	<xsl:template match="//IMG/@src">
 		<xsl:attribute name="src">
-			<xsl:choose>
-				<xsl:when test=" $authenticated ">
-					<xsl:value-of select="htmlrewriter:rewriteResource( $htmlrew, ., $response, 'other')" />
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:value-of select="htmlrewriter:rewriteUrl( $htmlrew, .)" />
-				</xsl:otherwise>
-			</xsl:choose>
+			<xsl:value-of select="urlfactory:createProxyUrl( $urlfact, ., 'GET', 'RAW', $response)" />
 		</xsl:attribute>
 	</xsl:template>
 	
 	<!-- Rewrite input src -->
 	<xsl:template match="//INPUT/@src">
 		<xsl:attribute name="src">
-			<xsl:choose>
-				<xsl:when test=" $authenticated ">
-					<xsl:value-of select="htmlrewriter:rewriteResource( $htmlrew, ., $response, 'other')" />
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:value-of select="htmlrewriter:rewriteUrl( $htmlrew, .)" />
-				</xsl:otherwise>
-			</xsl:choose>
+			<xsl:value-of select="urlfactory:createProxyUrl( $urlfact, ., 'GET', 'RAW', $response)" />
 		</xsl:attribute>
 	</xsl:template>
 	
 	<!-- Rewrite object data -->
 	<xsl:template match="//OBJECT/@data">
 		<xsl:attribute name="data">
-			<xsl:choose>
-				<xsl:when test=" $authenticated ">
-					<xsl:value-of select="htmlrewriter:rewriteResource( $htmlrew, ., $response, 'other')" />
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:value-of select="htmlrewriter:rewriteUrl( $htmlrew, .)" />
-				</xsl:otherwise>
-			</xsl:choose>
+			<xsl:value-of select="urlfactory:createProxyUrl( $urlfact, ., 'GET', 'RAW', $response)" />
 		</xsl:attribute>
 	</xsl:template>
 	
 	<!-- Rewrite embed src -->
 	<xsl:template match="//EMBED/@src">
 		<xsl:attribute name="src">
-			<xsl:choose>
-				<xsl:when test=" $authenticated ">
-					<xsl:value-of select="htmlrewriter:rewriteResource( $htmlrew, ., $response, 'other')" />
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:value-of select="htmlrewriter:rewriteUrl( $htmlrew, .)" />
-				</xsl:otherwise>
-			</xsl:choose>
+            <xsl:value-of select="urlfactory:createProxyUrl( $urlfact, ., 'GET', 'RAW', $response)" />
 		</xsl:attribute>
 	</xsl:template>
 	

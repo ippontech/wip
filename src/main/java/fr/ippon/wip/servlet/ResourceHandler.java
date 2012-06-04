@@ -19,14 +19,15 @@
 package fr.ippon.wip.servlet;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import fr.ippon.wip.http.WIPDownloader;
-import fr.ippon.wip.http.WIPDownloaderRegister;
+import fr.ippon.wip.http.Response;
+import fr.ippon.wip.state.ResponseStore;
 
 /**
  *  The servlet used to handle downloads.
@@ -51,7 +52,7 @@ public class ResourceHandler extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-
+        /*
 		// Getting the WIPDownloader register
 		WIPDownloaderRegister register = WIPDownloaderRegister.getInstance();
 		Long downloaderId = Long.parseLong(request.getParameter("dId"));
@@ -73,6 +74,13 @@ public class ResourceHandler extends HttpServlet {
 		// Writing response
 		response.setContentType(request.getParameter("contentType"));
 		response.getWriter().write(content);
+        */
+        // Retrieve response
+        UUID uuid = UUID.fromString(request.getParameter("uuid"));
+        Response wipResponse = ResponseStore.getInstance().remove(uuid);
+
+        // Send response
+        wipResponse.sendResponse(response);
 	}
 
 }

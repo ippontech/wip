@@ -22,8 +22,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
-import fr.ippon.wip.transformers.URLTypes;
+import fr.ippon.wip.http.Request;
 
 /**
  * Interface used to manage the configuration of the portlet.
@@ -241,7 +242,7 @@ public interface WIPConfiguration {
 	 * Get Ajax URLs to be rewritten during the JS transforming
 	 * @return the list of URLs to be rewritten
 	 */
-	public Map<String, URLTypes> getJavascriptUrls();
+	public Map<String, Request.ResourceType> getJavascriptUrls();
 	
 	/**
 	 * Set the URLs of the scripts that will not be transformed
@@ -432,5 +433,6 @@ public interface WIPConfiguration {
 	 * @return the class name
 	 */
 	public String getCredentialProviderClassName();
-	
+
+    public boolean isProxyURI (String uri);
 }

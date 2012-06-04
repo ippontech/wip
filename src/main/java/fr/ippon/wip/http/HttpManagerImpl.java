@@ -47,6 +47,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
@@ -93,10 +94,15 @@ public class HttpManagerImpl implements HttpManager {
 	private HttpManagerImpl() {
         try {
             SSLSocketFactory ssf = new SSLSocketFactory (new TrustSelfSignedStrategy(), new AllowAllHostnameVerifier());
-            Scheme scheme = new Scheme("https", 443, ssf);
+            Scheme httpsScheme = new Scheme("https", 443, ssf);
+            PlainSocketFactory psf = new PlainSocketFactory ();
+            Scheme httpScheme = new Scheme("http", 80, psf);
             SchemeRegistry registry = new SchemeRegistry ();
-            registry.register(scheme);
+            registry.register(httpsScheme);
+            registry.register(httpScheme);
             connectionManager = new PoolingClientConnectionManager(registry);
+            connectionManager.setDefaultMaxPerRoute(10);
+            connectionManager.setMaxTotal(100);
         } catch (Exception e) {
             throw new RuntimeException("Could not initialize HTTPS", e);
         }
@@ -165,6 +171,7 @@ public class HttpManagerImpl implements HttpManager {
         HttpResponse response = null;
 		try {
             response = httpClient.execute(request, context);
+            LOG.warning("Send: " + request.getURI().toString());
 		} finally {	}
 		cookiesManager.saveCookies(id, response.getAllHeaders());
 		return handleStatusCode(id, response, wipRequest, wipResponse, instance);
@@ -187,6 +194,7 @@ public class HttpManagerImpl implements HttpManager {
         HttpResponse response = null;
 		try {
             response = httpClient.execute(postRequest, context);
+            LOG.warning("Send: " + postRequest.getURI().toString());
 		} finally {	}
 		cookiesManager.saveCookies(id, response.getAllHeaders());
 		return handleStatusCode(id, response, wipRequest, wipResponse, instance);

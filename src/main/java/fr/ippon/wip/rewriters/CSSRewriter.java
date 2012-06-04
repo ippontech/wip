@@ -75,6 +75,7 @@ public class CSSRewriter extends WIPRewriter {
 	                if (before.startsWith("@import") || before.startsWith("@CHARSET")) {
 	                	matcher.appendReplacement(sb, before + rewriteResource(url, response, "CSS") + after);
 	                } else {
+                        //TODO: why this test ?
 	                	if (authenticated)
 		                	matcher.appendReplacement(sb, before + rewriteResource(url, response, "other") + after);
 		                else

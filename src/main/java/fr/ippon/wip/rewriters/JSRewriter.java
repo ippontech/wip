@@ -23,10 +23,13 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.portlet.MimeResponse;
 import javax.portlet.PortletResponse;
 import javax.portlet.ResourceURL;
 
+import fr.ippon.wip.http.UrlFactory;
 import fr.ippon.wip.portlet.WIPortlet;
+import fr.ippon.wip.http.Request;
 
 /**
  * An util class used to rewrite JS-related parts of code
@@ -53,30 +56,40 @@ public class JSRewriter extends WIPRewriter {
 	/**
 	 * A method to rewrite URL corresponding to ajax calls
 	 * @param url The original URL of the ajax call
-	 * @param resourceURL An empty ResourceURL
+	 * @param portletResponse To create a ResourceURL
 	 * @return The given ResourceURL to which a parameter was added : the given URL transformed into an absolute URL if needed
 	 */
-	public String rewriteAjax(String url, ResourceURL resourceURL, boolean post) {
-		// Setting parameter
-		Map<String, String[]> parameters = new HashMap<String, String[]>();
-		String[] tab = {toAbsolute(url)};
-		parameters.put(WIPortlet.AJAX_URL_KEY, tab);
-		resourceURL.setParameters(parameters);
-		String ret = resourceURL.toString();
-		// If POST method, add the method type parameter
-		if (post)
-			ret += "&"+WIPortlet.METHOD_TYPE+"=POST";
-		// URL_CONCATENATION: to concatenate the end of the URL in case the URL is a String concatenation
-		ret += "&"+WIPortlet.URL_CONCATENATION_KEY+"=";
-		// Delete unused parameters
-		int i = ret.indexOf("WIP_RESOURCE_URL");
-		int j = ret.indexOf("WIP_RESOURCE_TYPE");
-		if (i > -1 && j > -1) {
-			if (i < j)
-				ret = ret.substring(0, i) + ret.substring(j);
-			else 
-				ret = ret.substring(0, j) + ret.substring(i); 
-		}
+	public String rewriteAjax(String url, PortletResponse portletResponse, boolean post) {
+        String ret = null;
+        if (portletResponse instanceof MimeResponse) {
+            ResourceURL resourceURL = ((MimeResponse) portletResponse).createResourceURL();
+            // Setting parameter
+            Map<String, String[]> parameters = new HashMap<String, String[]>();
+            String[] tab = {toAbsolute(url)};
+            parameters.put(WIPortlet.AJAX_URL_KEY, tab);
+            resourceURL.setParameters(parameters);
+            ret = resourceURL.toString();
+            // If POST method, add the method type parameter
+            if (post)
+                ret += "&"+WIPortlet.METHOD_TYPE+"=POST";
+            // URL_CONCATENATION: to concatenate the end of the URL in case the URL is a String concatenation
+            ret += "&"+WIPortlet.URL_CONCATENATION_KEY+"=";
+            // Delete unused parameters
+            int i = ret.indexOf("WIP_RESOURCE_URL");
+            int j = ret.indexOf("WIP_RESOURCE_TYPE");
+            if (i > -1 && j > -1) {
+                if (i < j)
+                    ret = ret.substring(0, i) + ret.substring(j);
+                else
+                    ret = ret.substring(0, j) + ret.substring(i);
+            }
+        } else {
+            String requestedUrl = toAbsolute(url);
+            Request.HttpMethod httpMethod = post ? Request.HttpMethod.POST : Request.HttpMethod.GET;
+            Request.ResourceType resourceType = Request.ResourceType.AJAX;
+            ret = UrlFactory.createTempUrl(requestedUrl, httpMethod, resourceType);
+        }
+
 		return ret;
 	}
 	

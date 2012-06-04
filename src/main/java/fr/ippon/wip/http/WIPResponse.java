@@ -33,6 +33,7 @@ import javax.portlet.PortletSession;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
+import org.apache.http.util.EntityUtils;
 import org.xml.sax.SAXException;
 
 import fr.ippon.wip.cache.CacheManagerImpl;
@@ -146,7 +147,7 @@ public class WIPResponse implements java.io.Serializable {
 	public void transformHTML(PortletRequest request, PortletResponse response, String currentUrl) throws IOException {
 		PortletSession session = request.getPortletSession();
 		boolean authenticated = (session.getAttribute("authType")!=null) ? true : false;
-		HTMLTransformer transformer = new HTMLTransformer(response, currentUrl, authenticated);
+		HTMLTransformer transformer = new HTMLTransformer(request, response, currentUrl, authenticated);
 		try {
 			remoteResponse = transformer.transform(getRemoteResponse());
 			transformedResponse = true;
@@ -165,7 +166,7 @@ public class WIPResponse implements java.io.Serializable {
 	public void transformCSS(PortletRequest request, PortletResponse response, String currentUrl) throws IOException {
 		PortletSession session = request.getPortletSession();
 		boolean authenticated = (session.getAttribute("authType")!=null) ? true : false;
-		CSSTransformer transformer = new CSSTransformer(response, currentUrl, authenticated);
+		CSSTransformer transformer = new CSSTransformer(request, response, currentUrl, authenticated);
 		try {
 			remoteResponse = transformer.transform(getRemoteResponse());
 			transformedResponse = true;
@@ -184,7 +185,7 @@ public class WIPResponse implements java.io.Serializable {
 	public void transformJS(PortletRequest request, PortletResponse response, String url) throws IOException {
 		PortletSession session = request.getPortletSession();
 		boolean authenticated = (session.getAttribute("authType")!=null) ? true : false;
-		JSTransformer transformer = new JSTransformer(response, url, authenticated);
+		JSTransformer transformer = new JSTransformer(request, response, url, authenticated);
 		if (transformer.isDeletedScript(url)) {
 			remoteResponse = "";
 		}else if (!transformer.isIgnoredScript(url)) {
@@ -213,7 +214,7 @@ public class WIPResponse implements java.io.Serializable {
 	 */
 	public String getRemoteResponse() throws IOException {
         if (remoteResponse == null) {
-            remoteResponse = IOUtils.toString(httpResponse.getEntity().getContent());
+            remoteResponse = EntityUtils.toString(httpResponse.getEntity());
         }
         return remoteResponse;
     }
@@ -408,6 +409,6 @@ public class WIPResponse implements java.io.Serializable {
 
 	
 	public byte[] getBinaryContent() throws IOException {
-		return IOUtils.toByteArray(httpResponse.getEntity().getContent());
+		return EntityUtils.toByteArray(httpResponse.getEntity());
 	}
 }

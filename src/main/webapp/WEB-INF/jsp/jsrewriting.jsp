@@ -33,7 +33,7 @@
 					<%= printHelp("wip.help.urllistajax", locale) %>
 					<ul id="javascriptUrlList">
 						<%
-							Map<String, URLTypes> l = wipConf.getJavascriptUrls();
+							Map<String, Request.ResourceType> l = wipConf.getJavascriptUrls();
 							for (String s : l.keySet()) {
 								String entry = s+"::::"+l.get(s).name();
 								out.println(
@@ -49,7 +49,7 @@
 					</ul>
 					<input type="text" name="javascriptUrlToAdd" id="javascriptUrlToAdd" />
 					<select name="javascriptUrlTypeToAdd" id="javascriptUrlTypeToAdd">
-						<% for (URLTypes type : URLTypes.values()) { %>
+						<% for (Request.ResourceType type : Request.ResourceType.values()) { %>
 							<option value="<%= type.name() %>" ><%= type.name() %></option>
 						<% } %>
 					</select>

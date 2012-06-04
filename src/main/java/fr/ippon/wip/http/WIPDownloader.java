@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
+import org.apache.http.util.EntityUtils;
 
 /**
  * This class is used to process the downloading of a file. The file will then
@@ -83,7 +84,7 @@ public class WIPDownloader extends Thread {
 	public void run() {
 		synchronized (lock) {
 			try {
-				setResponse(IOUtils.toString(httpResponse.getEntity().getContent()));
+				setResponse(EntityUtils.toString(httpResponse.getEntity()));
 				getFileName();
 			} catch (IOException e) {
                 LOG.log(Level.FINE, "Error while fetching response", e);
