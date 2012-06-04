@@ -31,6 +31,15 @@
 				<td>
 					<label><fmt:message key="wip.config.ajaxurls" /></label>
 					<%= printHelp("wip.help.urllistajax", locale) %>
+					<input type="text" name="javascriptUrlToAdd" id="javascriptUrlToAdd" />
+					<select name="javascriptUrlTypeToAdd" id="javascriptUrlTypeToAdd">
+						<% for (URLTypes type : URLTypes.values()) { %>
+							<option value="<%= type.name() %>" ><%= type.name() %></option>
+						<% } %>
+					</select>
+					<a href="JavaScript:addUrl('javascriptUrl')">
+						<fmt:message key="wip.config.add" />
+					</a>
 					<ul id="javascriptUrlList">
 						<%
 							Map<String, URLTypes> l = wipConf.getJavascriptUrls();
@@ -47,21 +56,14 @@
 							}
 						%>
 					</ul>
-					<input type="text" name="javascriptUrlToAdd" id="javascriptUrlToAdd" />
-					<select name="javascriptUrlTypeToAdd" id="javascriptUrlTypeToAdd">
-						<% for (URLTypes type : URLTypes.values()) { %>
-							<option value="<%= type.name() %>" ><%= type.name() %></option>
-						<% } %>
-					</select>
-					<a href="JavaScript:addUrl('javascriptUrl')">
-						<fmt:message key="wip.config.add" />
-					</a>
 				</td>
 			</tr>
 			<tr>
-				<td width="50%">
-					<label><fmt:message key="wip.config.scriptignoredurls" /></label>
-					<%= printHelp("wip.help.ignorelist", locale) %>
+				<td>
+					<p>
+						<label><fmt:message key="wip.config.scriptignoredurls" /></label>
+						<%= printHelp("wip.help.ignorelist", locale) %>
+					</p>
 					<ul id="scriptIgnoredUrlList">
 						<%
 							List<String> l3 = wipConf.getScriptsToIgnore();
@@ -82,9 +84,17 @@
 						<fmt:message key="wip.config.add" />
 					</a>
 				</td>
-				<td width="50%">
-					<label><fmt:message key="wip.config.scriptdeletedurls" /></label>
-					<%= printHelp("wip.help.deletelist", locale) %>
+			</tr>
+			<tr>
+				<td>
+					<p>
+						<label><fmt:message key="wip.config.scriptdeletedurls" /></label>
+						<%= printHelp("wip.help.deletelist", locale) %>
+					</p>
+					<input type="text" name="scriptDeletedUrlToAdd" id="scriptDeletedUrlToAdd" />
+					<a href="JavaScript:addUrl('scriptDeletedUrl')">
+						<fmt:message key="wip.config.add" />
+					</a>
 					<ul id="scriptDeletedUrlList">
 						<%
 							List<String> l4 = wipConf.getScriptsToDelete();
@@ -100,10 +110,6 @@
 							}
 						%>
 					</ul>
-					<input type="text" name="scriptDeletedUrlToAdd" id="scriptDeletedUrlToAdd" />
-					<a href="JavaScript:addUrl('scriptDeletedUrl')">
-						<fmt:message key="wip.config.add" />
-					</a>
 				</td>
 			</tr>
 		</table>
