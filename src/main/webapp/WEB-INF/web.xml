@@ -28,9 +28,6 @@
 	</servlet-mapping>
 
     <listener>
-        <listener-class>fr.ippon.wip.cookies.CookiesCleanupListener</listener-class>
-    </listener>
-    <listener>
         <listener-class>fr.ippon.wip.http.hc.HttpClientSessionListener</listener-class>
     </listener>
 </web-app>

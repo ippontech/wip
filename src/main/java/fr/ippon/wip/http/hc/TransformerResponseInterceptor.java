@@ -18,6 +18,7 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.logging.Logger;
 
 /**
@@ -73,16 +74,25 @@ public class TransformerResponseInterceptor implements HttpResponseInterceptor {
                     return;
                 } else {
                     // HTML transformation
-                    transformer = new HTMLTransformer(portletRequest, portletResponse, actualURI, authenticated);
+                    transformer = new HTMLTransformer(portletRequest, portletResponse);
                 }
                 break;
             case JS:
                 // JavaScript transformation
-                transformer = new JSTransformer(portletRequest, portletResponse, actualURI, authenticated);
+                transformer = new JSTransformer(portletRequest, portletResponse);
+                // Empty content
+                if (((JSTransformer)transformer).isDeletedScript (actualURI)) {
+                    // Send à 404 empty response
+                    emtpyResponse(httpResponse);
+                    return;
+                } else if (((JSTransformer)transformer).isIgnoredScript(actualURI)) {
+                    // No transformation
+                    return;
+                }
                 break;
             case CSS:
                 // CSS transformation
-                transformer = new CSSTransformer(portletRequest, portletResponse, actualURI, authenticated);
+                transformer = new CSSTransformer(portletRequest, portletResponse);
                 break;
             case AJAX:
                 if (contentType == null) {
@@ -90,10 +100,10 @@ public class TransformerResponseInterceptor implements HttpResponseInterceptor {
                     return;
                 } else if (mimeType.equals("text/html") || mimeType.equals("application/xhtml+xml")) {
                     // HTML transformation
-                    transformer = new HTMLTransformer(portletRequest, portletResponse, actualURI, authenticated);
+                    transformer = new HTMLTransformer(portletRequest, portletResponse);
                 } else if (mimeType.equals("text/javascript") || mimeType.equals("application/javascript")) {
                     // JavaScript transformation
-                    transformer = new JSTransformer(portletRequest, portletResponse, actualURI, authenticated);
+                    transformer = new JSTransformer(portletRequest, portletResponse);
                 } else if (mimeType.equals("application/json")) {
                     // JSON transformation
                     transformer = new JSONTransformer();
@@ -119,5 +129,12 @@ public class TransformerResponseInterceptor implements HttpResponseInterceptor {
         } catch (TransformerException e) {
             // TODO: log exception
         }
+    }
+
+    private void emtpyResponse (HttpResponse httpResponse) {
+        EntityUtils.consumeQuietly(httpResponse.getEntity());
+        httpResponse.setEntity(new StringEntity("", Charset.defaultCharset()));
+        httpResponse.setStatusCode(HttpStatus.SC_NOT_FOUND);
+        httpResponse.setReasonPhrase("Deleted by WIP");
     }
 }

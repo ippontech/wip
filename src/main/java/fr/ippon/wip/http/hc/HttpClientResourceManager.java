@@ -191,7 +191,7 @@ public class HttpClientResourceManager {
             HttpClient sharedCacheClient = new CachingHttpClient(defaultHttpClient, cacheStorage, cacheConfig);
 
             HttpClientDecorator decoratedClient = new HttpClientDecorator(sharedCacheClient);
-            decoratedClient.addPreProcessor(new LtapRequestInterceptor());
+            decoratedClient.addPreProcessor(new LtpaRequestInterceptor());
             decoratedClient.addPostProcessor(new TransformerResponseInterceptor());
 
             rootClient = decoratedClient;

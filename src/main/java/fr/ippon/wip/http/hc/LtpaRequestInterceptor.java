@@ -22,7 +22,7 @@ import java.io.IOException;
  * Time: 07:21
  * To change this template use File | Settings | File Templates.
  */
-public class LtapRequestInterceptor implements HttpRequestInterceptor {
+public class LtpaRequestInterceptor implements HttpRequestInterceptor {
     public void process(HttpRequest request, HttpContext context) throws HttpException, IOException {
         PortletRequest portletRequest = HttpClientResourceManager.getInstance().getCurrentPortletRequest();
         PortletWindow windowState = PortletWindow.getInstance(portletRequest);

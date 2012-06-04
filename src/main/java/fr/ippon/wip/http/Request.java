@@ -69,10 +69,6 @@ public class Request implements Serializable {
         return parameterMap;
     }
 
-    public void setParameterMap(Map<String, String[]> parameterMap) {
-        this.parameterMap = parameterMap;
-    }
-
     public ResourceType getResourceType() {
         return resourceType;
     }

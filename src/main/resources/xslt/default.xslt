@@ -14,12 +14,10 @@
 	<xsl:param name="wip_divClassName" />
 	<xsl:param name="retrieveCss" />
 	<xsl:param name="rewriteUrl" />
-	<xsl:param name="currentUrl" />
-	<xsl:param name="authenticated" />
 		
 	<xsl:variable name="urlfact" select="urlfactory:new( $request )" />
-	<xsl:variable name="jstrans" select="jstransformer:new( $request, $response, $currentUrl, $authenticated )" />
-	<xsl:variable name="csstrans" select="csstransformer:new( $request, $response, $currentUrl, $authenticated )" />
+	<xsl:variable name="jstrans" select="jstransformer:new( $request, $response )" />
+	<xsl:variable name="csstrans" select="csstransformer:new( $request, $response )" />
 
 	
 

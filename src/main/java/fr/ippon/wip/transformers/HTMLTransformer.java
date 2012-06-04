@@ -18,10 +18,8 @@
 
 package fr.ippon.wip.transformers;
 
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.MalformedURLException;
@@ -32,8 +30,6 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.FactoryConfigurationError;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -71,19 +67,9 @@ public class HTMLTransformer extends AbstractTransformer {
 	private static final String parserClassName = "org.cyberneko.html.parsers.SAXParser";
 
 	/**
-	 * A boolean to check wether the user is authenticated or not
-	 */
-	private boolean authenticated;
-
-	/**
 	 * The XSLT stylesheet that will be used by the transformer.
 	 */
 	private String xsltTransform;
-	
-	/**
-	 * The current URL, used to resolve relative URLs
-	 */
-	private String currentUrl;
 	
 	/**
 	 * The instance of the WIPConfiguration class
@@ -102,20 +88,17 @@ public class HTMLTransformer extends AbstractTransformer {
 
 	/**
 	 * A constructor who will create a HTMLTransformer using the given fields
+     *
      * @param request The request object
      * @param response The response object used to build PortletURL when needed
-	 * @param currentUrl The URL of the distant page currently displayed in the portlet
-	 * @param authenticated A boolean to tell the stylesheet wheter the user is authenticated or not to the distant application
 	 * @throws MalformedURLException
 	 */
-	public HTMLTransformer(PortletRequest request, PortletResponse response, String currentUrl, boolean authenticated) throws MalformedURLException {
+	public HTMLTransformer(PortletRequest request, PortletResponse response) throws MalformedURLException {
         super (request);
 		this.wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
-		this.currentUrl = currentUrl;
 		this.xsltTransform = wipConfig.getXsltTransform();
         this.request = request;
 		this.response = response;
-		this.authenticated = authenticated;
 	}
 
 	/**
@@ -161,8 +144,6 @@ public class HTMLTransformer extends AbstractTransformer {
         transformer.setParameter("request", request);
         transformer.setParameter("response", response);
 		transformer.setParameter("wip_divClassName", wipConfig.getPortletDivId());
-		transformer.setParameter("currentUrl", currentUrl);			
-		transformer.setParameter("authenticated", authenticated);
 		if (wipConfig.getEnableCssRetrieving())
 			transformer.setParameter("retrieveCss", "true");
 		else
@@ -214,18 +195,5 @@ public class HTMLTransformer extends AbstractTransformer {
 		parser.setFeature("http://cyberneko.org/html/features/override-namespaces", true);
 		parser.setFeature("http://cyberneko.org/html/features/insert-namespaces", true);
 		parser.setProperty("http://cyberneko.org/html/properties/default-encoding","UTF-8");
-	}
-
-	public static void fileLog(String input, String filename) {
-		try{
-			// Create file 
-			FileWriter fstream = new FileWriter(filename);
-			BufferedWriter out = new BufferedWriter(fstream);
-			out.write(input);
-			// Close the output stream
-			out.close();
-		} catch (Exception e) {//Catch exception if any
-			LOG.log(Level.WARNING, "Could not write to log file: ", e);
-		}
 	}
 }

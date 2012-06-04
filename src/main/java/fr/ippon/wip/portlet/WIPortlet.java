@@ -66,64 +66,6 @@ public class WIPortlet extends GenericPortlet {
 	
 	@Override
 	protected void doView(RenderRequest request, RenderResponse response) throws PortletException, IOException {
-        /*
-		// Getting session and user session id
-		PortletSession session = request.getPortletSession();
-		String id = session.getId();
-		String instance = request.getWindowID();
-		
-		// Getting WIP request 
-		WIPRequest wipRequest = (WIPRequest) session.getAttribute(WIP_REQUEST_KEY);
-		WIPResponse wipResponse = (WIPResponse) session.getAttribute(WIP_RESPONSE_KEY);
-		
-		// Getting WIP config
-		WIPConfiguration wipConfig = wipConfigurationManager.getConfiguration(request.getWindowID());
-		response.setTitle(wipConfig.getPortletTitle());
-		
-		// The response is set only if processAction have been executed before
-		if (wipResponse == null) {
-			// LTPA SSO authentication
-			if (wipConfig.getLtpaSsoAuthentication()) {
-				String cookie = LtpaCookieUtil.getLtpaCookie(request, wipConfig);
-				if (cookie != null)
-					httpManager.saveSingleCookie(id, cookie);
-			}
-			// First request
-			if (wipRequest == null) {
-				wipRequest = new WIPRequest(wipConfig.getInitUrlAsString(), request, false);
-				session.setAttribute(WIP_REQUEST_KEY, wipRequest);
-			}
-			wipResponse = httpManager.doRequest(id, wipRequest, instance);
-		} else {
-			// Removing from session
-			session.removeAttribute(WIP_RESPONSE_KEY);
-		}
-		
-		// Transforming the response if it has not been already done
-		if (!wipResponse.isTransformedResponse()) {
-			wipResponse.transformHTML(request, response, wipRequest.getUrl());
-            LOG.warning("Release: " + wipRequest.getUrl().toString());
-        }
-
-		// Caching the response
-		httpManager.setCacheEntry(id, wipRequest, wipResponse, instance);
-		
-		if (!wipResponse.getAuthType().equals("none")) {
-			// Redirecting to the form
-			String location = "/WEB-INF/jsp/auth.jsp";
-			PortletRequestDispatcher portletRequestDispatcher = getPortletContext().getRequestDispatcher(location);
-			request.setAttribute("authType", wipResponse.getAuthType());
-			portletRequestDispatcher.include(request, response);
-		} else { 
-			// Writing response
-			response.setContentType(wipResponse.getContentType());
-			PrintWriter pw = response.getWriter();
-			pw.print(getLogoutButton(session, response));
-			pw.print(wipResponse.getRemoteResponse());
-            LOG.warning("Release: " + wipRequest.getUrl().toString());
-			pw.close();
-		}
-		*/
         WIPConfiguration wipConfig = wipConfigurationManager.getConfiguration(request.getWindowID());
         PortletWindow windowState = PortletWindow.getInstance(request);
         Response wipResponse = null;
@@ -168,56 +110,6 @@ public class WIPortlet extends GenericPortlet {
 
 	@Override
 	public void processAction(ActionRequest request, ActionResponse response) throws PortletException, IOException {
-        /*
-		// Getting portlet session and user session id
-		PortletSession session = request.getPortletSession();
-		String id = session.getId();
-		String instance = request.getWindowID();
-		
-		// If edit mode, process the edit action 
-		if (request.getPortletMode().equals(PortletMode.EDIT)) {
-			WIPEdit.processAction(request, response);
-			httpManager.cleanCache();
-		}
-		
-		// Authentication
-		else if (request.getParameter("auth") != null) {
-			WIPAuth.processAction(request, response, httpManager);
-		}
-		
-		// Else normal behavior
-		else {
-			// Getting URL, creating the WIPRequest and getting the corresponding WIPResponse
-			String url = request.getParameter(LINK_URL_KEY);
-			WIPRequest wipRequest = new WIPRequest(url, request, false);
-			WIPResponse wipResponse = httpManager.doRequest(id, wipRequest, instance);
-			
-			int statusCode = wipResponse.getStatusCode();
-			String contentType = wipResponse.getContentType();
-			
-			// Redirect to the resource handler or let the doView do the work
-			if (statusCode == StatusCode.OK && contentType.compareTo("text/html") != 0) {
-				// Creating a new WIPDownloader, registering, starting
-                String fileName =  wipRequest.getUrl();
-                int index = fileName.lastIndexOf('/');
-                fileName = fileName.substring(index + 1);
-                int index2 = fileName.indexOf('?');
-                if (index2 > -1) {
-                    fileName = fileName.substring(0, index2);
-                }
-
-                WIPDownloader downloader = new WIPDownloader(wipResponse.getHttpResponse(), fileName);
-				downloader.register();
-				downloader.start();
-				// Redirecting to ResourceHandler servlet
-				response.sendRedirect(request.getContextPath() + "/ResourceHandler?contentType=" + contentType + "&dId=" + downloader.getDownloaderId());
-			} else {
-				// Saving in session to be treated in doView
-				session.setAttribute(WIP_REQUEST_KEY, wipRequest);
-				session.setAttribute(WIP_RESPONSE_KEY, wipResponse);
-			}
-		}
-		*/
         // If edit mode, process the edit action
         if (request.getPortletMode().equals(PortletMode.EDIT)) {
             WIPEdit.processAction(request, response);
@@ -262,85 +154,6 @@ public class WIPortlet extends GenericPortlet {
 	// 2. Manage AJAX Request
 	@Override
 	public void serveResource(ResourceRequest request, ResourceResponse response) throws PortletException, IOException {
-        /*
-		WIPResponse wipResponse = null;
-		
-		// Getting portlet session and user session id
-		PortletSession session = request.getPortletSession();
-		String id = session.getId();
-		String instance = request.getWindowID();
-		
-		// Handling CSS and JS resources
-		if (request.getParameter(AJAX_URL_KEY) == null) {
-			// Getting URL, creating the WIPRequest and getting the corresponding WIPResponse
-			String url = request.getParameter(RESOURCE_URL_KEY);
-			String url2 = request.getParameter(URL_CONCATENATION_KEY);
-			if (url2 !=  null && !url2.equals("")) 
-				url += url2.replaceAll(" ", "%20");
-			
-			WIPRequest wipRequest = new WIPRequest(url, request, true);
-			wipResponse = httpManager.doRequest(id, wipRequest, instance);
-			
-			// Transforming response according to the resource type
-			if (!wipResponse.isTransformedResponse()) {
-				String type = request.getParameter(RESOURCE_TYPE_KEY);
-				if (type.compareTo("CSS") == 0) {
-					wipResponse.transformCSS(request, response, wipRequest.getUrl());
-                    LOG.warning("Release: " + wipRequest.getUrl().toString());
-				} else if (type.compareTo("JS") == 0) {
-					wipResponse.transformJS(request, response, wipRequest.getUrl());
-                    LOG.warning("Release: " + wipRequest.getUrl().toString());
-				}
-			}
-			// Caching the response
-			httpManager.setCacheEntry(id, wipRequest, wipResponse, instance);
-		} 
-		
-		// Handling Ajax
-		else {
-			// Getting URL, creating the WIPRequest and getting the corresponding WIPResponse
-			String url = request.getParameter(AJAX_URL_KEY);
-			
-			// Managing url contatenation in JS files 
-			// For Liferay, do not work with GateIn and uPortal
-			String url2 = request.getParameter(URL_CONCATENATION_KEY);
-			if (url2 !=  null && !url2.equals(""))
-				url += url2.replaceAll(" ", "%20");
-
-			WIPRequest wipRequest = new WIPRequest(url, request, true);
-			wipResponse = httpManager.doRequest(id, wipRequest, instance);
-
-			if (!wipResponse.isTransformedResponse()) {
-				if (wipResponse.getContentType().equals("text/html")) {
-					wipResponse.transformHTML(request, response, wipRequest.getUrl());
-                    LOG.warning("Release: " + wipRequest.getUrl().toString());
-				} else if (wipResponse.getContentType().equals("text/javascript")) {
-					wipResponse.transformJS(request, response, wipRequest.getUrl());
-                    LOG.warning("Release: " + wipRequest.getUrl().toString());
-				} else if (wipResponse.getContentType().equals("application/json")) {
-					wipResponse.transformJSON();
-                    LOG.warning("Release: " + wipRequest.getUrl().toString());
-				} else if (wipResponse.getContentType().equals("application/xml")
-						|| wipResponse.getContentType().equals("text/xml")) {
-					// TODO: handle xml rewriting
-				}
-			}
-		}
-
-		// Writing response
-		response.setContentType(wipResponse.getContentType());
-		
-		if (request.getParameter(RESOURCE_TYPE_KEY)!=null && request.getParameter(RESOURCE_TYPE_KEY).equals("other")) {
-			OutputStream os = response.getPortletOutputStream();
-			os.write(wipResponse.getBinaryContent());
-            LOG.warning("Release: binary");
-			os.close();
-		} else {
-			PrintWriter pw = response.getWriter();
-			pw.print(wipResponse.getRemoteResponse());
-			pw.close();
-		}
-		*/
         // Create request
         Request wipRequest = new Request(request);
 

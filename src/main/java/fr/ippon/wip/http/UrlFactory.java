@@ -6,11 +6,6 @@ import fr.ippon.wip.portlet.WIPortlet;
 import fr.ippon.wip.state.PortletWindow;
 
 import javax.portlet.*;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created with IntelliJ IDEA.
@@ -39,29 +34,6 @@ public class UrlFactory {
             return createProxyUrl (tokens[0], tokens[1], tokens[2], mimeResponse);
         }
         throw new IllegalArgumentException("tempUrl is not valid");
-        /*
-        String requestedURL = tokens[0];
-        Request.HttpMethod httpMethod = Request.HttpMethod.valueOf(tokens[1]);
-        Request.ResourceType resourceType = Request.ResourceType.valueOf(tokens[2]);
-        Map<String,String[]> params = new HashMap<String, String[]>();
-        for (int i = 3; i < tokens.length; i++) {
-            String[] paramTokens = tokens[i].split(TOKENS[1]);
-            params.put(paramTokens[0], Arrays.copyOfRange(tokens, 1, tokens.length));
-        }
-
-        BaseURL baseUrl;
-        if (resourceType == Request.ResourceType.HTML) {
-            baseUrl = mimeResponse.createActionURL();
-        } else {
-            baseUrl = mimeResponse.createResourceURL();
-        }
-        baseUrl.setParameter(WIPortlet.LINK_URL_KEY, requestedURL);
-        baseUrl.setParameter(WIPortlet.METHOD_TYPE, httpMethod.name());
-        baseUrl.setParameter(WIPortlet.RESOURCE_TYPE_KEY, resourceType.name());
-        baseUrl.getParameterMap().putAll(params);
-
-        return baseUrl.toString() + "&" + WIPortlet.URL_CONCATENATION_KEY + "=";
-        */
     }
 
     public static String createTempUrl (String requestedUrl, Request.HttpMethod httpMethod, Request.ResourceType resourceType) {

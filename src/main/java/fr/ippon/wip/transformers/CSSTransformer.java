@@ -31,7 +31,6 @@ import org.xml.sax.SAXException;
 
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.WIPConfigurationManager;
-import fr.ippon.wip.rewriters.CSSRewriter;
 
 /**
  * CSSTransformer implements the WIPTransformer interface that defines the
@@ -59,10 +58,8 @@ public class CSSTransformer extends AbstractTransformer {
 	 * initializing the CSS rewriter and setting the PortletResponse.
      * @param request The PortletRequest used to get configuration
      * @param response The PortletResponse used to build ResourceURLs
-	 * @param currentUrl The Url of the page of the distant application currently displayed in the portlet
-	 * @param authenticated A boolean to tell the rewriter wether the user is authenticated or not
-	 */
-	public CSSTransformer(PortletRequest request, PortletResponse response, String currentUrl, boolean authenticated) {
+     */
+	public CSSTransformer(PortletRequest request, PortletResponse response) {
         super (request);
 		WIPConfigurationManager w = WIPConfigurationManager.getInstance();
 		this.response = response;

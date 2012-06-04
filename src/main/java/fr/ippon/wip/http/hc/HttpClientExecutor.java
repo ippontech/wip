@@ -21,7 +21,6 @@ import org.apache.http.util.EntityUtils;
 
 import javax.portlet.*;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -73,7 +72,6 @@ public class HttpClientExecutor implements HttpExecutor {
                 AuthState authState = (AuthState)context.getAttribute(ClientContext.TARGET_AUTH_STATE);
                 portletWindow.setAuthenticated(authState != null & authState.getCredentials() != null);
 
-                // TODO: not thread-safe !
                 // Get real (ie. redirected) URI
                 HttpUriRequest actualRequest = (HttpUriRequest) context.getAttribute(
                         ExecutionContext.HTTP_REQUEST);

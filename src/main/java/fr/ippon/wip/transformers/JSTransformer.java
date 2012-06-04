@@ -33,8 +33,6 @@ import org.xml.sax.SAXException;
 
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.WIPConfigurationManager;
-import fr.ippon.wip.rewriters.HTMLRewriter;
-import fr.ippon.wip.rewriters.JSRewriter;
 
 /**
  * JSTransformer implements the WIPTransformer interface that defines the
@@ -73,10 +71,6 @@ public class JSTransformer extends AbstractTransformer {
 	 */
 	private WIPConfiguration wipConfig;
 
-	/**
-	 * A boolean to check wether the user is authenticated or not
-	 */
-	private boolean authenticated;
 
 	/**
 	 * Create a new JSTransformer by initializing the rewriter, getting the
@@ -84,17 +78,13 @@ public class JSTransformer extends AbstractTransformer {
 	 * values.
      * @param request the Portlet request
      * @param response the Portlet response used to create ResourceURLs
-	 * @param currentUrl  The URL of the page of the distant application currently displayed, used to instanciate the JSRewriter
-	 * @param authenticated  A boolean to check wether the user is authenticated or not
-	 */
-	public JSTransformer(PortletRequest request, PortletResponse response, String currentUrl, boolean authenticated) {
+     */
+	public JSTransformer(PortletRequest request, PortletResponse response) {
 		super(request);
-		//this.jsRewriter = new JSRewriter(currentUrl, authenticated);
-		//this.htmlRewriter = new HTMLRewriter(currentUrl);
+
         this.request = request;
 		this.response = response;
 		this.wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
-		this.authenticated = authenticated;
 	}
 
 	/**

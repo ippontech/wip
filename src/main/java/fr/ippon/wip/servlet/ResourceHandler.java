@@ -52,29 +52,6 @@ public class ResourceHandler extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-        /*
-		// Getting the WIPDownloader register
-		WIPDownloaderRegister register = WIPDownloaderRegister.getInstance();
-		Long downloaderId = Long.parseLong(request.getParameter("dId"));
-		
-		// Getting the downloader
-		WIPDownloader downloader = register.getDownloader(downloaderId);
-		
-		Object lock = downloader.getLock();
-		String content = "";
-		
-		// Waiting for a complete download, then get the content
-		synchronized (lock) {
-			content = downloader.getResponse();
-		}
-		register.unRegister(downloaderId);
-		response.setHeader("Content-Disposition", "attachment; filename=\""+downloader.getFileName()+"\"");
-		downloader = null;
-		
-		// Writing response
-		response.setContentType(request.getParameter("contentType"));
-		response.getWriter().write(content);
-        */
         // Retrieve response
         UUID uuid = UUID.fromString(request.getParameter("uuid"));
         Response wipResponse = ResponseStore.getInstance().remove(uuid);
