@@ -172,6 +172,7 @@
 	<!-- Rewrite forms -->
 	<xsl:template match="//FORM">
 		<xsl:copy>
+            <!-- TODO: does not work if action attribute is empty -->
 			<xsl:for-each select="./@*">
 				<xsl:attribute name="{name()}"> 
 					<xsl:value-of select="."/>    
