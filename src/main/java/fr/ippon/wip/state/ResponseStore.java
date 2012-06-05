@@ -8,32 +8,43 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 /**
- * Created with IntelliJ IDEA.
- * User: fprot
- * Date: 01/06/12
- * Time: 10:21
- * To change this template use File | Settings | File Templates.
+ * Singleton class used to store Response from ACTION to RENDER phase (or servlet)
+ *
+ * This store could grow infinitely if some responses are never reclaimed (could happens
+ * if communication with the browser is interrupted), so a maximum number of entry is forced.
+ *
+ * To retrieve an entry the Map#remove(UUID uuid) method must be called
+ *
+ * The oldest entries are evicted first.
+ *
+ * @author François Prot
  */
-public class ResponseStore extends LinkedHashMap<UUID,Response> {
+public class ResponseStore extends LinkedHashMap<UUID, Response> {
     private static final Logger LOG = Logger.getLogger(ResponseStore.class.getName());
 
-    private static final ResponseStore instance = new ResponseStore ();
+    private static final ResponseStore instance = new ResponseStore();
 
     // TODO: get max entries from portlet.xml
     // TODO: manage max entries per host
     // TODO: manage expiration dates
     private static final int MAX_ENTRIES = 100;
 
-    private ResponseStore () {
-        super ();
+    private ResponseStore() {
+        super();
     }
 
-    public static ResponseStore getInstance () {
+    public static ResponseStore getInstance() {
         return instance;
     }
 
-    public UUID store (Response response) {
-        UUID id = UUID.nameUUIDFromBytes(response.getUri().getBytes());
+    /**
+     * Store a Response object and return a corresponding UUID to retrieve it later
+     *
+     * @param response
+     * @return
+     */
+    public UUID store(Response response) {
+        UUID id = UUID.nameUUIDFromBytes(response.getUrl().getBytes());
         if (containsKey(id)) {
             throw new IllegalStateException("An object already exists for this UUID");
         } else {
@@ -46,7 +57,7 @@ public class ResponseStore extends LinkedHashMap<UUID,Response> {
     protected boolean removeEldestEntry(Map.Entry<UUID, Response> entry) {
         if (size() > MAX_ENTRIES) {
             entry.getValue().dispose();
-            LOG.warning("Response evicted from store, URI was: " + entry.getValue().getUri());
+            LOG.warning("Response evicted from store, URI was: " + entry.getValue().getUrl());
             return true;
         }
         return false;

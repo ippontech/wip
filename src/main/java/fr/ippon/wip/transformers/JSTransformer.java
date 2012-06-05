@@ -18,6 +18,13 @@
 
 package fr.ippon.wip.transformers;
 
+import fr.ippon.wip.config.WIPConfiguration;
+import fr.ippon.wip.config.WIPConfigurationManager;
+import fr.ippon.wip.http.Request;
+import org.xml.sax.SAXException;
+
+import javax.portlet.PortletRequest;
+import javax.portlet.PortletResponse;
 import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
@@ -26,19 +33,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import javax.portlet.*;
-
-import fr.ippon.wip.http.Request;
-import org.xml.sax.SAXException;
-
-import fr.ippon.wip.config.WIPConfiguration;
-import fr.ippon.wip.config.WIPConfigurationManager;
-
 /**
  * JSTransformer implements the WIPTransformer interface that defines the
  * transform method used to rewrite the JavaScript code of the distant
  * application.
- * 
+ *
  * @author Anthony Luce
  * @author Quentin Thierry
  */
@@ -47,121 +46,109 @@ public class JSTransformer extends AbstractTransformer {
     private static final Logger LOG = Logger.getLogger(JSTransformer.class.getName());
 
     /**
-	 * The rewriter used to rewrite JS-specific parts of code
-	 */
-	//private JSRewriter jsRewriter;
-	
-	/**
-	 * The rewriter used to rewrite JS-specific parts of code
-	 */
-	//private HTMLRewriter htmlRewriter;
-
-    /**
-     * A PortletRequest
+     * A PortletResponse used by the rewriter to create ResourceUrls
      */
-    private PortletRequest request;
+    private final PortletResponse response;
 
     /**
-	 * A PortletResponse used by the rewriter to create ResourceUrls
-	 */
-	private PortletResponse response;
-
-	/**
-	 * The instance of WIPConfiguration
-	 */
-	private WIPConfiguration wipConfig;
+     * The instance of WIPConfiguration
+     */
+    private final WIPConfiguration wipConfig;
 
 
-	/**
-	 * Create a new JSTransformer by initializing the rewriter, getting the
-	 * portlet configuration and initializing the other fields with given
-	 * values.
-     * @param request the Portlet request
+    /**
+     * Create a new JSTransformer by initializing the rewriter, getting the
+     * portlet configuration and initializing the other fields with given
+     * values.
+     *
+     * @param request  the Portlet request
      * @param response the Portlet response used to create ResourceURLs
      */
-	public JSTransformer(PortletRequest request, PortletResponse response) {
-		super(request);
+    public JSTransformer(PortletRequest request, PortletResponse response) {
+        super(request);
 
-        this.request = request;
-		this.response = response;
-		this.wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
-	}
+        this.response = response;
+        this.wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
+    }
 
-	/**
-	 * Transform the given Javascript code: rewrite Ajax URLs and regular URLs
-	 * defined in the portlet configuration.
-	 * @param input the string corresponding to the original JavaScript code
-	 * @return a string corresponding to the transformed JavaScript code
-	 */
-	public String transform(String input) throws SAXException, IOException {
-		String url = null;
+    /**
+     * Transform the given Javascript code: rewrite Ajax URLs and regular URLs
+     * defined in the portlet configuration.
+     *
+     * @param input the string corresponding to the original JavaScript code
+     * @return a string corresponding to the transformed JavaScript code
+     */
+    public String transform(String input) throws SAXException, IOException {
+        String url;
 
-		// CUSTOM ------------------------------------------------------------------
+        // CUSTOM ------------------------------------------------------------------
 
-		//---------------------------------------------------------------------------
+        //---------------------------------------------------------------------------
 
-		Map<String, Request.ResourceType> jsUrls = wipConfig.getJavascriptUrls();
-		for(String jsUrl : jsUrls.keySet()) {
-			url = jsUrl;
-			// Add \\ for regex characters like "?"
-			if (url.contains("?")) 
-				url = url.replace("?", "\\?");
-			// Rewrite accoding to the URL type
+        Map<String, Request.ResourceType> jsUrls = wipConfig.getJavascriptUrls();
+        for (String jsUrl : jsUrls.keySet()) {
+            url = jsUrl;
+            // Add \\ for regex characters like "?"
+            if (url.contains("?"))
+                url = url.replace("?", "\\?");
+            // Rewrite accoding to the URL type
             input = input.replaceAll(url, urlFactory.createProxyUrl(jsUrl, "GET", jsUrls.get(jsUrl).name(), response));
-		}
-		
-		// Rewriting URLs
-		String regex = wipConfig.getJsRegex();
-		input = rewrite(regex, input);
-		
-		return input;
-	}
+        }
 
-	/**
-	 * Check if the script from the given URL has to be rewritten
-	 * @param url the script URL
-	 * @return a boolean indicating if the script has to be rewritten
-	 */
-	public boolean isIgnoredScript(String url) {
-		for(String regex : wipConfig.getScriptsToIgnore()){
-			try{
-				Pattern p = Pattern.compile(regex);
-				Matcher m = p.matcher(url);
-				if(m.find())return true;
-			}catch (PatternSyntaxException e) {
+        // Rewriting URLs
+        String regex = wipConfig.getJsRegex();
+        input = rewrite(regex, input);
+
+        return input;
+    }
+
+    /**
+     * Check if the script from the given URL has to be rewritten
+     *
+     * @param url the script URL
+     * @return a boolean indicating if the script has to be rewritten
+     */
+    public boolean isIgnoredScript(String url) {
+        for (String regex : wipConfig.getScriptsToIgnore()) {
+            try {
+                Pattern p = Pattern.compile(regex);
+                Matcher m = p.matcher(url);
+                if (m.find()) return true;
+            } catch (PatternSyntaxException e) {
                 LOG.log(Level.WARNING, "Could not parse ignoredScript regex: ", e);
-			}
-		}
-		
-		return false;
-	}
-	
-	/**
-	 * Check if the script from the given URL has to be deleted
-	 * @param url the script URL
-	 * @return a boolean indicating if the script has to be deleted
-	 */
-	public boolean isDeletedScript(String url) {
-		for(String regex : wipConfig.getScriptsToDelete()){
-			try{
-				Pattern p = Pattern.compile(regex);
-				Matcher m = p.matcher(url);
-				if(m.find())return true;
-			}catch (PatternSyntaxException e) {
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if the script from the given URL has to be deleted
+     *
+     * @param url the script URL
+     * @return a boolean indicating if the script has to be deleted
+     */
+    public boolean isDeletedScript(String url) {
+        for (String regex : wipConfig.getScriptsToDelete()) {
+            try {
+                Pattern p = Pattern.compile(regex);
+                Matcher m = p.matcher(url);
+                if (m.find()) return true;
+            } catch (PatternSyntaxException e) {
                 LOG.log(Level.WARNING, "Could not parse deletedScript regex: ", e);
-			}
-		}
-		
-		return false;
-	}
+            }
+        }
+
+        return false;
+    }
 
     private String rewrite(String regex, String input) {
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(input);
         StringBuffer sb = new StringBuffer();
-        while(matcher.find()) {
+        while (matcher.find()) {
             int group = extractGroup(matcher);
-            if(group > 0) {
+            if (group > 0) {
                 String before = input.substring(matcher.start(), matcher.start(group));
                 String url = matcher.group(group);
                 String after = input.substring(matcher.end(group), matcher.end());

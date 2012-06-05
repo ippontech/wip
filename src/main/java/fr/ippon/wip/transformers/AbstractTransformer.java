@@ -9,16 +9,14 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 
 /**
- * Created with IntelliJ IDEA.
- * User: fprot
- * Date: 04/06/12
- * Time: 13:04
- * To change this template use File | Settings | File Templates.
+ * Base convenience abstract class for Transformers
+ *
+ * Creates a local instance of UrlFactory
  */
 public abstract class AbstractTransformer implements WIPTransformer {
-    protected UrlFactory urlFactory;
+    protected final UrlFactory urlFactory;
 
-    public AbstractTransformer (PortletRequest portletRequest) {
+    public AbstractTransformer(PortletRequest portletRequest) {
         urlFactory = new UrlFactory(portletRequest);
     }
 
@@ -26,8 +24,8 @@ public abstract class AbstractTransformer implements WIPTransformer {
 
     protected int extractGroup(Matcher matcher) {
         int matchingGroup = -1;
-        for(int i = 1; i <= matcher.groupCount(); i++) {
-            if(matcher.start(i) > -1) {
+        for (int i = 1; i <= matcher.groupCount(); i++) {
+            if (matcher.start(i) > -1) {
                 matchingGroup = i;
                 break;
             }

@@ -18,46 +18,44 @@
 
 package fr.ippon.wip.servlet;
 
-import java.io.IOException;
-import java.util.UUID;
+import fr.ippon.wip.http.Response;
+import fr.ippon.wip.state.ResponseStore;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import fr.ippon.wip.http.Response;
-import fr.ippon.wip.state.ResponseStore;
+import java.io.IOException;
+import java.util.UUID;
 
 /**
- *  The servlet used to handle downloads.
- *  
+ * The servlet used to handle downloads.
+ *
  * @author Anthony Luce
  * @author Quentin Thierry
  */
 public class ResourceHandler extends HttpServlet {
-	private static final long serialVersionUID = 1L;
 
-	public ResourceHandler() {
-		super();
-	}
+    public ResourceHandler() {
+        super();
+    }
 
-	/**
-	 * This method is called after the redirection to this servlet, and will
-	 * wait for the WIPDownloader to complete its download and then get its file
-	 * as a String and write it in the response
-	 * 
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
-	 *      response)
-	 */
-	protected void doGet(HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException {
+    /**
+     * This method is called after the redirection to this servlet, and will
+     * wait for the WIPDownloader to complete its download and then get its file
+     * as a String and write it in the response
+     *
+     * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+     *      response)
+     */
+    protected void doGet(HttpServletRequest request,
+                         HttpServletResponse response) throws ServletException, IOException {
         // Retrieve response
         UUID uuid = UUID.fromString(request.getParameter("uuid"));
         Response wipResponse = ResponseStore.getInstance().remove(uuid);
 
         // Send response
         wipResponse.sendResponse(response);
-	}
+    }
 
 }

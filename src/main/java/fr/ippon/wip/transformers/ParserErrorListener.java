@@ -25,32 +25,32 @@ import java.util.logging.Logger;
 
 /**
  * An error listener for the HTMLTransformer used to display custom error messages
+ *
  * @author Anthony Luce
  * @author Quentin Thierry
- *
  */
-public class ParserErrorListener implements ErrorListener {
+class ParserErrorListener implements ErrorListener {
 
     private static final Logger LOG = Logger.getLogger(ParserErrorListener.class.getName());
 
     /**
-	 * Error message
-	 */
-	public void error(TransformerException ex) throws TransformerException {
+     * Error message
+     */
+    public void error(TransformerException ex) throws TransformerException {
         LOG.log(Level.INFO, "Error parsing HTML: ", ex);
-	}
+    }
 
-	/**
-	 * Fatal error message
-	 */
-	public void fatalError(TransformerException ex) throws TransformerException {
+    /**
+     * Fatal error message
+     */
+    public void fatalError(TransformerException ex) throws TransformerException {
         LOG.log(Level.WARNING, "Error parsing HTML: ", ex);
     }
 
-	/**
-	 * Warning message
-	 */
-	public void warning(TransformerException ex) throws TransformerException {
+    /**
+     * Warning message
+     */
+    public void warning(TransformerException ex) throws TransformerException {
         LOG.log(Level.FINE, "Error parsing HTML: ", ex);
     }
 

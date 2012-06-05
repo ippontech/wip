@@ -2,72 +2,72 @@
 
 <configuration>
 
-	<wipDefault>
-	
-		<initUrl>http://blog.ippon.fr</initUrl>
-        
+    <wipDefault>
+
+        <initUrl>http://blog.ippon.fr</initUrl>
+
         <enableUrlRewriting>true</enableUrlRewriting>
-        
+
         <domainsToProxy>http://blog.ippon.fr</domainsToProxy>
-		
-		<portletTitle>Blog Ippon</portletTitle>
-		
-		<cssRegex>(?:url\((?:'|")?(.*?)(?:'|")?\))|(?:@import\s+[^url](?:'|")?(.*?)(?:'|")|;|\s+|$)</cssRegex>
-		
-		<jsRegex>open\('([^']*)'|open\("([^\"]*)"</jsRegex>
-		
-		<enableCssRewriting>true</enableCssRewriting>
-		
-		<enableCssRetrieving>true</enableCssRetrieving>
-		
-		<portletDivId>wip</portletDivId>
-		
-		<absolutePositioning>true</absolutePositioning>
-		
-		<addPrefix>true</addPrefix>
-		
-		<customCss></customCss>
-		
-		<javascriptUrls></javascriptUrls>
-		
-		<scriptsToIgnore></scriptsToIgnore>
-		
-		<scriptsToDelete>js/jquery/jquery.js</scriptsToDelete>
-		
-		<clippingType>none</clippingType>
-		
-		<xPath></xPath>
-		
-		<xsltClipping></xsltClipping>
-		
-		<xsltTransform></xsltTransform>
-		
-		<!-- Caching -->
-		
-		<enableCache>false</enableCache>
-		
-		<pageCachePrivate>false</pageCachePrivate>
-		
-		<resourceCachePublic>false</resourceCachePublic>
-		
-		<forcePageCaching>false</forcePageCaching>
-		
-		<forceResourceCaching>false</forceResourceCaching>
-		
-		<pageCacheTimeout>0</pageCacheTimeout>
-		
-		<resourceCacheTimeout>0</resourceCacheTimeout>
-		
-		<cacheDateRate>30</cacheDateRate>
-	
-	   <!-- LTPA SSO Authentication -->
-	   
-	   <ltpaSsoAuthentication>false</ltpaSsoAuthentication>
-	   
-	   <ltpaSecretProviderClassName></ltpaSecretProviderClassName>
-	   
-	   <credentialProviderClassName></credentialProviderClassName>
-	   
-	</wipDefault>
-	
+
+        <portletTitle>Blog Ippon</portletTitle>
+
+        <cssRegex>(?:url\((?:'|")?(.*?)(?:'|")?\))|(?:@import\s+[^url](?:'|")?(.*?)(?:'|")|;|\s+|$)</cssRegex>
+
+        <jsRegex>open\('([^']*)'|open\("([^\"]*)"</jsRegex>
+
+        <enableCssRewriting>true</enableCssRewriting>
+
+        <enableCssRetrieving>true</enableCssRetrieving>
+
+        <portletDivId>wip</portletDivId>
+
+        <absolutePositioning>true</absolutePositioning>
+
+        <addPrefix>true</addPrefix>
+
+        <customCss></customCss>
+
+        <javascriptUrls></javascriptUrls>
+
+        <scriptsToIgnore></scriptsToIgnore>
+
+        <scriptsToDelete>js/jquery/jquery.js</scriptsToDelete>
+
+        <clippingType>none</clippingType>
+
+        <xPath></xPath>
+
+        <xsltClipping></xsltClipping>
+
+        <xsltTransform></xsltTransform>
+
+        <!-- Caching -->
+
+        <enableCache>false</enableCache>
+
+        <pageCachePrivate>false</pageCachePrivate>
+
+        <resourceCachePublic>false</resourceCachePublic>
+
+        <forcePageCaching>false</forcePageCaching>
+
+        <forceResourceCaching>false</forceResourceCaching>
+
+        <pageCacheTimeout>0</pageCacheTimeout>
+
+        <resourceCacheTimeout>0</resourceCacheTimeout>
+
+        <cacheDateRate>30</cacheDateRate>
+
+        <!-- LTPA SSO Authentication -->
+
+        <ltpaSsoAuthentication>false</ltpaSsoAuthentication>
+
+        <ltpaSecretProviderClassName></ltpaSecretProviderClassName>
+
+        <credentialProviderClassName></credentialProviderClassName>
+
+    </wipDefault>
+
 </configuration>

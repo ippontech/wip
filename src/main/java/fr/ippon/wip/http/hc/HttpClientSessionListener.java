@@ -4,11 +4,10 @@ import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
 /**
- * Created with IntelliJ IDEA.
- * User: fprot
- * Date: 01/06/12
- * Time: 11:00
- * To change this template use File | Settings | File Templates.
+ * Implementation of HttpSessionListener. Must be declared in web.xml to release
+ * resources associated to a session when it is destroyed.
+ *
+ * @author François Prot
  */
 public class HttpClientSessionListener implements HttpSessionListener {
     public void sessionCreated(HttpSessionEvent httpSessionEvent) {

@@ -6,48 +6,60 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Created with IntelliJ IDEA.
- * User: fprot
- * Date: 01/06/12
- * Time: 10:05
- * To change this template use File | Settings | File Templates.
+ * This class is a container for all state datas associated to a given sessionID/windowID
+ *
+ * Instances of this class are obtained by the static method #getInstance
+ *
+ * @author François Prot
  */
 public class PortletWindow {
-    private UUID requestResponseID;
-    private boolean renderPending = false;
-    private String currentURI;
+    private UUID responseID;
+    private String currentURL;
     private List<String> requestedAuthSchemes;
     private boolean authenticated = false;
 
-    public static final String PORTLET_SESSION_KEY = "wip.window.state";
+    private static final String PORTLET_SESSION_KEY = "wip.window.state";
 
-    public PortletWindow() {
+    private PortletWindow() {
     }
 
-    public UUID getRequestResponseID() {
-        return requestResponseID;
+    /**
+     * UUID of a Response obtained in the ACTION phase that has not already been sent to client.
+     *
+     * Used to get a Response instance from ResponseStore.
+     *
+     * @return
+     */
+    public UUID getResponseID() {
+        return responseID;
     }
 
-    public void setRequestResponseID(UUID requestResponseID) {
-        this.requestResponseID = requestResponseID;
+    public void setResponseID(UUID responseID) {
+        this.responseID = responseID;
     }
 
-    public boolean isRenderPending() {
-        return renderPending;
+    /**
+     * The remote URL for this sessionID/windowID.
+     *
+     * If the remote host send "Redirect" response, the URL is the final target location
+     *
+     * @return
+     */
+    public String getCurrentURL() {
+        return currentURL;
     }
 
-    public void setRenderPending(boolean renderPending) {
-        this.renderPending = renderPending;
+    public void setCurrentURL(String currentURL) {
+        this.currentURL = currentURL;
     }
 
-    public String getCurrentURI() {
-        return currentURI;
-    }
-
-    public void setCurrentURI(String currentURI) {
-        this.currentURI = currentURI;
-    }
-
+    /**
+     * Authentication schemes accepted by remote host.
+     *
+     * Is null is no authentication is requested.
+     *
+     * @return
+     */
     public List<String> getRequestedAuthSchemes() {
         return requestedAuthSchemes;
     }
@@ -56,6 +68,11 @@ public class PortletWindow {
         this.requestedAuthSchemes = requestedAuthSchemes;
     }
 
+    /**
+     * Is the user authenticated on the remote host
+     *
+     * @return
+     */
     public boolean isAuthenticated() {
         return authenticated;
     }
@@ -64,19 +81,34 @@ public class PortletWindow {
         this.authenticated = authenticated;
     }
 
-    public static PortletWindow getInstance (PortletRequest request) {
+    /**
+     * Get the instance associated with this PortletSession (in the PORTLET_SCOPE) if exists.
+     * Else create a new one and update session.
+     *
+     * @param request
+     * @return
+     */
+    public static PortletWindow getInstance(PortletRequest request) {
         PortletSession session = request.getPortletSession();
-        PortletWindow state = (PortletWindow)session.getAttribute(PORTLET_SESSION_KEY, PortletSession.PORTLET_SCOPE);
+        PortletWindow state;
+        synchronized (session) {
+            state = (PortletWindow) session.getAttribute(PORTLET_SESSION_KEY, PortletSession.PORTLET_SCOPE);
 
-        if (state == null) {
-            state = new PortletWindow();
-            session.setAttribute(PORTLET_SESSION_KEY, state, PortletSession.PORTLET_SCOPE);
+            if (state == null) {
+                state = new PortletWindow();
+                session.setAttribute(PORTLET_SESSION_KEY, state, PortletSession.PORTLET_SCOPE);
+            }
         }
-
         return state;
     }
 
-    public static void clearInstance (PortletRequest request) {
+    /**
+     * This method must be called when the state of a particular session/window must be cleared
+     * (on remote logout for example)
+     *
+     * @param request
+     */
+    public static void clearInstance(PortletRequest request) {
         PortletSession session = request.getPortletSession();
         session.removeAttribute(PORTLET_SESSION_KEY, PortletSession.PORTLET_SCOPE);
     }

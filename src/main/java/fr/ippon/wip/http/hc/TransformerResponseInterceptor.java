@@ -5,8 +5,6 @@ import fr.ippon.wip.config.WIPConfigurationManager;
 import fr.ippon.wip.http.Request;
 import fr.ippon.wip.transformers.*;
 import org.apache.http.*;
-import org.apache.http.auth.AuthState;
-import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.protocol.ExecutionContext;
@@ -22,16 +20,24 @@ import java.nio.charset.Charset;
 import java.util.logging.Logger;
 
 /**
- * Created with IntelliJ IDEA.
- * User: fprot
- * Date: 29/05/12
- * Time: 23:16
- * To change this template use File | Settings | File Templates.
+ * Implementation of HttpResponseInterceptor in charge of processing all content transformations (HTML, CSS, JavaScript)
+ * and clipping.
+ * @author François Prot
  */
-public class TransformerResponseInterceptor implements HttpResponseInterceptor {
+class TransformerResponseInterceptor implements HttpResponseInterceptor {
 
     private static final Logger LOG = Logger.getLogger(TransformerResponseInterceptor.class.getName());
 
+    /**
+     * If httpResponse must be transformed, creates an instance of WIPTransformer,
+     *  executes WIPTransformer#transform on the response content and updates the
+     *  response entity accordingly.
+     *
+     * @param httpResponse
+     * @param context
+     * @throws HttpException
+     * @throws IOException
+     */
     public void process(HttpResponse httpResponse, HttpContext context) throws HttpException, IOException {
         PortletRequest portletRequest = HttpClientResourceManager.getInstance().getCurrentPortletRequest();
         PortletResponse portletResponse = HttpClientResourceManager.getInstance().getCurrentPortletResponse();
@@ -52,22 +58,20 @@ public class TransformerResponseInterceptor implements HttpResponseInterceptor {
 
         ContentType contentType = ContentType.getOrDefault(entity);
         String mimeType = contentType.getMimeType();
-        boolean authenticated = false;
-        AuthState authState = (AuthState)context.getAttribute(ClientContext.TARGET_AUTH_STATE);
-        if (authState != null & authState.getCredentials() != null) {
-            authenticated = true;
-        }
 
         // Check if actual URI must be transformed
-        HttpRequest actualRequest = (HttpRequest)context.getAttribute(ExecutionContext.HTTP_REQUEST);
-        HttpHost actualHost = (HttpHost)context.getAttribute(ExecutionContext.HTTP_TARGET_HOST);
+        HttpRequest actualRequest = (HttpRequest) context.getAttribute(ExecutionContext.HTTP_REQUEST);
+        HttpHost actualHost = (HttpHost) context.getAttribute(ExecutionContext.HTTP_TARGET_HOST);
         String actualURI = actualHost.toURI() + actualRequest.getRequestLine().getUri();
         if (!config.isProxyURI(actualURI)) {
             return;
         }
 
+        // Creates an instance of Transformer depending on ResourceType and MimeType
+        // May returns directly if no transformation is need
         WIPTransformer transformer = null;
         switch (request.getResourceType()) {
+            // Direct link or form submit
             case HTML:
                 if (!mimeType.equals("text/html") && !mimeType.equals("application/xhtml+xml")) {
                     // No transformation
@@ -81,11 +85,11 @@ public class TransformerResponseInterceptor implements HttpResponseInterceptor {
                 // JavaScript transformation
                 transformer = new JSTransformer(portletRequest, portletResponse);
                 // Empty content
-                if (((JSTransformer)transformer).isDeletedScript (actualURI)) {
+                if (((JSTransformer) transformer).isDeletedScript(actualURI)) {
                     // Send à 404 empty response
                     emtpyResponse(httpResponse);
                     return;
-                } else if (((JSTransformer)transformer).isIgnoredScript(actualURI)) {
+                } else if (((JSTransformer) transformer).isIgnoredScript(actualURI)) {
                     // No transformation
                     return;
                 }
@@ -95,7 +99,7 @@ public class TransformerResponseInterceptor implements HttpResponseInterceptor {
                 transformer = new CSSTransformer(portletRequest, portletResponse);
                 break;
             case AJAX:
-                if (contentType == null) {
+                if (mimeType == null) {
                     // No transformation
                     return;
                 } else if (mimeType.equals("text/html") || mimeType.equals("application/xhtml+xml")) {
@@ -107,6 +111,9 @@ public class TransformerResponseInterceptor implements HttpResponseInterceptor {
                 } else if (mimeType.equals("application/json")) {
                     // JSON transformation
                     transformer = new JSONTransformer();
+                } else {
+                    // No transformation
+                    return;
                 }
                 break;
             case RAW:
@@ -114,10 +121,11 @@ public class TransformerResponseInterceptor implements HttpResponseInterceptor {
                 return;
         }
 
+        // Call WIPTransformer#transform method and update the response Entity object
         try {
             String transformedContent = transformer.transform(EntityUtils.toString(entity));
-            HttpEntity transformedEntity = null;
-            if (contentType != null && contentType.getCharset() != null) {
+            HttpEntity transformedEntity;
+            if (contentType.getCharset() != null) {
                 transformedEntity = new StringEntity(transformedContent, ContentType.getOrDefault(entity));
             } else {
                 transformedEntity = new StringEntity(transformedContent);
@@ -131,7 +139,7 @@ public class TransformerResponseInterceptor implements HttpResponseInterceptor {
         }
     }
 
-    private void emtpyResponse (HttpResponse httpResponse) {
+    private void emtpyResponse(HttpResponse httpResponse) {
         EntityUtils.consumeQuietly(httpResponse.getEntity());
         httpResponse.setEntity(new StringEntity("", Charset.defaultCharset()));
         httpResponse.setStatusCode(HttpStatus.SC_NOT_FOUND);

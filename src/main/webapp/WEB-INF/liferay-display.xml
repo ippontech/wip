@@ -2,6 +2,6 @@
 
 <display>
     <category name="category.integration">
-        <portlet id="WIP" />
+        <portlet id="WIP"/>
     </category>
 </display>

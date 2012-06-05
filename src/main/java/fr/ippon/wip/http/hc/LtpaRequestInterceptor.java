@@ -16,20 +16,16 @@ import javax.portlet.PortletRequest;
 import java.io.IOException;
 
 /**
- * Created with IntelliJ IDEA.
- * User: fprot
- * Date: 03/06/12
- * Time: 07:21
- * To change this template use File | Settings | File Templates.
+ * Implementation of HttpRequestInterceptor used to create a LTPA token cookie and add it to the current CookieStore
  */
-public class LtpaRequestInterceptor implements HttpRequestInterceptor {
+class LtpaRequestInterceptor implements HttpRequestInterceptor {
     public void process(HttpRequest request, HttpContext context) throws HttpException, IOException {
         PortletRequest portletRequest = HttpClientResourceManager.getInstance().getCurrentPortletRequest();
         PortletWindow windowState = PortletWindow.getInstance(portletRequest);
         WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(portletRequest.getWindowID());
 
         // If it is the first request
-        if (windowState.getCurrentURI() == null) {
+        if (windowState.getCurrentURL() == null) {
             // If LTPA SSO enabled for this portlet
             if (wipConfig.getLtpaSsoAuthentication()) {
                 // Create LTPA cookie & add it ot store
@@ -39,7 +35,7 @@ public class LtpaRequestInterceptor implements HttpRequestInterceptor {
                     if (valueAndDomain[1] != null & !valueAndDomain[1].equals("")) {
                         ltpaCookie.setDomain(valueAndDomain[1]);
                     }
-                    CookieStore cookieStore = (CookieStore)context.getAttribute(ClientContext.COOKIE_STORE);
+                    CookieStore cookieStore = (CookieStore) context.getAttribute(ClientContext.COOKIE_STORE);
                     cookieStore.addCookie(ltpaCookie);
                 }
             }

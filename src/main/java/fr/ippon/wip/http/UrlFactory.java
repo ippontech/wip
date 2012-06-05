@@ -5,47 +5,67 @@ import fr.ippon.wip.config.WIPConfigurationManager;
 import fr.ippon.wip.portlet.WIPortlet;
 import fr.ippon.wip.state.PortletWindow;
 
-import javax.portlet.*;
+import javax.portlet.BaseURL;
+import javax.portlet.MimeResponse;
+import javax.portlet.PortletRequest;
+import javax.portlet.PortletResponse;
 
 /**
- * Created with IntelliJ IDEA.
- * User: fprot
- * Date: 04/06/12
- * Time: 09:34
- * To change this template use File | Settings | File Templates.
+ * This class creates portal URL for corresponding to URL of the content returned by a remote host.
+ *
+ * The sole constructor takes a PortletRequest as parameter in order to create portal URL
+ * If the PortletRequest is not an instance of MimeRequest, it is not possible to create portal URL, so temporary
+ * URL will be generated for future parsing (Response#computePortalURL)
+ *
+ * @author François Prot
  */
 public class UrlFactory {
-    public static final String TEMP_URL_SEPARATOR = "&#128;";
+
+    private static final String TEMP_URL_SEPARATOR = "&#128;";
     public static final String TEMP_URL_ENCODED_SEPARATOR = "&amp;#128;";
     private static final String[] TOKENS = {"<", "$"};
 
-    private String currentUrl;
-    private WIPConfiguration configuration;
+    private final String currentUrl;
+    private final WIPConfiguration configuration;
 
-    public UrlFactory (PortletRequest portletRequest) {
+    /**
+     * @param portletRequest To get windowID and retrieve appropriate configuration
+     */
+    public UrlFactory(PortletRequest portletRequest) {
         configuration = WIPConfigurationManager.getInstance().getConfiguration(portletRequest.getWindowID());
         PortletWindow window = PortletWindow.getInstance(portletRequest);
-        currentUrl = window.getCurrentURI();
+        currentUrl = window.getCurrentURL();
     }
 
-    public String createPortalUrl (String tempUrl, MimeResponse mimeResponse) {
+    /**
+     * Create a portal URL from a temporary URL (response transformed in the ACTION phase)
+     *
+     * @param tempUrl
+     * @param mimeResponse To create portal URLs
+     * @return
+     */
+    public String convertTempToPortalUrl(String tempUrl, MimeResponse mimeResponse) {
         String[] tokens = tempUrl.split(TOKENS[0]);
         if (tokens.length >= 3) {
-            return createProxyUrl (tokens[0], tokens[1], tokens[2], mimeResponse);
+            return createProxyUrl(tokens[0], tokens[1], tokens[2], mimeResponse);
         }
         throw new IllegalArgumentException("tempUrl is not valid");
     }
 
-    public static String createTempUrl (String requestedUrl, Request.HttpMethod httpMethod, Request.ResourceType resourceType) {
-        String tempUrl = requestedUrl + TOKENS[0];
-        tempUrl += httpMethod.name() + TOKENS[0];
-        tempUrl += resourceType.name();
-
-        return TEMP_URL_SEPARATOR + tempUrl + TEMP_URL_SEPARATOR;
-    }
-
-    public String createProxyUrl (String url, String method, String type, PortletResponse response) {
-        String proxyUrl = null;
+    /**
+     * Create a proxy URL.
+     *
+     * If portletResponse is an instance of MimeResponse, creates portal URL,
+     * else creates temporary URL.
+     *
+     * @param url URL of the remote resource
+     * @param method HTTP method for this request
+     * @param type Type of resource
+     * @param portletResponse To create portal URL if instance of MimeResponse
+     * @return
+     */
+    public String createProxyUrl(String url, String method, String type, PortletResponse portletResponse) {
+        String proxyUrl;
         Request.HttpMethod httpMethod = Request.HttpMethod.valueOf(method);
         Request.ResourceType resourceType = Request.ResourceType.valueOf(type);
         // Convert to absolute URL
@@ -54,15 +74,15 @@ public class UrlFactory {
         if (!configuration.isProxyURI(absoluteUrl)) {
             return absoluteUrl;
         }
-        if (response instanceof MimeResponse) {
+        if (portletResponse instanceof MimeResponse) {
             // Create a portal URL
             BaseURL baseURL;
             if (resourceType == Request.ResourceType.HTML) {
                 // Create an ActionURL
-                baseURL = ((MimeResponse) response).createActionURL();
+                baseURL = ((MimeResponse) portletResponse).createActionURL();
             } else {
                 // Create a ResourceURL
-                baseURL = ((MimeResponse) response).createResourceURL();
+                baseURL = ((MimeResponse) portletResponse).createResourceURL();
             }
             // Set common parameters
             baseURL.setParameter(WIPortlet.LINK_URL_KEY, absoluteUrl);
@@ -72,16 +92,16 @@ public class UrlFactory {
             proxyUrl = baseURL.toString();
             // Append concatenation key for AJAX URLs (hack !)
             if (resourceType == Request.ResourceType.AJAX) {
-                proxyUrl += "&" +WIPortlet.URL_CONCATENATION_KEY +"=";
+                proxyUrl += "&" + WIPortlet.URL_CONCATENATION_KEY + "=";
             }
         } else {
             // Create a temp URL
-            proxyUrl = createTempUrl(absoluteUrl, httpMethod, resourceType);
+            proxyUrl = TEMP_URL_SEPARATOR + absoluteUrl + TOKENS[0] + httpMethod.name() + TOKENS[0] + resourceType.name() + TEMP_URL_SEPARATOR;
         }
         return proxyUrl;
     }
 
-    private String toAbsolute (String url) {
+    private String toAbsolute(String url) {
         if (url.startsWith("http://") || url.startsWith("https://")) {
             return url;
         } else {

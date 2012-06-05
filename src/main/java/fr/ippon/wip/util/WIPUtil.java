@@ -18,26 +18,24 @@
 
 package fr.ippon.wip.util;
 
-import java.net.URL;
-import java.util.*;
-import java.util.logging.Logger;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * Wip Utility Class
- * 
+ *
  * @author Anthony Luce
  * @author Quentin Thierry
  */
 
 public class WIPUtil {
-
-    private static final Logger LOG = Logger.getLogger(WIPUtil.class.getName());
-
     private static final String BUNDLE_NAME = "content.Language";
 
-    private static Map<Locale, ResourceBundle> bundles = new HashMap<Locale, ResourceBundle>();
+    private static final Map<Locale, ResourceBundle> bundles = new HashMap<Locale, ResourceBundle>();
 
-    public static String getMessage (String key, Locale locale) {
+    public static String getMessage(String key, Locale locale) {
         ResourceBundle bundle = bundles.get(locale);
         if (bundle == null) {
             bundle = ResourceBundle.getBundle(BUNDLE_NAME, locale);
