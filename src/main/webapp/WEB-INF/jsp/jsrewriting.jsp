@@ -3,124 +3,6 @@
 <% String src = request.getContextPath() + "/img/remove.png"; %>
 
 <div id="editForm">
-	<div id="editHeader">
-		<div class="left"><h2><fmt:message key="wip.config.title"/></h2></div>
-		<div class="right">
-			<form id="changePage" action="<portlet:actionURL/>" method="POST">
-				<select name="editPage" onchange="javascript:this.form.submit();return(false);">
-					<option value="generalsettings"><fmt:message key="wip.config.generalsettings"/></option>
-					<option value="caching"><fmt:message key="wip.config.caching" /></option>
-					<option value="htmlrewriting"><fmt:message key="wip.config.htmlrewriting"/></option>
-					<option value="clipping"><fmt:message key="wip.config.easyclipping"/></option>
-					<option value="cssrewriting"><fmt:message key="wip.config.cssrewriting"/></option>
-					<option value="jsrewriting" selected="selected"><fmt:message key="wip.config.jsrewriting"/></option>
-					<option value="ltpaauth"><fmt:message key="wip.config.ltpaauth"/></option>
-				</select>
-			</form>
-		</div>
-	</div>
-	<form method="POST" action="<portlet:actionURL/>" class="wip_form" onsubmit="saveJavascriptUrls(); saveScriptIgnoredUrls(); saveScriptDeletedUrls();">
-		<input type="hidden" name="form" value="5"/>
-		<p style="margin-left:15px; margin-bottom: 25px;">
-			<label for="jsRegex"><fmt:message key="wip.config.jsregex" /> :</label>
-			<input type="text" name="jsRegex" id="jsRegex" value="<%= wipConf.getJsRegex() %>" size="60" />
-			<%= printHelp("wip.help.jsregex", locale) %>
-		</p>
-		<table>
-			<tr>
-				<td>
-					<label><fmt:message key="wip.config.ajaxurls" /></label>
-					<%= printHelp("wip.help.urllistajax", locale) %>
-					<input type="text" name="javascriptUrlToAdd" id="javascriptUrlToAdd" />
-					<select name="javascriptUrlTypeToAdd" id="javascriptUrlTypeToAdd">
-						<% for (URLTypes type : URLTypes.values()) { %>
-							<option value="<%= type.name() %>" ><%= type.name() %></option>
-						<% } %>
-					</select>
-					<a href="JavaScript:addUrl('javascriptUrl')">
-						<fmt:message key="wip.config.add" />
-					</a>
-					<ul id="javascriptUrlList">
-						<%
-							Map<String, URLTypes> l = wipConf.getJavascriptUrls();
-							for (String s : l.keySet()) {
-								String entry = s+"::::"+l.get(s).name();
-								out.println(
-									"<li id=\"javascriptUrl"+ entry +"\">"
-									+ 	"<a href=\"JavaScript:removeUrl('javascriptUrl"+entry+"')\">"
- 									+ 		"<img src=\""+src+"\" alt=\"remove\" />"
-									+	"</a>"
-									+ 	"<span>" + s + " - " + l.get(s).name() + "</span>"
-									+ "</li>"
-								);
-							}
-						%>
-					</ul>
-				</td>
-			</tr>
-			<tr>
-				<td>
-					<p>
-						<label><fmt:message key="wip.config.scriptignoredurls" /></label>
-						<%= printHelp("wip.help.ignorelist", locale) %>
-					</p>
-					<ul id="scriptIgnoredUrlList">
-						<%
-							List<String> l3 = wipConf.getScriptsToIgnore();
-							for (String s : l3) {
-								out.println(
-									"<li id=\"scriptIgnoredUrl"+s+"\">"
-									+ 	"<a href=\"JavaScript:removeUrl('scriptIgnoredUrl"+s+"')\">"
- 									+ 		"<img src=\""+src+"\" alt=\"remove\" />"
-									+ 	"</a>"
-									+	"<span>" + s + "</span>"
-									+ "</li>"
-								);
-							}
-						%>
-					</ul>
-					<input type="text" name="scriptIgnoredUrlToAdd" id="scriptIgnoredUrlToAdd" />
-					<a href="JavaScript:addUrl('scriptIgnoredUrl')">
-						<fmt:message key="wip.config.add" />
-					</a>
-				</td>
-			</tr>
-			<tr>
-				<td>
-					<p>
-						<label><fmt:message key="wip.config.scriptdeletedurls" /></label>
-						<%= printHelp("wip.help.deletelist", locale) %>
-					</p>
-					<input type="text" name="scriptDeletedUrlToAdd" id="scriptDeletedUrlToAdd" />
-					<a href="JavaScript:addUrl('scriptDeletedUrl')">
-						<fmt:message key="wip.config.add" />
-					</a>
-					<ul id="scriptDeletedUrlList">
-						<%
-							List<String> l4 = wipConf.getScriptsToDelete();
-							for (String s : l4) {
-								out.println(
-									"<li id=\"scriptDeletedUrl"+s+"\">"
-									+ 	"<a href=\"JavaScript:removeUrl('scriptDeletedUrl"+s+"')\">"
- 									+ 		"<img src=\""+src+"\" alt=\"remove\" />"
-									+ 	"</a>"
-									+	"<span>" + s + "</span>"
-									+ "</li>"
-								);
-							}
-						%>
-					</ul>
-				</td>
-			</tr>
-		</table>
-		<p class="submit">
-			<input type="hidden" name="javascriptUrls" id="javascriptUrlToSave" />
-			<input type="hidden" name="scriptIgnoredUrls" id="scriptIgnoredUrlToSave" />
-			<input type="hidden" name="scriptDeletedUrls" id="scriptDeletedUrlToSave" />
-			<input type="submit" value="<fmt:message key='wip.config.save' />" />
-		</p>
-	</form>
-	<% session.removeAttribute("errors"); %>
     <div id="editHeader">
         <div class="left"><h2><fmt:message key="wip.config.title"/></h2></div>
         <div class="right">
@@ -204,7 +86,6 @@
                     </a>
                 </td>
              </tr>
-             <tr>
                 <td>
                     <label><fmt:message key="wip.config.scriptdeletedurls"/></label>
                     <%= printHelp("wip.help.deletelist", locale) %>
