@@ -5,7 +5,7 @@
     if (sconf != null) {
         if (sconf.equals("all")) {
 %>
-<table class="configs">
+<table class="wip_table">
     <%
         List<String> confs = WIPConfigurationManager.getInstance().getSavedConfigurations();
         if (confs.size() == 0) {
