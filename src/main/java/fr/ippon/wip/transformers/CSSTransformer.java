@@ -18,139 +18,180 @@
 
 package fr.ippon.wip.transformers;
 
-import java.io.IOException;
-
-import javax.portlet.PortletResponse;
-
-import org.xml.sax.SAXException;
-
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.WIPConfigurationManager;
-import fr.ippon.wip.rewriters.CSSRewriter;
+import org.xml.sax.SAXException;
+
+import javax.portlet.PortletRequest;
+import javax.portlet.PortletResponse;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * CSSTransformer implements the WIPTransformer interface that defines the
  * transform method used to rewrite the CSS code of the distant application.
- * 
+ *
  * @author Anthony Luce
  * @author Quentin Thierry
  */
-public class CSSTransformer implements WIPTransformer {
+public class CSSTransformer extends AbstractTransformer {
 
-	/**
-	 * The WIPConfiguration instance
-	 */
-	private WIPConfiguration wipConfig;
-	
-	/**
-	 * A CSSRewriter used to rewrite CSS-specific parts of code
-	 */
-	private CSSRewriter rewriter;
-	
-	/**
-	 * An empty PortletResponse used to create ResourceURLs
-	 */
-	private PortletResponse response;
-	
-	/**
-	 * Create a new CSSTransformer by getting the portlet configuration, 
-	 * initializing the CSS rewriter and setting the PortletResponse.
-	 * @param portletResponse The empty PortletResponse used to build ResourceURLs
-	 * @param currentUrl The Url of the page of the distant application currently displayed in the portlet
-	 * @param authenticated A boolean to tell the rewriter wether the user is authenticated or not
-	 */
-	public CSSTransformer(PortletResponse portletResponse, String currentUrl, boolean authenticated) {
-		WIPConfigurationManager w = WIPConfigurationManager.getInstance();
-		rewriter = new CSSRewriter(currentUrl, authenticated);
-		response = portletResponse;
-		wipConfig = w.getConfiguration(response.getNamespace());
-	}
-	
-	/**
-	 * Transform the given CSS code: add the prefix defined in portlet config
-	 * before each selectors, rewrite URL thanks to the CSS regex defined in 
-	 * config, remove absolute positionning and add custom CSS.
-	 * @param input the string corresponding to the CSS code
-	 * @return a string corresponding to the transformed CSS code 
-	 */
-	public String transform(String input) throws SAXException, IOException {
-		if (wipConfig.getEnableCssRewriting()) {
-			// Getting prefix
-			String wip = "\n." + wipConfig.getPortletDivId() + " ";
-		
-			// Removing all \n
-			input = input.replaceAll("\\r|\\n", "");
-			input = input.replaceAll(System.getProperty("line.separator"), "");
-			input = " "+input;
-			
-			 // Removing comments
-			int idx1 = input.indexOf("/*", 0);
-			int idx2 = input.indexOf("*/", 0);
-			while (idx1 > -1) {
-				input = input.substring(0, idx1) + input.substring(idx2+2);
-				idx1 = input.indexOf("/*", 0);
-				idx2 = input.indexOf("*/", 0);
-			}
-			
-			// Parsing the file to add the wip prefix before selectors
-			if (wipConfig.getAddPrefix()) {
-				String aux = "", imported = "";
-				String selector = null;
+    private static final Logger LOG = Logger.getLogger(CSSTransformer.class.getName());
 
-				int index = 0;
-				int blocStart = input.indexOf("{", 0);
-				int blocEnd = input.indexOf("}", 0);
-				
-				if (blocStart > -1) {
-					do {
-						selector = input.substring(index+1, blocStart);
-						if (selector.startsWith("@import") || selector.startsWith("@CHARSET")) {
-							// Get import and save it
-							int i = input.indexOf(";", index);
-							imported += input.substring(index+1, i+1);
-							index = i;
-						} else {
-							if (selector.startsWith("@media")) {
-								// Copy the entire bloc without modification
-								blocEnd = input.indexOf("}}", index)+1;
-								if (blocEnd < 1) blocEnd = input.indexOf("} }", index)+1;
-								aux += "\n" + selector; 
-								aux += input.substring(blocStart, blocEnd+1);
-							} else {
-								// Add prefix
-								if (selector.indexOf(",") > -1) 
-									selector = selector.replaceAll(",", "," + wip);
-								aux += "\n" + wip + selector;
-								aux += input.substring(blocStart, blocEnd+1);
-							}
-							// Next step
-							index = blocEnd;
-							blocStart = input.indexOf("{", index);
-							blocEnd = input.indexOf("}", blocStart);
-						}
-					} while (blocStart > -1);
-					
-					input = imported + aux;
-				}
-			}
-			
-			// Rewriting URLs
-			String regex = wipConfig.getCssRegex();
-			input = rewriter.rewrite(regex, input, response);
-	
-			// Removing position: absolute;
-			if (!wipConfig.getAbsolutePositioning())
-				input = input.replaceAll("absolute", "relative");
-		}
-		return input;
-	}
-	
-	/**
-	 * Get custom CSS code in the portlet configuration
-	 * @return the custom CSS code as a string
-	 */
-	public String getCustomCss() {
-		return wipConfig.getCustomCss();
-	}
+    /**
+     * The WIPConfiguration instance
+     */
+    private final WIPConfiguration wipConfig;
+
+    /**
+     * An empty PortletResponse used to create ResourceURLs
+     */
+    private final PortletResponse response;
+
+    /**
+     * Create a new CSSTransformer by getting the portlet configuration,
+     * initializing the CSS rewriter and setting the PortletResponse.
+     *
+     * @param request  The PortletRequest used to get configuration
+     * @param response The PortletResponse used to build ResourceURLs
+     */
+    public CSSTransformer(PortletRequest request, PortletResponse response) {
+        super(request);
+        WIPConfigurationManager w = WIPConfigurationManager.getInstance();
+        this.response = response;
+        wipConfig = w.getConfiguration(request.getWindowID());
+    }
+
+    /**
+     * Transform the given CSS code: add the prefix defined in portlet config
+     * before each selectors, rewrite URL thanks to the CSS regex defined in
+     * config, remove absolute positionning and add custom CSS.
+     *
+     * @param input the string corresponding to the CSS code
+     * @return a string corresponding to the transformed CSS code
+     */
+    public String transform(String input) throws SAXException, IOException {
+        if (wipConfig.getEnableCssRewriting()) {
+            // Getting prefix
+            String wip = "\n." + wipConfig.getPortletDivId() + " ";
+
+            // Removing all \n
+            input = input.replaceAll("\\r|\\n", "");
+            input = input.replaceAll(System.getProperty("line.separator"), "");
+            input = " " + input;
+
+            // Removing comments
+            int idx1 = input.indexOf("/*", 0);
+            int idx2 = input.indexOf("*/", idx1 + 2);
+            while (idx2 > -1) {
+                input = input.substring(0, idx1) + input.substring(idx2 + 2);
+                idx1 = input.indexOf("/*", 0);
+                if (idx1 > -1) {
+                    idx2 = input.indexOf("*/", idx1 + 2);
+                } else {
+                    break;
+                }
+            }
+
+            // Parsing the file to add the wip prefix before selectors
+            if (wipConfig.getAddPrefix()) {
+                String aux = "", imported = "";
+                String selector;
+
+                int index = 0;
+                int blocStart = input.indexOf("{", 0);
+                int blocEnd = input.indexOf("}", 0);
+
+                if (blocStart > -1) {
+                    do {
+                        selector = input.substring(index + 1, blocStart);
+                        if (selector.startsWith("@import") || selector.startsWith("@CHARSET")) {
+                            // Get import and save it
+                            int i = input.indexOf(";", index);
+                            imported += input.substring(index + 1, i + 1);
+                            index = i;
+                        } else {
+                            if (selector.startsWith("@media")) {
+                                // Copy the entire bloc without modification
+                                blocEnd = input.indexOf("}}", index) + 1;
+                                if (blocEnd < 1) blocEnd = input.indexOf("} }", index) + 1;
+                                aux += "\n" + selector;
+                                aux += input.substring(blocStart, blocEnd + 1);
+                            } else {
+                                // Add prefix
+                                if (selector.contains(","))
+                                    selector = selector.replaceAll(",", "," + wip);
+                                aux += "\n" + wip + selector;
+                                aux += input.substring(blocStart, blocEnd + 1);
+                            }
+                            // Next step
+                            index = blocEnd;
+                            blocStart = input.indexOf("{", index);
+                            blocEnd = input.indexOf("}", blocStart);
+                        }
+                    } while (blocStart > -1);
+
+                    input = imported + aux;
+                }
+            }
+
+            // Rewriting URLs
+            String regex = wipConfig.getCssRegex();
+            input = rewrite(regex, input, response);
+
+            // Removing position: absolute;
+            if (!wipConfig.getAbsolutePositioning())
+                input = input.replaceAll("absolute", "relative");
+        }
+        return input;
+    }
+
+    /**
+     * Get custom CSS code in the portlet configuration
+     *
+     * @return the custom CSS code as a string
+     */
+    public String getCustomCss() {
+        return wipConfig.getCustomCss();
+    }
+
+    /**
+     * Rewrite every url found thanks to the given regex in the input
+     * String to ResourceURL if the user is authenticated, and to
+     * absolute URLs if he's not
+     *
+     * @param regex    The regex used to find URLs in the CSS code
+     * @param input    The CSS code that we want to rewrite
+     * @param response An empty PortletResponse used to create the ResourceURLs
+     * @return The CSS code, whose all URLs have been rewrited
+     */
+    protected String rewrite(String regex, String input, PortletResponse response) {
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(input);
+        StringBuffer sb = new StringBuffer();
+        while (matcher.find()) {
+            try {
+                int group = extractGroup(matcher);
+                if (group > 0) {
+                    String before = input.substring(matcher.start(), matcher.start(group));
+                    String url = matcher.group(group);
+                    String after = input.substring(matcher.end(group), matcher.end());
+                    if (before.startsWith("@import") || before.startsWith("@CHARSET")) {
+                        matcher.appendReplacement(sb, before + urlFactory.createProxyUrl(url, "GET", "CSS", response) + after);
+                    } else {
+                        matcher.appendReplacement(sb, before + urlFactory.createProxyUrl(url, "GET", "RAW", response) + after);
+                    }
+                }
+            } catch (IllegalArgumentException e) {
+                LOG.log(Level.INFO, "Error parsing URL in CSS: " + e.getMessage());
+            }
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
+    }
+
 
 }

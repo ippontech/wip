@@ -18,27 +18,27 @@
 
 package fr.ippon.wip.transformers;
 
-import java.io.IOException;
+import org.xml.sax.SAXException;
 
 import javax.xml.transform.TransformerException;
-
-import org.xml.sax.SAXException;
+import java.io.IOException;
 
 /**
  * The WIPTransformer interface defines the method transform that will be
  * implemented by the different transformers (HTML, CSS...)
- * 
+ *
  * @author Anthony Luce
  * @author Quentin Thierry
  */
 public interface WIPTransformer {
 
-	/**
-	 * This method will modify the original content returned by a http response.
-	 * @param input the input string to rewrite
-	 * @return the transformed string
-	 * @throws TransformerException
-	 */
-	public String transform(String input) throws SAXException, IOException,	TransformerException;
+    /**
+     * This method will modify the original content returned by a http response.
+     *
+     * @param input the input string to rewrite
+     * @return the transformed string
+     * @throws TransformerException
+     */
+    public String transform(String input) throws SAXException, IOException, TransformerException;
 
 }

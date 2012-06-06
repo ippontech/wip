@@ -18,63 +18,24 @@
 
 package fr.ippon.wip.util;
 
-import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.apache.commons.httpclient.Cookie;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.ResourceBundle;
 
 /**
  * Wip Utility Class
- * 
+ *
  * @author Anthony Luce
  * @author Quentin Thierry
  */
 
 public class WIPUtil {
-
-    private static final Logger LOG = Logger.getLogger(WIPUtil.class.getName());
-
     private static final String BUNDLE_NAME = "content.Language";
 
-    private static Map<Locale, ResourceBundle> bundles = new HashMap<Locale, ResourceBundle>();
+    private static final Map<Locale, ResourceBundle> bundles = new HashMap<Locale, ResourceBundle>();
 
-    public static String getTmpPath(URL url) {
-		String surl = url.toExternalForm();
-		if (!surl.startsWith("/")) {
-			String[] aux = surl.split(":");
-			surl = aux[1];
-		}
-		return surl;
-	}
-	
-	public static Date getDate(String s) {
-		Date date = null;
-		if (s != null) {
-			try {
-				date = (new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z")).parse(s);
-			} catch (ParseException e) {
-				try {
-					date = (new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z", Locale.US)).parse(s);
-				} catch (ParseException e1) {
-                    LOG.log(Level.FINE, "Error parsing date " + s, e1);
-				}
-			}
-		}
-		return date;
-	}
-	
-	public static Cookie[] toArray(List<Cookie> l) {
-		Cookie[] c = new Cookie[l.size()];
-		for (int i=0; i<l.size(); i++)
-			c[i] = l.get(i);
-		return c;
-	}
-
-    public static String getMessage (String key, Locale locale) {
+    public static String getMessage(String key, Locale locale) {
         ResourceBundle bundle = bundles.get(locale);
         if (bundle == null) {
             bundle = ResourceBundle.getBundle(BUNDLE_NAME, locale);

@@ -4,4 +4,4 @@ target
 .settings
 rebel.xml
 .DS_Store
-
+.idea
