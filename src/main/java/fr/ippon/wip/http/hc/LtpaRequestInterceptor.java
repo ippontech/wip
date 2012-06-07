@@ -4,6 +4,8 @@ import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.WIPConfigurationManager;
 import fr.ippon.wip.ltpa.LtpaCookieUtil;
 import fr.ippon.wip.state.PortletWindow;
+import fr.ippon.wip.util.WIPUtil;
+
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
@@ -22,7 +24,7 @@ class LtpaRequestInterceptor implements HttpRequestInterceptor {
     public void process(HttpRequest request, HttpContext context) throws HttpException, IOException {
         PortletRequest portletRequest = HttpClientResourceManager.getInstance().getCurrentPortletRequest();
         PortletWindow windowState = PortletWindow.getInstance(portletRequest);
-        WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(portletRequest.getWindowID());
+        WIPConfiguration wipConfig = WIPUtil.extractConfiguration(portletRequest);
 
         // If it is the first request
         if (windowState.getCurrentURL() == null) {

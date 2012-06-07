@@ -23,6 +23,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import javax.portlet.PortletRequest;
+import javax.portlet.PortletSession;
+
+import fr.ippon.wip.config.WIPConfiguration;
+
 /**
  * Wip Utility Class
  *
@@ -42,5 +47,10 @@ public class WIPUtil {
             bundles.put(locale, bundle);
         }
         return bundle.getString(key);
+    }
+    
+    public static WIPConfiguration extractConfiguration(PortletRequest request) {
+    	PortletSession session = request.getPortletSession();
+    	return (WIPConfiguration) session.getAttribute("configuration");
     }
 }

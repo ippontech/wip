@@ -4,6 +4,8 @@ import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.WIPConfigurationManager;
 import fr.ippon.wip.http.Request;
 import fr.ippon.wip.transformers.*;
+import fr.ippon.wip.util.WIPUtil;
+
 import org.apache.http.*;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -41,7 +43,7 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
     public void process(HttpResponse httpResponse, HttpContext context) throws HttpException, IOException {
         PortletRequest portletRequest = HttpClientResourceManager.getInstance().getCurrentPortletRequest();
         PortletResponse portletResponse = HttpClientResourceManager.getInstance().getCurrentPortletResponse();
-        WIPConfiguration config = WIPConfigurationManager.getInstance().getConfiguration(portletRequest.getWindowID());
+        WIPConfiguration config = WIPUtil.extractConfiguration(portletRequest);
         Request request = HttpClientResourceManager.getInstance().getCurrentRequest();
 
         if (httpResponse == null) {

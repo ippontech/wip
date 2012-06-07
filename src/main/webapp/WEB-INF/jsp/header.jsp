@@ -24,7 +24,7 @@
     request.setAttribute("localeCode", locale.getLanguage());
     RenderRequest pReq = (RenderRequest) request.getAttribute("javax.portlet.request");
     PortletResponse pRsp = (PortletResponse) request.getAttribute("javax.portlet.response");
-    WIPConfiguration wipConf = WIPConfigurationManager.getInstance().getConfiguration(pReq.getWindowID());
+    WIPConfiguration wipConf = pReq.getPortletSession().getAttribute("configuration");
     Map<String, String> errors = (Map<String, String>) session.getAttribute("errors");
     if (errors == null) errors = new HashMap<String, String>();
 %>
@@ -49,12 +49,6 @@
 
 <fmt:setLocale value="${localeCode}" scope="session"/>
 <fmt:setBundle basename="content.Language"/>
-
-<% if (!WIPConfigurationManager.getInstance().saveConfigEnable()) { %>
-<div id="wipconfig_error">
-    <fmt:message key="wip.config.error"/>
-</div>
-<% } %>
 
 <% if (pReq.getPortletMode().equals(PortletMode.EDIT)) { %>
 <div class="config_menu">

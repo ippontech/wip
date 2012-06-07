@@ -21,6 +21,8 @@ package fr.ippon.wip.transformers;
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.WIPConfigurationManager;
 import fr.ippon.wip.util.CachedDTD;
+import fr.ippon.wip.util.WIPUtil;
+
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -67,7 +69,7 @@ public class Clipper implements WIPTransformer {
      * A basic constructor, getting the WIPConfiguration instance and the stylesheet
      */
     public Clipper(PortletRequest request) {
-        wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
+    	wipConfig = WIPUtil.extractConfiguration(request);
         xsltClipping = wipConfig.getXsltClipping();
     }
 

@@ -21,6 +21,8 @@ package fr.ippon.wip.transformers;
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.WIPConfigurationManager;
 import fr.ippon.wip.util.CachedDTD;
+import fr.ippon.wip.util.WIPUtil;
+
 import org.apache.xml.serializer.ToHTMLStream;
 import org.w3c.dom.Document;
 import org.xml.sax.*;
@@ -90,7 +92,7 @@ public class HTMLTransformer extends AbstractTransformer {
      */
     public HTMLTransformer(PortletRequest request, PortletResponse response) {
         super(request);
-        this.wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
+        this.wipConfig = WIPUtil.extractConfiguration(request);
         this.xsltTransform = wipConfig.getXsltTransform();
         this.request = request;
         this.response = response;

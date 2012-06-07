@@ -20,6 +20,8 @@ package fr.ippon.wip.transformers;
 
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.WIPConfigurationManager;
+import fr.ippon.wip.util.WIPUtil;
+
 import org.xml.sax.SAXException;
 
 import javax.portlet.PortletRequest;
@@ -62,7 +64,7 @@ public class CSSTransformer extends AbstractTransformer {
         super(request);
         WIPConfigurationManager w = WIPConfigurationManager.getInstance();
         this.response = response;
-        wipConfig = w.getConfiguration(request.getWindowID());
+        wipConfig = WIPUtil.extractConfiguration(request);
     }
 
     /**

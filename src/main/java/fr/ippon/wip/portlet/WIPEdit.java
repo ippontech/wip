@@ -21,8 +21,10 @@ package fr.ippon.wip.portlet;
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.WIPConfigurationManager;
 import fr.ippon.wip.state.PortletWindow;
+import fr.ippon.wip.util.WIPUtil;
 
 import javax.portlet.*;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -55,7 +57,7 @@ class WIPEdit {
         session.removeAttribute("saveConfig");
         session.removeAttribute("deleteConfig");
         session.removeAttribute("source");
-
+        
         if (request.getParameter("editPage") != null && !request.getParameter("editPage").equals("")) {
             session.setAttribute("editPage", request.getParameter("editPage"));
         } else if (request.getParameter("form") != null) {
@@ -87,12 +89,21 @@ class WIPEdit {
         } else if (request.getParameter("configPage") != null) {
             session.setAttribute("configPage", request.getParameter("configPage"));
         } else if (request.getParameter("changeConfig") != null) {
-            WIPConfigurationManager.getInstance().loadConfiguration(request.getParameter("changeConfig"), request.getWindowID());
+        	String configurationName = request.getParameter("changeConfig");
+        	WIPConfiguration configuration = WIPUtil.extractConfiguration(request);
+        	session.setAttribute("configuration", configuration);
+        	try {
+				request.getPreferences().setValue("configurationName", configurationName);
+			} catch (ReadOnlyException e) {
+				e.printStackTrace();
+			}
+        	
         } else if (request.getParameter("saveConfig") != null) {
             if (request.getParameter("saveConfig").equals("all") || request.getParameter("saveConfig").equals("")) {
                 session.setAttribute("saveConfig", "");
             } else {
-                WIPConfigurationManager.getInstance().saveConfiguration(request.getParameter("saveConfig"), request.getWindowID());
+                WIPConfiguration configuration = (WIPConfiguration) session.getAttribute("configuration");
+                configuration.save();
             }
         } else if(request.getParameter("deleteConfig") != null) {
 			WIPConfigurationManager.getInstance().deleteConfiguration(request.getParameter("deleteConfig"));
@@ -122,7 +133,7 @@ class WIPEdit {
      */
     private static void handleGeneralSettings(ActionRequest request, ActionResponse response) {
         // Getting WIPConfig, resource bundle and a map to store errors
-        WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
+    	WIPConfiguration wipConfig = WIPUtil.extractConfiguration(request);
         ResourceBundle rb = ResourceBundle.getBundle("content.Language", request.getLocale());
         Map<String, String> errors = new HashMap<String, String>();
 
@@ -165,7 +176,7 @@ class WIPEdit {
      */
     private static void handleClipping(ActionRequest request, ActionResponse response) {
         // Getting WIPConfig, resource bundle and a map to store errors
-        WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
+    	WIPConfiguration wipConfig = WIPUtil.extractConfiguration(request);
         ResourceBundle rb = ResourceBundle.getBundle("content.Language", request.getLocale());
         Map<String, String> errors = new HashMap<String, String>();
 
@@ -208,7 +219,7 @@ class WIPEdit {
      */
     private static void handleHtmlRewriting(ActionRequest request, ActionResponse response) {
         // Getting WIPConfig, resource bundle and a map to store errors
-        WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
+    	WIPConfiguration wipConfig = WIPUtil.extractConfiguration(request);
 
         // Getting the parameters from the request
         String xsltTransform = request.getParameter("xsltTransform");
@@ -230,7 +241,7 @@ class WIPEdit {
      */
     private static void handleCSSRewriting(ActionRequest request, ActionResponse response) {
         // Getting WIPConfig, resource bundle and a map to store errors
-        WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
+    	WIPConfiguration wipConfig = WIPUtil.extractConfiguration(request);
         Map<String, String> errors = new HashMap<String, String>();
 
         // Getting the parameters from the request
@@ -281,7 +292,7 @@ class WIPEdit {
      */
     private static void handleJSRewriting(ActionRequest request, ActionResponse response) {
         // Getting WIPConfig, resource bundle and a map to store errors
-        WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
+    	WIPConfiguration wipConfig = WIPUtil.extractConfiguration(request);
         Map<String, String> errors = new HashMap<String, String>();
 
         // Getting the parameters from the request
@@ -315,7 +326,7 @@ class WIPEdit {
 
     private static void handleCaching(ActionRequest request, ActionResponse response) {
         // Getting WIPConfig, resource bundle and a map to store errors
-        WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
+    	WIPConfiguration wipConfig = WIPUtil.extractConfiguration(request);
         Map<String, String> errors = new HashMap<String, String>();
 
         // Getting the parameters from the request
@@ -369,7 +380,7 @@ class WIPEdit {
 
     private static void handleLTPAAuthentication(ActionRequest request, ActionResponse response) {
         // Getting WIPConfig, resource bundle and a map to store errors
-        WIPConfiguration wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
+    	WIPConfiguration wipConfig = WIPUtil.extractConfiguration(request);
         Map<String, String> errors = new HashMap<String, String>();
 
         // Getting the parameters from the request

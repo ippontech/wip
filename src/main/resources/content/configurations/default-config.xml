@@ -2,8 +2,6 @@
 
 <configuration>
 
-    <wipDefault>
-
         <initUrl>http://blog.ippon.fr</initUrl>
 
         <enableUrlRewriting>true</enableUrlRewriting>
@@ -67,7 +65,5 @@
         <ltpaSecretProviderClassName></ltpaSecretProviderClassName>
 
         <credentialProviderClassName></credentialProviderClassName>
-
-    </wipDefault>
 
 </configuration>
