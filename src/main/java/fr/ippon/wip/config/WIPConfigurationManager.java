@@ -101,6 +101,8 @@ public class WIPConfigurationManager {
 		for(String filename : new File(pathConfigFiles).list())
 			configurationNames.add(filename.substring(0, filename.length() - 4));
 		
+		Collections.sort(configurationNames);
+		
 		// instanciation of the default configuration as a read only configuration: it can't be changed
 		File defaultConfigurationFile = getConfigurationFile(DEFAULT_CONFIG_NAME);
 		WIPConfiguration defaultConfiguration = new WIPConfigurationImpl(defaultConfigurationFile, true);
@@ -151,8 +153,10 @@ public class WIPConfigurationManager {
 		if (DEFAULT_CONFIG_NAME.equals(name))
 			return;
 
-		if (configurationNames.remove(name))
+		if (configurationNames.remove(name)) {
 			configurationsCache.put(name, null);
+			getConfigurationFile(name).delete();
+		}
 	}
 
 	/**
@@ -197,7 +201,7 @@ public class WIPConfigurationManager {
 	 * 
 	 * @return the list of names
 	 */
-	public List<String> getSavedConfigurations() {
+	public List<String> getConfigurationsNames() {
 		return configurationNames;
 	}
 }

@@ -17,14 +17,16 @@
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Locale" %>
 <%@ page import="java.util.Map" %>
+<%@ page import="java.util.logging.Logger" %>
 
 <portlet:defineObjects/>
 <%
+	Logger LOG = Logger.getLogger("JSP");
     Locale locale = request.getLocale();
     request.setAttribute("localeCode", locale.getLanguage());
     RenderRequest pReq = (RenderRequest) request.getAttribute("javax.portlet.request");
     PortletResponse pRsp = (PortletResponse) request.getAttribute("javax.portlet.response");
-    WIPConfiguration wipConf = pReq.getPortletSession().getAttribute("configuration");
+    WIPConfiguration wipConf = (WIPConfiguration) pReq.getPortletSession().getAttribute("configuration");
     Map<String, String> errors = (Map<String, String>) session.getAttribute("errors");
     if (errors == null) errors = new HashMap<String, String>();
 %>

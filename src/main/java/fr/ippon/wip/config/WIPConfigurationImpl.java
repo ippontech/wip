@@ -49,6 +49,8 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 	private XMLConfiguration config;
 
 	private boolean readOnly;
+	
+	private String name;
 
 	public WIPConfigurationImpl(File configFile) {
 		this(configFile, false);
@@ -56,6 +58,9 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 	
 	public WIPConfigurationImpl(File configFile, boolean readOnly) {
 		try {
+			name = configFile.getName();
+			//TODO: find a cleaner way to suppress the extension of the name
+			name = name.substring(0, name.length() - 4);
 			this.readOnly = readOnly;
 			this.config = new XMLConfiguration(configFile);
 			this.config.setDelimiterParsingDisabled(true);
@@ -436,5 +441,9 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 			}
 		}
 		return false;
+	}
+
+	public String getName() {
+		return name;
 	}
 }

@@ -37,6 +37,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;
@@ -130,6 +131,7 @@ public class HTMLTransformer extends AbstractTransformer {
             LOG.log(Level.SEVERE, "Could not create XML document builder", e);
             return input;
         }
+        
         db.setEntityResolver(new CachedDTD());
         Document doc = db.parse(xhtml);
 

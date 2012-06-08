@@ -11,11 +11,6 @@
 
         <portlet-class>fr.ippon.wip.portlet.WIPortlet</portlet-class>
 
-        <init-param>
-            <name>config-path</name>
-            <value>/../../conf/</value>
-        </init-param>
-
         <supports>
             <mime-type>text/html</mime-type>
             <portlet-mode>VIEW</portlet-mode>
@@ -26,10 +21,35 @@
         <supported-locale>en</supported-locale>
 
         <resource-bundle>content.Language</resource-bundle>
-
-        <portlet-info>
+		
+		<portlet-info>
             <title>Portlet d'intégration web</title>
             <short-title>WIP</short-title>
+            <keywords>WIP</keywords>
+        </portlet-info>
+    </portlet>
+    
+    <portlet>
+
+        <description>WIP Configurations management portlet</description>
+        <portlet-name>WIPConfiguration</portlet-name>
+        <display-name>WIPConfiguration</display-name>
+
+        <portlet-class>fr.ippon.wip.portlet.WIPConfigurationPortlet</portlet-class>
+
+        <supports>
+            <mime-type>text/html</mime-type>
+            <portlet-mode>VIEW</portlet-mode>
+        </supports>
+
+        <supported-locale>fr</supported-locale>
+        <supported-locale>en</supported-locale>
+
+        <resource-bundle>content.Language</resource-bundle>
+
+        <portlet-info>
+            <title>WIP configurations management portlet</title>
+            <short-title>WIPCMP</short-title>
             <keywords>WIP</keywords>
         </portlet-info>
 

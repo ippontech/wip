@@ -106,6 +106,7 @@ public class WIPortlet extends GenericPortlet {
 	 */
 	@Override
 	protected void doView(RenderRequest request, RenderResponse response) throws PortletException, IOException {
+		request.getPreferences();
 		WIPConfiguration wipConfig = getOrCreateConfiguration(request);
 
 		PortletWindow windowState = PortletWindow.getInstance(request);
@@ -161,7 +162,7 @@ public class WIPortlet extends GenericPortlet {
 	 */
 	@Override
 	public void processAction(ActionRequest request, ActionResponse response) throws PortletException, IOException {
-		WIPConfiguration wipConfig = getOrCreateConfiguration(request);
+		WIPConfiguration wipConfig = WIPUtil.extractConfiguration(request);
 
 		// If in edit mode, delegates processing to WIPEdit
 		if (request.getPortletMode().equals(PortletMode.EDIT)) {
@@ -236,6 +237,7 @@ public class WIPortlet extends GenericPortlet {
 	@Override
 	protected void doEdit(RenderRequest request, RenderResponse response) throws PortletException, IOException {
 		PortletSession session = request.getPortletSession();
+		
 		if (session.getAttribute("editPage") != null && !session.getAttribute("editPage").equals("")) {
 			String location = "/WEB-INF/jsp/" + session.getAttribute("editPage") + ".jsp";
 			PortletRequestDispatcher portletRequestDispatcher = getPortletContext().getRequestDispatcher(location);
@@ -271,5 +273,4 @@ public class WIPortlet extends GenericPortlet {
 			executor.logout(actionRequest);
 		}
 	}
-
 }

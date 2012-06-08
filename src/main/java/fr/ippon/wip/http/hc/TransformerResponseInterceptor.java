@@ -19,6 +19,7 @@ import javax.portlet.PortletResponse;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -135,9 +136,9 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
             httpResponse.setEntity(transformedEntity);
 
         } catch (SAXException e) {
-            // TODO: log exception
+            LOG.log(Level.SEVERE, e.getMessage(), e);
         } catch (TransformerException e) {
-            // TODO: log exception
+        	LOG.log(Level.SEVERE, e.getMessage(), e);
         }
     }
 
