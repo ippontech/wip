@@ -76,6 +76,11 @@ public class WIPortlet extends GenericPortlet {
 
 	/**
 	 * Retrieve the portlet configuration, creating it if necessary.
+	 * 
+	 * @Todo: their must be a clever way to initiate the configurations
+	 *        preferences, but it doesn't seem possible to access portlet
+	 *        preferences in the process of an HttpSessionListener.
+	 *
 	 * @param request
 	 * @return the portlet configuration
 	 */
@@ -237,7 +242,7 @@ public class WIPortlet extends GenericPortlet {
 	@Override
 	protected void doEdit(RenderRequest request, RenderResponse response) throws PortletException, IOException {
 		PortletSession session = request.getPortletSession();
-		
+
 		if (session.getAttribute("editPage") != null && !session.getAttribute("editPage").equals("")) {
 			String location = "/WEB-INF/jsp/" + session.getAttribute("editPage") + ".jsp";
 			PortletRequestDispatcher portletRequestDispatcher = getPortletContext().getRequestDispatcher(location);
