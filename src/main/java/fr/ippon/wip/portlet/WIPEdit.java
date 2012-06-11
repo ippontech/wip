@@ -25,8 +25,6 @@ import fr.ippon.wip.util.WIPUtil;
 
 import javax.portlet.*;
 
-import org.apache.commons.lang.StringUtils;
-
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -99,10 +97,10 @@ class WIPEdit {
 		} else if (request.getParameter("changeConfig") != null) {
 			String configurationName = request.getParameter("changeConfig");
 			WIPConfiguration configuration = WIPConfigurationManager.getInstance().getConfiguration(configurationName);
-			session.setAttribute("configuration", configuration);
+			session.setAttribute(Params.CONFIGURATION.name(), configuration);
 			
 			try {
-				request.getPreferences().setValue("configurationName", configurationName);
+				request.getPreferences().setValue(Params.CONFIGURATION_NAME.name(), configurationName);
 				request.getPreferences().store();
 				
 			} catch (ReadOnlyException e) {
@@ -125,8 +123,8 @@ class WIPEdit {
 			} else {
 				try {
 					WIPConfiguration configuration = WIPConfigurationManager.getInstance().createConfiguration(name);
-					session.setAttribute("configuration", configuration);
-					request.getPreferences().setValue("configurationName", configuration.getName());
+					session.setAttribute(Params.CONFIGURATION.name(), configuration);
+					request.getPreferences().setValue(Params.CONFIGURATION_NAME.name(), configuration.getName());
 					request.getPreferences().store();
 					
 				} catch (IOException e) {

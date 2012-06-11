@@ -27,6 +27,7 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletSession;
 
 import fr.ippon.wip.config.WIPConfiguration;
+import fr.ippon.wip.portlet.Params;
 
 /**
  * Wip Utility Class
@@ -49,8 +50,13 @@ public class WIPUtil {
         return bundle.getString(key);
     }
     
+    /**
+     * Extract the selected configuration associated to a session
+     * @param request the session container
+     * @return the selected configuration
+     */
     public static WIPConfiguration extractConfiguration(PortletRequest request) {
     	PortletSession session = request.getPortletSession();
-    	return (WIPConfiguration) session.getAttribute("configuration");
+    	return (WIPConfiguration) session.getAttribute(Params.CONFIGURATION.name());
     }
 }

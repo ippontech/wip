@@ -1,4 +1,4 @@
-<%@include file="/WEB-INF/jsp/header.jsp" %>
+<%@include file="/WEB-INF/jsp/config/header.jsp" %>
 
 <p><fmt:message key="wip.config.chooseconfigname"/></p>
 

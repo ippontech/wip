@@ -92,12 +92,12 @@ public class WIPortlet extends GenericPortlet {
 
 		// retrieve the configuration name associated to the portlet preferences
 		PortletPreferences preferences = request.getPreferences();
-		String configurationName = preferences.getValue("configurationName", WIPConfigurationManager.DEFAULT_CONFIG_NAME);
+		String configurationName = preferences.getValue(Params.CONFIGURATION_NAME.name(), WIPConfigurationManager.DEFAULT_CONFIG_NAME);
 		configuration = wipConfigurationManager.getConfiguration(configurationName);
 
 		// update the session with the configuration
 		PortletSession session = request.getPortletSession();
-		session.setAttribute("configuration", configuration);
+		session.setAttribute(Params.CONFIGURATION.name(), configuration);
 		return configuration;
 	}
 
@@ -148,7 +148,7 @@ public class WIPortlet extends GenericPortlet {
 		// Check if authentication is requested by remote host
 		if (windowState.getRequestedAuthSchemes() != null) {
 			// Redirecting to the form
-			String location = "/WEB-INF/jsp/auth.jsp";
+			String location = PageEnum.AUTH.getPath();
 			PortletRequestDispatcher portletRequestDispatcher = getPortletContext().getRequestDispatcher(location);
 			portletRequestDispatcher.include(request, response);
 		} else {
