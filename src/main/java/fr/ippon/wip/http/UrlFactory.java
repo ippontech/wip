@@ -4,6 +4,7 @@ import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.WIPConfigurationManager;
 import fr.ippon.wip.portlet.WIPortlet;
 import fr.ippon.wip.state.PortletWindow;
+import fr.ippon.wip.util.WIPUtil;
 
 import javax.portlet.BaseURL;
 import javax.portlet.MimeResponse;
@@ -32,7 +33,7 @@ public class UrlFactory {
      * @param portletRequest To get windowID and retrieve appropriate configuration
      */
     public UrlFactory(PortletRequest portletRequest) {
-        configuration = WIPConfigurationManager.getInstance().getConfiguration(portletRequest.getWindowID());
+        configuration = WIPUtil.extractConfiguration(portletRequest);
         PortletWindow window = PortletWindow.getInstance(portletRequest);
         currentUrl = window.getCurrentURL();
     }

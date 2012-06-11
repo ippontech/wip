@@ -21,6 +21,8 @@ package fr.ippon.wip.transformers;
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.WIPConfigurationManager;
 import fr.ippon.wip.util.CachedDTD;
+import fr.ippon.wip.util.WIPUtil;
+
 import org.apache.xml.serializer.ToHTMLStream;
 import org.w3c.dom.Document;
 import org.xml.sax.*;
@@ -35,6 +37,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;
@@ -90,7 +93,7 @@ public class HTMLTransformer extends AbstractTransformer {
      */
     public HTMLTransformer(PortletRequest request, PortletResponse response) {
         super(request);
-        this.wipConfig = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
+        this.wipConfig = WIPUtil.extractConfiguration(request);
         this.xsltTransform = wipConfig.getXsltTransform();
         this.request = request;
         this.response = response;
@@ -128,6 +131,7 @@ public class HTMLTransformer extends AbstractTransformer {
             LOG.log(Level.SEVERE, "Could not create XML document builder", e);
             return input;
         }
+        
         db.setEntityResolver(new CachedDTD());
         Document doc = db.parse(xhtml);
 

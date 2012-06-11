@@ -18,317 +18,190 @@
 
 package fr.ippon.wip.config;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.*;
-import java.net.URI;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.io.FileUtils;
+
 /**
- * The WIPConfiguration manager stores the WIPConfiguration object
- * associated with the different portlet instances. It also manages
- * the store and the retrieve of configurations.
- *
+ * The WIPConfiguration manager manages the store and the
+ * retrieve of configurations.
+ * 
  * @author Anthony Luce
  * @author Quentin Thierry
+ * @author Legat Yohan
  */
 public class WIPConfigurationManager {
 
-    private static final Logger LOG = Logger.getLogger(WIPConfigurationManager.class.getName());
-
-    /**
-     * The WIPConfigurationManager singleton.
-     */
-    private static WIPConfigurationManager instance = null;
-
-    /**
-     * A map that contains the configurations associated to the different intances.
-     */
-    private final Map<String, WIPConfiguration> wipConfigurations;
-
-    /**
-     * A list that contains the name of the configurations that have been saved.
-     */
-    private final List<String> savedConfigurations;
-
-    /**
-     * Location to save the configuration files
-     */
-    private String pathConfigFiles;
-
-    /**
-     * File to save current configuration
-     */
-    private File wipConfigFile;
-
-    /**
-     * Get the WIPConfigurationManager singleton.
-     *
-     * @return the class singleton
-     */
-    public static synchronized WIPConfigurationManager getInstance() {
-        if (instance == null)
-            instance = new WIPConfigurationManager();
-        return instance;
-    }
-
-    /**
-     * The private constructor that initializes the singleton.
-     */
-    private WIPConfigurationManager() {
-        wipConfigurations = new HashMap<String, WIPConfiguration>();
-        savedConfigurations = new ArrayList<String>();
-    }
+	private static final Logger LOG = Logger.getLogger(WIPConfigurationManager.class.getName());
 
 	/**
-	 * Delete the configuration associated to the given name.
-	 * @param name the name of the configuration to delete
+	 * The WIPConfigurationManager singleton.
 	 */
-	public void deleteConfiguration(String name) {
-		savedConfigurations.remove(name);
+	private static WIPConfigurationManager instance = null;
+
+	/**
+	 * Get the WIPConfigurationManager singleton.
+	 * 
+	 * @return the class singleton
+	 */
+	public static synchronized WIPConfigurationManager getInstance() {
+		try {
+			if (instance == null)
+				instance = new WIPConfigurationManager();
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+
+		return instance;
+	}
+
+	/**
+	 * A map that contains the configurations associated to their names.
+	 */
+	private final Map<String, WIPConfiguration> configurationsCache;
+
+	/**
+	 * A list that contains the name of the configurations. Names are sorted.
+	 */
+	private final List<String> configurationNames;
+
+	/**
+	 * The default configuration name.
+	 */
+	public static final String DEFAULT_CONFIG_NAME = "default-config";
+
+	/**
+	 * Configuration files location
+	 */
+	private String pathConfigFiles;
+
+	/**
+	 * The private constructor that initializes the singleton.
+	 * 
+	 * @throws URISyntaxException
+	 */
+	private WIPConfigurationManager() throws URISyntaxException {
+		configurationsCache = new HashMap<String, WIPConfiguration>();
+		configurationNames = new ArrayList<String>();
+
+		// set the configuration files location
+		URL url = getClass().getResource("/content/configurations/");
+		pathConfigFiles = new File(url.toURI()).toString();
+
+		// save the names of all the configurations
+		for(String filename : new File(pathConfigFiles).list())
+			configurationNames.add(filename.substring(0, filename.length() - 4));
 		
-		String s = readSavedConfigXML();
-		int start = s.indexOf("<"+name+">");
-		int end = s.indexOf("</"+name+">", start) + name.length() + "</>".length();
-		s = s.substring(0, start) + s.substring(end);
-		writeSavedConfigXML(s);
+		Collections.sort(configurationNames);
+		
+		// instanciation of the default configuration as a read only configuration: it can't be changed
+		File defaultConfigurationFile = getConfigurationFile(DEFAULT_CONFIG_NAME);
+		WIPConfiguration defaultConfiguration = new WIPConfigurationImpl(defaultConfigurationFile, true);
+		configurationsCache.put(DEFAULT_CONFIG_NAME, defaultConfiguration);
 	}
 	
-    /**
-     * check and load the configuration files
-     */
-    public void load(String pathConfigFiles) {
-        this.pathConfigFiles = pathConfigFiles;
-        LOG.info("Path config = " + pathConfigFiles);
-
-        //check if the saved-config.xml exist
-        File saveConfigFile = new File(pathConfigFiles + "/saved-config.xml");
-        if (!saveConfigFile.exists()) {
-            //create saved-config.xml with default value
-            try {
-                saveConfigFile.createNewFile();
-
-                URL url = getClass().getResource("/content/saved-config.xml");
-                URI uri = url.toURI();
-                File saveConfigDefaultFile = new File(uri);
-
-                InputStream in = new FileInputStream(saveConfigDefaultFile);
-                OutputStream out = new FileOutputStream(saveConfigFile);
-
-                byte[] buf = new byte[1024];
-                int len;
-                while ((len = in.read(buf)) > 0) {
-                    out.write(buf, 0, len);
-                }
-
-                in.close();
-                out.close();
-            } catch (Exception e) {
-                LOG.log(Level.SEVERE, "Could not create saved configuration file with default values at path: " +
-                        saveConfigFile.getPath(), e);
-			}
-		}else{
-			//load config
-			try{
-				Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(saveConfigFile);
-				NodeList lst = doc.getFirstChild().getChildNodes();
-				
-				for(int i = 0; i < lst.getLength(); i++){
-					Node n = lst.item(i);
-					if(n.getNodeType() == Node.ELEMENT_NODE)
-						savedConfigurations.add(n.getNodeName());
-				}
-				
-				Collections.sort(savedConfigurations);
-				
-			}catch (Exception e) {
-                LOG.log(Level.SEVERE, "Could not load saved configuration file at path: " +
-                        saveConfigFile.getPath(), e);
-            }
-        }
-
-        //check if the wip-config.xml exist
-        wipConfigFile = new File(pathConfigFiles + "/wip-config.xml");
-        if (!wipConfigFile.exists()) {
-            //create wip-config.xml with default value
-            try {
-                wipConfigFile.createNewFile();
-
-                URL url = getClass().getResource("/content/wip-config.xml");
-                URI uri = url.toURI();
-                File wipConfigDefaultFile = new File(uri);
-
-                InputStream in = new FileInputStream(wipConfigDefaultFile);
-                OutputStream out = new FileOutputStream(wipConfigFile);
-
-                byte[] buf = new byte[1024];
-                int len;
-                while ((len = in.read(buf)) > 0) {
-                    out.write(buf, 0, len);
-                }
-
-                in.close();
-                out.close();
-            } catch (Exception e) {
-                wipConfigFile = null;
-                LOG.log(Level.SEVERE, "Could not create WIP configuration file with default values at path: " +
-                        wipConfigFile.getPath(), e);
-            }
-        }
-    }
-
-    /**
-     * Get the WIPConfiguration associated with the given instance name.
-     *
-     * @param instance the portlet instance name as a key to retrieve the configuration
-     * @return the configuration associated with the given instance name
-     */
-    public WIPConfiguration getConfiguration(String instance) {
-        WIPConfiguration config = wipConfigurations.get(instance);
-        if (config == null) {
-            config = new WIPConfigurationImpl(wipConfigFile, instance);
-            wipConfigurations.put(instance, config);
-        }
-        return config;
-    }
-
-    /**
-     * Get the list of names of the saved configurations.
-     *
-     * @return the list of names
-     */
-    public List<String> getSavedConfigurations() {
-        return savedConfigurations;
-    }
-
-    /**
-     * Get the saved configuration associated with the given name.
-     *
-     * @param name the name of the saved configuration
-     * @return the configuration as a string
-     */
-    public String getSavedConfiguration(String name) {
-        String ret = readSavedConfigXML();
-        if (ret.contains(name)) {
-            int start = ret.indexOf("<" + name);
-            start = ret.indexOf("<initUrl>", start);
-            int end = ret.indexOf("</" + name);
-            ret = ret.substring(start, end);
-        }
-        return ret;
-    }
-
-    /**
-     * Save the configuration of the given instance under the given name.
-     *
-     * @param name     the name to save the configuration
-     * @param instance the instance to save
-     */
-    public void saveConfiguration(String name, String instance) {
-		// correct the configuration name if it is already used
-		if(savedConfigurations.contains(name))
-			name = correctConfigurationName(name, 2);
-
-        savedConfigurations.add(name);
-        WIPConfiguration config = wipConfigurations.get(instance);
-        String s = readSavedConfigXML();
-        int index = s.indexOf("</configuration>");
-        s = s.substring(0, index)
-                + "<" + name + ">"
-                + config.getConfigAsString()
-                + "</" + name + ">"
-                + s.substring(index);
-        writeSavedConfigXML(s);
-    }
-    
-	/*
-	 * return "name_x+1" while "name_x" exists
+	/**
+	 * Return "name(x+1)" while "name(x)" already exists as a configuration name.
+	 * @param name the name of the configuration
+	 * @param increment the increment x
+	 * @return a unique configuration name.
 	 */
 	private String correctConfigurationName(String name, int increment) {
-		String incrementName = name + "_" + increment;
-		
-		boolean alreadyExists = savedConfigurations.contains(incrementName);
+		String incrementName = name + "(" + increment + ")";
+
+		boolean alreadyExists = configurationNames.contains(incrementName);
 		return alreadyExists ? correctConfigurationName(name, increment + 1) : incrementName;
 	}
 
+	/**
+	 * Create a configuration.
+	 * @param name the name of the configuration to create
+	 * @return the new configuration
+	 * @throws IOException
+	 */
+	public WIPConfiguration createConfiguration(String name) throws IOException {
+		// correct the configuration name if it is already used
+		if (configurationNames.contains(name))
+			name = correctConfigurationName(name, 2);
 
-    /**
-     * Load the saved configuration associated with the given name and load
-     * it on the given instance name.
-     *
-     * @param name     the name of the configuration to load
-     * @param instance the instance that will receive the configuration
-     */
-    public void loadConfiguration(String name, String instance) {
-        String s = readSavedConfigXML();
-        int start = s.indexOf("<" + name);
-        start = s.indexOf("<init", start);
-        int end = s.indexOf("</" + name);
-        s = s.substring(start, end);
-        WIPConfiguration c = new WIPConfigurationImpl(wipConfigFile, instance, s);
-        wipConfigurations.put(instance, c);
-    }
+		configurationNames.add(name);
+		Collections.sort(configurationNames);
 
-    /**
-     * Read the XML file that contains the saved configurations.
-     *
-     * @return the file content as a string
-     */
-    private String readSavedConfigXML() {
-        String ret = "";
-        File f = new File(pathConfigFiles + "/saved-config.xml");
-        if (f.exists()) {
-            try {
-                InputStream is = new FileInputStream(f);
-                InputStreamReader isr = new InputStreamReader(is);
-                BufferedReader br = new BufferedReader(isr);
-                StringWriter sw = new StringWriter();
-                String line;
-                while ((line = br.readLine()) != null) sw.write(line);
-                ret = sw.toString();
-            } catch (Exception e) {
-                LOG.log(Level.SEVERE, "Could not read save config file at path: " + f.getPath(), e);
-            }
-        } else {
-            LOG.severe("The save config file does not exist at path: " + f.getPath());
-        }
-        return ret;
-    }
+		File defaultConfigurationFile = getConfigurationFile(DEFAULT_CONFIG_NAME);
+		File newConfigurationFile = getConfigurationFile(name);
+		FileUtils.copyFile(defaultConfigurationFile, newConfigurationFile);
 
-    /**
-     * Write the XML file that contains the saved configurations.
-     *
-     * @param s the string to write.
-     */
-    private void writeSavedConfigXML(String s) {
-        File f = new File(pathConfigFiles + "/saved-config.xml");
-        if (f.exists()) {
-            try {
-                FileWriter w = new FileWriter(f);
-                BufferedWriter bw = new BufferedWriter(w);
-                bw.write(s);
-                bw.close();
-            } catch (Exception e) {
-                LOG.log(Level.SEVERE, "Could not write save config file at path: " + f.getPath(), e);
-            }
-        } else {
-            LOG.severe("The save config file does not exist at path: " + f.getPath());
-        }
-    }
+		return getConfiguration(name);
+	}
 
-    public boolean saveConfigEnable() {
-        return wipConfigFile != null;
-    }
+	/**
+	 * Delete the configuration associated to the given name.
+	 * 
+	 * @param name
+	 *            the name of the configuration to delete
+	 */
+	public void deleteConfiguration(String name) {
+		if (DEFAULT_CONFIG_NAME.equals(name))
+			return;
+
+		if (configurationNames.remove(name)) {
+			configurationsCache.put(name, null);
+			getConfigurationFile(name).delete();
+		}
+	}
+
+	/**
+	 * Retrieve the configuration of the given name.
+	 * @param name the name of the configuration to retrieve
+	 * @return
+	 */
+	public WIPConfiguration getConfiguration(String name) {
+		if (!configurationNames.contains(name))
+			return null;
+
+		WIPConfiguration configuration = configurationsCache.get(name);
+		if (configuration != null)
+			return configuration;
+
+		File configurationFile = getConfigurationFile(name);
+		configuration = new WIPConfigurationImpl(configurationFile);
+		configurationsCache.put(name, configuration);
+
+		return configuration;
+	}
+
+	/**
+	 * Return the file associated to the given configuration name.
+	 * @param name the name of the configuration
+	 * @return the file associated to the configuration
+	 */
+	private File getConfigurationFile(String name) {
+		return new File(pathConfigFiles + "/" + name + ".xml");
+	}
+
+	/**
+	 * Retrive the default configuration
+	 * @return the default configuration
+	 */
+	public WIPConfiguration getDefaultConfiguration() {
+		return getConfiguration(DEFAULT_CONFIG_NAME);
+	}
+
+	/**
+	 * Get the list of names of the saved configurations.
+	 * 
+	 * @return the list of names
+	 */
+	public List<String> getConfigurationsNames() {
+		return configurationNames;
+	}
 }
-

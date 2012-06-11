@@ -3,6 +3,8 @@ package fr.ippon.wip.http.hc;
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.WIPConfigurationManager;
 import fr.ippon.wip.http.Request;
+import fr.ippon.wip.util.WIPUtil;
+
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
@@ -116,7 +118,7 @@ class HttpClientResourceManager {
         synchronized (perUserClientMap) {
             client = perUserClientMap.get(userSessionId);
             if (client == null) {
-                WIPConfiguration config = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
+                WIPConfiguration config = WIPUtil.extractConfiguration(request);
                 if (config.getPageCachePrivate()) {
                     client = rootClient;
                 } else {

@@ -7,7 +7,7 @@
 %>
 <table class="wip_table">
     <%
-        List<String> confs = WIPConfigurationManager.getInstance().getSavedConfigurations();
+        List<String> confs = WIPConfigurationManager.getInstance().getConfigurationsNames();
         if (confs.size() == 0) {
             out.print("<fmt:message key=\"wip.config.noconfig\" />");
         } else {
@@ -38,8 +38,7 @@
 </table>
 <%
         } else {
-            String conf = WIPConfigurationManager.getInstance().getSavedConfiguration(sconf);
-            out.print(conf
+            out.print(wipConf.getConfigAsString()
                     .replaceFirst("<", "&lt;")
                     .replaceAll(">[ |\\s]*<", "&gt;\n\n&lt;")
                     .replaceAll(">", "&gt;\n")

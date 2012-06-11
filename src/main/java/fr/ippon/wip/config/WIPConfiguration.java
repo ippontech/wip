@@ -489,4 +489,10 @@ public interface WIPConfiguration {
     public String getCredentialProviderClassName();
 
     public boolean isProxyURI(String uri);
+    
+    /**
+     * Get the configuration name.
+     * @return the configuration name
+     */
+    public String getName();
 }
