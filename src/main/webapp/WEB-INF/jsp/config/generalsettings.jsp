@@ -1,4 +1,4 @@
-<%@include file="/WEB-INF/jsp/header.jsp" %>
+<%@include file="/WEB-INF/jsp/config/header.jsp" %>
 
 <script type="text/javascript">
 
@@ -15,18 +15,19 @@
 
 <div id="editForm">
     <div id="editHeader">
-        <div class="left"><h2><fmt:message key="wip.config.title"/></h2></div>
+        <div class="left">
+			<h5>Configuration: <%= wipConf.getName() %></h5>
+		</div>
         <div class="right">
-            <form id="changePage" action="<portlet:actionURL/>" method="POST">
-                <select name="editPage" onchange="this.form.submit();return(false);">
-                    <option value="generalsettings" selected="selected"><fmt:message
-                            key="wip.config.generalsettings"/></option>
-                    <option value="caching"><fmt:message key="wip.config.caching"/></option>
-                    <option value="htmlrewriting"><fmt:message key="wip.config.htmlrewriting"/></option>
-                    <option value="clipping"><fmt:message key="wip.config.easyclipping"/></option>
-                    <option value="cssrewriting"><fmt:message key="wip.config.cssrewriting"/></option>
-                    <option value="jsrewriting"><fmt:message key="wip.config.jsrewriting"/></option>
-                    <option value="ltpaauth"><fmt:message key="wip.config.ltpaauth"/></option>
+             <form id="changePage" action="<portlet:actionURL/>" method="POST">
+               	<select name="<%= Attributes.PAGE.name() %>" onchange="this.form.submit();return(false);">
+                    <option value="GENERAL_SETTINGS" selected="selected"><fmt:message key="wip.config.generalsettings"/></option>
+                    <option value="CACHING"><fmt:message key="wip.config.caching"/></option>
+                    <option value="HTML_REWRITING"><fmt:message key="wip.config.htmlrewriting"/></option>
+                    <option value="CLIPPING"><fmt:message key="wip.config.easyclipping"/></option>
+                    <option value="CSS_REWRITING"><fmt:message key="wip.config.cssrewriting"/></option>
+                    <option value="JS_REWRITING"><fmt:message key="wip.config.jsrewriting"/></option>
+                    <option value="LTPA_AUTH"><fmt:message key="wip.config.ltpaauth"/></option>
                 </select>
             </form>
         </div>

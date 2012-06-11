@@ -1,11 +1,6 @@
-<%@include file="/WEB-INF/jsp/header.jsp" %>
+<%@include file="/WEB-INF/jsp/config/header.jsp" %>
 
-<%
-    String sconf = (String) pReq.getPortletSession().getAttribute("configPage");
-    if (sconf != null) {
-        if (sconf.equals("all")) {
-%>
-<table class="wip_table">
+<table class=wip_table>
     <%
         List<String> confs = WIPConfigurationManager.getInstance().getConfigurationsNames();
         if (confs.size() == 0) {
@@ -22,13 +17,18 @@
             for (String conf : confs) {
  	   %>
 				<tr>
-					<td><%=conf%></td>
 					<td>
-						<a href="<portlet:actionURL><portlet:param name="configPage" value="<%=conf%>" /></portlet:actionURL>"><fmt:message key="wip.config.action.show"/></a>
+						<%
+							if(wipConf.getName().equals(conf))
+								out.print("<strong>" + conf + "</strong>");
+							else
+								out.print(conf);
+						%>
+					</td>
+					<td>
+						<a href="<portlet:actionURL><portlet:param name="<%=Attributes.ACTION_SELECT.name() %>" value="<%=conf%>" /></portlet:actionURL>"><fmt:message key="wip.config.action.select"/></a>
 						<c:out value=" | "></c:out>
-						<a href="<portlet:actionURL><portlet:param name="changeConfig" value="<%=conf%>" /></portlet:actionURL>"><fmt:message key="wip.config.action.select"/></a>
-						<c:out value=" | "></c:out>
-						<a href="<portlet:actionURL><portlet:param name="deleteConfig" value="<%=conf%>" /></portlet:actionURL>"><fmt:message key="wip.config.action.delete"/></a>
+						<a href="<portlet:actionURL><portlet:param name="<%=Attributes.ACTION_DELETE.name() %>" value="<%=conf%>" /></portlet:actionURL>"><fmt:message key="wip.config.action.delete"/></a>
 					</td>
 				</tr>
   	  <%
@@ -37,15 +37,14 @@
     %>
 </table>
 <%
-        } else {
+/*         else {
             out.print(wipConf.getConfigAsString()
                     .replaceFirst("<", "&lt;")
                     .replaceAll(">[ |\\s]*<", "&gt;\n\n&lt;")
                     .replaceAll(">", "&gt;\n")
                     .replaceAll("</", "\n&lt;/")
                     .replaceAll("\n", "<br />"));
-        }
-    }
+        } */
 %>
 
 <style>

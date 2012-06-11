@@ -1,8 +1,11 @@
 package fr.ippon.wip.portlet;
 
-public enum PageEnum {
+public enum Pages {
 
-	HEADER("header"),
+	HEADER_CONFIG("header"),
+	EXISTING_CONFIG("existingconfig"),
+	SAVE_CONFIG("saveconfig"),
+	SELECT_CONFIG("selectconfig", "/WEB-INF/jsp/"),
 	
 	GENERAL_SETTINGS("generalsettings"),
 	AUTH("auth", "/WEB-INF/jsp/"),
@@ -18,23 +21,26 @@ public enum PageEnum {
 	private final String parentDirectory;
 
 	private final String extension;
+	
+	private final String path;
 
 	private static final String DEFAULT_EXTENSION = ".jsp";
 
 	private static final String DEFAULT_PATH = "/WEB-INF/jsp/config/";
 
-	PageEnum(String name) {
+	Pages(String name) {
 		this(name, DEFAULT_PATH, DEFAULT_EXTENSION);
 	}
 
-	PageEnum(String fileName, String path) {
+	Pages(String fileName, String path) {
 		this(fileName, path, DEFAULT_EXTENSION);
 	}
 
-	PageEnum(String fileName, String parentDirectory, String extension) {
+	Pages(String fileName, String parentDirectory, String extension) {
 		this.fileName = fileName;
 		this.parentDirectory = parentDirectory;
 		this.extension = extension;
+		this.path = parentDirectory + fileName + extension;
 	}
 
 	public String getExtension() {
@@ -50,6 +56,6 @@ public enum PageEnum {
 	}
 
 	public String getPath() {
-		return parentDirectory + fileName + extension;
+		return path;
 	}
 }

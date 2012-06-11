@@ -36,7 +36,7 @@ public interface WIPConfiguration {
      * Save the current configuration
      */
     public void save();
-
+    
     /**
      * Get the configuration as a string.
      *

@@ -21,6 +21,8 @@ package fr.ippon.wip.config;
 import fr.ippon.wip.http.Request;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -31,6 +33,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 /**
  * An implementation of the WIPConfiguration interface using apache commons
@@ -49,48 +58,109 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 	private XMLConfiguration config;
 
 	private boolean readOnly;
-	
+
 	private String name;
 
 	public WIPConfigurationImpl(File configFile) {
 		this(configFile, false);
 	}
-	
+
 	public WIPConfigurationImpl(File configFile, boolean readOnly) {
 		try {
 			name = configFile.getName();
-			//TODO: find a cleaner way to suppress the extension of the name
-			name = name.substring(0, name.length() - 4);
+			name = name.substring(0, name.lastIndexOf("."));
+
 			this.readOnly = readOnly;
 			this.config = new XMLConfiguration(configFile);
 			this.config.setDelimiterParsingDisabled(true);
-			
+
 		} catch (ConfigurationException e) {
 			LOG.log(Level.SEVERE, "Could not instanciate XMLConfiguration", e);
 		}
 	}
 
-	/**
-	 * Save this configuration into its file.
-	 */
-	public void save() {
-		try {
-			if (!readOnly)
-				config.save();
-			
-		} catch (ConfigurationException e) {
-			LOG.log(Level.SEVERE, "Could not save XMLConfiguration", e);
-		}
-	}
-
-	public String getConfigAsString() {
-		return config.toString();
+	public boolean getAbsolutePositioning() {
+		return config.getBoolean("absolutePositioning");
 	}
 
 	// GENERAL CONFIG
 
-	public void setInitUrl(URL initUrl) {
-		config.setProperty("initUrl", initUrl.toExternalForm());
+	public boolean getAddPrefix() {
+		return config.getBoolean("addPrefix");
+	}
+
+	public int getCacheDateRate() {
+		return config.getInt("cacheDateRate");
+	}
+
+	public String getClippingType() {
+		return config.getString("clippingType");
+	}
+
+	public String getConfigAsString() {
+		try {
+			Source source = new DOMSource(config.getDocument());
+			StringWriter stringWriter = new StringWriter();
+			Result result = new StreamResult(stringWriter);
+			TransformerFactory factory = TransformerFactory.newInstance();
+			Transformer transformer = factory.newTransformer();
+			transformer.transform(source, result);
+			return stringWriter.getBuffer().toString();
+
+		} catch (Exception e) {
+			return StringUtils.EMPTY;
+		}
+	}
+
+	public String getCredentialProviderClassName() {
+		return config.getString("credentialProviderClassName");
+	}
+
+	public String getCssRegex() {
+		return config.getString("cssRegex");
+	}
+
+	public String getCustomCss() {
+		return config.getString("customCss");
+	}
+
+	public String getDomainsAsString(List<URL> domains) {
+		String domainsAsString = "";
+		for (URL u : domains)
+			domainsAsString += u.toExternalForm() + ";";
+		if (domainsAsString.length() > 0)
+			domainsAsString = domainsAsString.substring(0, domainsAsString.length() - 1);
+		return domainsAsString;
+	}
+
+	public List<URL> getDomainsToProxy() {
+		return setDomainsFromString(config.getString("domainsToProxy"));
+	}
+
+	// CSS REWRITING CONFIG
+
+	public boolean getEnableCache() {
+		return config.getBoolean("enableCache");
+	}
+
+	public boolean getEnableCssRetrieving() {
+		return config.getBoolean("enableCssRetrieving");
+	}
+
+	public boolean getEnableCssRewriting() {
+		return config.getBoolean("enableCssRewriting");
+	}
+
+	public boolean getEnableUrlRewriting() {
+		return config.getBoolean("enableUrlRewriting");
+	}
+
+	public boolean getForcePageCaching() {
+		return config.getBoolean("forcePageCaching");
+	}
+
+	public boolean getForceResourceCaching() {
+		return config.getBoolean("forceResourceCaching");
 	}
 
 	public URL getInitUrl() {
@@ -106,106 +176,6 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 
 	public String getInitUrlAsString() {
 		return config.getString("initUrl");
-	}
-
-	public void setDomainsToProxy(List<URL> domainsToProxy) {
-		config.setProperty("domainsToProxy", getDomainsAsString(domainsToProxy));
-	}
-
-	public List<URL> getDomainsToProxy() {
-		return setDomainsFromString(config.getString("domainsToProxy"));
-	}
-
-	public String getDomainsAsString(List<URL> domains) {
-		String domainsAsString = "";
-		for (URL u : domains)
-			domainsAsString += u.toExternalForm() + ";";
-		if (domainsAsString.length() > 0)
-			domainsAsString = domainsAsString.substring(0, domainsAsString.length() - 1);
-		return domainsAsString;
-	}
-
-	public List<URL> setDomainsFromString(String string) {
-		ArrayList<URL> list = new ArrayList<URL>();
-		if (!string.equals("")) {
-			for (String s : string.split(";")) {
-				try {
-					list.add(new URL(s));
-				} catch (MalformedURLException e) {
-					LOG.warning("Malformed URL for domain to proxy: " + s);
-				}
-			}
-		} else if (!getInitUrl().toExternalForm().equals("")) {
-			URL init = null;
-			String path = getInitUrl().getProtocol() + "://" + getInitUrl().getHost();
-			try {
-				init = new URL(path);
-			} catch (MalformedURLException e) {
-				LOG.warning("Malformed URL for domain to proxy: " + path);
-			}
-			list.add(init);
-		}
-		return list;
-	}
-
-	public void setPortletTitle(String title) {
-		config.setProperty("portletTitle", title);
-	}
-
-	public String getPortletTitle() {
-		return config.getString("portletTitle");
-	}
-
-	// CSS REWRITING CONFIG
-
-	public void setCssRegex(String cssRegex) {
-		config.setProperty("cssRegex", cssRegex);
-	}
-
-	public String getCssRegex() {
-		return config.getString("cssRegex");
-	}
-
-	public void setPortletDivId(String portletDivId) {
-		config.setProperty("portletDivId", portletDivId);
-	}
-
-	public String getPortletDivId() {
-		return config.getString("portletDivId");
-	}
-
-	public String getCustomCss() {
-		return config.getString("customCss");
-	}
-
-	public void setCustomCss(String customCss) {
-		config.setProperty("customCss", customCss);
-	}
-
-	public void setAddPrefix(boolean b) {
-		config.setProperty("addPrefix", b);
-	}
-
-	public boolean getAddPrefix() {
-		return config.getBoolean("addPrefix");
-	}
-
-	public void setAbsolutePositioning(boolean b) {
-		config.setProperty("absolutePositioning", b);
-	}
-
-	public boolean getAbsolutePositioning() {
-		return config.getBoolean("absolutePositioning");
-	}
-
-	// JS REWRITING CONFIG
-
-	public void setJsRegex(String jsRegex) {
-		config.setProperty("jsRegex", jsRegex);
-	}
-
-	public String getJsRegex() {
-		return config.getString("jsRegex");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -225,24 +195,48 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 		return map;
 	}
 
-	public void setJavascriptUrls(List<String> urls) {
-		config.setProperty("javascriptUrls", urls);
+	public String getJsRegex() {
+		return config.getString("jsRegex");
 	}
 
-	@SuppressWarnings("unchecked")
-	public List<String> getScriptsToIgnore() {
-		List<String> l = config.getList("scriptsToIgnore");
-		if (l.size() == 1 && l.get(0).equals(""))
-			l = new ArrayList<String>();
-		return l;
+	// JS REWRITING CONFIG
+
+	public String getLtpaSecretProviderClassName() {
+		return config.getString("ltpaSecretProviderClassName");
 	}
 
-	public void setScriptsToIgnore(List<String> urls) {
-		config.setProperty("scriptsToIgnore", urls);
+	public boolean getLtpaSsoAuthentication() {
+		return config.getBoolean("ltpaSsoAuthentication");
 	}
 
-	public void setScriptsToDelete(List<String> urls) {
-		config.setProperty("scriptsToDelete", urls);
+	public String getName() {
+		return name;
+	}
+
+	public boolean getPageCachePrivate() {
+		return config.getBoolean("pageCachePrivate");
+	}
+
+	public int getPageCacheTimeout() {
+		return config.getInt("pageCacheTimeout");
+	}
+
+	public String getPortletDivId() {
+		return config.getString("portletDivId");
+	}
+
+	public String getPortletTitle() {
+		return config.getString("portletTitle");
+	}
+
+	public boolean getResourceCachePublic() {
+		return config.getBoolean("resourceCachePublic");
+	}
+
+	// CLIPPING CONFIG
+
+	public int getResourceCacheTimeout() {
+		return config.getInt("resourceCacheTimeout");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -253,22 +247,16 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 		return l;
 	}
 
-	// CLIPPING CONFIG
+	@SuppressWarnings("unchecked")
+	public List<String> getScriptsToIgnore() {
+		List<String> l = config.getList("scriptsToIgnore");
+		if (l.size() == 1 && l.get(0).equals(""))
+			l = new ArrayList<String>();
+		return l;
+	}
 
 	public String getXPath() {
 		return config.getString("xPath");
-	}
-
-	public void setXPath(String xpath) {
-		config.setProperty("xPath", xpath);
-	}
-
-	public String getClippingType() {
-		return config.getString("clippingType");
-	}
-
-	public void setClippingType(String type) {
-		config.setProperty("clippingType", type);
 	}
 
 	public String getXsltClipping() {
@@ -293,10 +281,6 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 		return result;
 	}
 
-	public void setXsltClipping(String xslt) {
-		config.setProperty("xsltClipping", xslt);
-	}
-
 	public String getXsltTransform() {
 		String result = "";
 		if (!config.getString("xsltTransform").equals("")) {
@@ -319,121 +303,6 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 		return result;
 	}
 
-	public void setXsltTransform(String xslt) {
-		config.setProperty("xsltTransform", xslt);
-	}
-
-	public boolean getEnableUrlRewriting() {
-		return config.getBoolean("enableUrlRewriting");
-	}
-
-	public void setEnableUrlRewriting(boolean bool) {
-		config.setProperty("enableUrlRewriting", bool);
-	}
-
-	public boolean getEnableCssRetrieving() {
-		return config.getBoolean("enableCssRetrieving");
-	}
-
-	public void setEnableCssRetrieving(boolean bool) {
-		config.setProperty("enableCssRetrieving", bool);
-	}
-
-	public boolean getEnableCssRewriting() {
-		return config.getBoolean("enableCssRewriting");
-	}
-
-	public void setEnableCssRewriting(boolean bool) {
-		config.setProperty("enableCssRewriting", bool);
-	}
-
-	// CACHE CONFIGURATION
-
-	public boolean getEnableCache() {
-		return config.getBoolean("enableCache");
-	}
-
-	public void setEnableCache(boolean enable) {
-		config.setProperty("enableCache", enable);
-	}
-
-	public boolean getPageCachePrivate() {
-		return config.getBoolean("pageCachePrivate");
-	}
-
-	public void setPageCachePrivate(boolean b) {
-		config.setProperty("pageCachePrivate", b);
-	}
-
-	public boolean getResourceCachePublic() {
-		return config.getBoolean("resourceCachePublic");
-	}
-
-	public void setResourceCachePublic(boolean b) {
-		config.setProperty("resourceCachePublic", b);
-	}
-
-	public boolean getForcePageCaching() {
-		return config.getBoolean("forcePageCaching");
-	}
-
-	public void setForcePageCaching(boolean b) {
-		config.setProperty("forcePageCaching", b);
-	}
-
-	public boolean getForceResourceCaching() {
-		return config.getBoolean("forceResourceCaching");
-	}
-
-	public void setForceResourceCaching(boolean b) {
-		config.setProperty("forceResourceCaching", b);
-	}
-
-	public int getPageCacheTimeout() {
-		return config.getInt("pageCacheTimeout");
-	}
-
-	public void setPageCacheTimeout(int timeout) {
-		config.setProperty("pageCacheTimeout", timeout);
-	}
-
-	public int getResourceCacheTimeout() {
-		return config.getInt("resourceCacheTimeout");
-	}
-
-	public void setResourceCacheTimeout(int timeout) {
-		config.setProperty("resourceCacheTimeout", timeout);
-	}
-
-	public int getCacheDateRate() {
-		return config.getInt("cacheDateRate");
-	}
-
-	public void setLtpaSsoAuthentication(boolean b) {
-		config.setProperty("ltpaSsoAuthentication", b);
-	}
-
-	public boolean getLtpaSsoAuthentication() {
-		return config.getBoolean("ltpaSsoAuthentication");
-	}
-
-	public void setLtpaSecretProviderClassName(String name) {
-		config.setProperty("ltpaSecretProviderClassName", name);
-
-	}
-
-	public String getLtpaSecretProviderClassName() {
-		return config.getString("ltpaSecretProviderClassName");
-	}
-
-	public void setCredentialProviderClassName(String name) {
-		config.setProperty("credentialProviderClassName", name);
-	}
-
-	public String getCredentialProviderClassName() {
-		return config.getString("credentialProviderClassName");
-	}
-
 	public boolean isProxyURI(String uri) {
 		for (URL baseURL : getDomainsToProxy()) {
 			if (uri.startsWith(baseURL.toString())) {
@@ -443,7 +312,158 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 		return false;
 	}
 
-	public String getName() {
-		return name;
+	/**
+	 * Save this configuration into its file.
+	 */
+	public void save() {
+		try {
+			if (!readOnly)
+				config.save();
+
+		} catch (ConfigurationException e) {
+			LOG.log(Level.SEVERE, "Could not save XMLConfiguration", e);
+		}
+	}
+
+	public void setAbsolutePositioning(boolean b) {
+		config.setProperty("absolutePositioning", b);
+	}
+
+	public void setAddPrefix(boolean b) {
+		config.setProperty("addPrefix", b);
+	}
+
+	public void setClippingType(String type) {
+		config.setProperty("clippingType", type);
+	}
+
+	public void setCredentialProviderClassName(String name) {
+		config.setProperty("credentialProviderClassName", name);
+	}
+
+	public void setCssRegex(String cssRegex) {
+		config.setProperty("cssRegex", cssRegex);
+	}
+
+	public void setCustomCss(String customCss) {
+		config.setProperty("customCss", customCss);
+	}
+
+	// CACHE CONFIGURATION
+
+	public List<URL> setDomainsFromString(String string) {
+		ArrayList<URL> list = new ArrayList<URL>();
+		if (!string.equals("")) {
+			for (String s : string.split(";")) {
+				try {
+					list.add(new URL(s));
+				} catch (MalformedURLException e) {
+					LOG.warning("Malformed URL for domain to proxy: " + s);
+				}
+			}
+		} else if (!getInitUrl().toExternalForm().equals("")) {
+			URL init = null;
+			String path = getInitUrl().getProtocol() + "://" + getInitUrl().getHost();
+			try {
+				init = new URL(path);
+			} catch (MalformedURLException e) {
+				LOG.warning("Malformed URL for domain to proxy: " + path);
+			}
+			list.add(init);
+		}
+		return list;
+	}
+
+	public void setDomainsToProxy(List<URL> domainsToProxy) {
+		config.setProperty("domainsToProxy", getDomainsAsString(domainsToProxy));
+	}
+
+	public void setEnableCache(boolean enable) {
+		config.setProperty("enableCache", enable);
+	}
+
+	public void setEnableCssRetrieving(boolean bool) {
+		config.setProperty("enableCssRetrieving", bool);
+	}
+
+	public void setEnableCssRewriting(boolean bool) {
+		config.setProperty("enableCssRewriting", bool);
+	}
+
+	public void setEnableUrlRewriting(boolean bool) {
+		config.setProperty("enableUrlRewriting", bool);
+	}
+
+	public void setForcePageCaching(boolean b) {
+		config.setProperty("forcePageCaching", b);
+	}
+
+	public void setForceResourceCaching(boolean b) {
+		config.setProperty("forceResourceCaching", b);
+	}
+
+	public void setInitUrl(URL initUrl) {
+		config.setProperty("initUrl", initUrl.toExternalForm());
+	}
+
+	public void setJavascriptUrls(List<String> urls) {
+		config.setProperty("javascriptUrls", urls);
+	}
+
+	public void setJsRegex(String jsRegex) {
+		config.setProperty("jsRegex", jsRegex);
+	}
+
+	public void setLtpaSecretProviderClassName(String name) {
+		config.setProperty("ltpaSecretProviderClassName", name);
+
+	}
+
+	public void setLtpaSsoAuthentication(boolean b) {
+		config.setProperty("ltpaSsoAuthentication", b);
+	}
+
+	public void setPageCachePrivate(boolean b) {
+		config.setProperty("pageCachePrivate", b);
+	}
+
+	public void setPageCacheTimeout(int timeout) {
+		config.setProperty("pageCacheTimeout", timeout);
+	}
+
+	public void setPortletDivId(String portletDivId) {
+		config.setProperty("portletDivId", portletDivId);
+	}
+
+	public void setPortletTitle(String title) {
+		config.setProperty("portletTitle", title);
+	}
+
+	public void setResourceCachePublic(boolean b) {
+		config.setProperty("resourceCachePublic", b);
+	}
+
+	public void setResourceCacheTimeout(int timeout) {
+		config.setProperty("resourceCacheTimeout", timeout);
+	}
+
+	public void setScriptsToDelete(List<String> urls) {
+		config.setProperty("scriptsToDelete", urls);
+	}
+
+	public void setScriptsToIgnore(List<String> urls) {
+		config.setProperty("scriptsToIgnore", urls);
+	}
+
+	public void setXPath(String xpath) {
+		config.setProperty("xPath", xpath);
+	}
+
+	public void setXsltClipping(String xslt) {
+		config.setProperty("xsltClipping", xslt);
+	}
+
+	public void setXsltTransform(String xslt) {
+		config.setProperty("xsltTransform", xslt);
 	}
 }

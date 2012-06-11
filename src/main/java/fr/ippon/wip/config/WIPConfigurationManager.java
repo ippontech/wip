@@ -123,12 +123,23 @@ public class WIPConfigurationManager {
 	}
 
 	/**
-	 * Create a configuration.
+	 * Create a configuration on the model of the default one.
 	 * @param name the name of the configuration to create
 	 * @return the new configuration
 	 * @throws IOException
 	 */
-	public WIPConfiguration createConfiguration(String name) throws IOException {
+	public synchronized WIPConfiguration createConfiguration(String name) throws IOException {
+		return createConfiguration(name, getConfiguration(DEFAULT_CONFIG_NAME));
+	}
+
+	/**
+	 * Create a configuration on the model of the given one.
+	 * @param name the name of the configuration to create
+	 * @param originalConfiguration the configuration model
+	 * @return the new configuration
+	 * @throws IOException
+	 */
+	public synchronized WIPConfiguration createConfiguration(String name, WIPConfiguration originalConfiguration) throws IOException {
 		// correct the configuration name if it is already used
 		if (configurationNames.contains(name))
 			name = correctConfigurationName(name, 2);
@@ -136,7 +147,7 @@ public class WIPConfigurationManager {
 		configurationNames.add(name);
 		Collections.sort(configurationNames);
 
-		File defaultConfigurationFile = getConfigurationFile(DEFAULT_CONFIG_NAME);
+		File defaultConfigurationFile = getConfigurationFile(originalConfiguration.getName());
 		File newConfigurationFile = getConfigurationFile(name);
 		FileUtils.copyFile(defaultConfigurationFile, newConfigurationFile);
 
@@ -149,7 +160,7 @@ public class WIPConfigurationManager {
 	 * @param name
 	 *            the name of the configuration to delete
 	 */
-	public void deleteConfiguration(String name) {
+	public synchronized void deleteConfiguration(String name) {
 		if (DEFAULT_CONFIG_NAME.equals(name))
 			return;
 
@@ -164,7 +175,7 @@ public class WIPConfigurationManager {
 	 * @param name the name of the configuration to retrieve
 	 * @return
 	 */
-	public WIPConfiguration getConfiguration(String name) {
+	public synchronized WIPConfiguration getConfiguration(String name) {
 		if (!configurationNames.contains(name))
 			return null;
 
@@ -201,7 +212,8 @@ public class WIPConfigurationManager {
 	 * 
 	 * @return the list of names
 	 */
-	public List<String> getConfigurationsNames() {
-		return configurationNames;
+	public synchronized List<String> getConfigurationsNames() {
+		// for resolving concurrency problems
+		return new ArrayList<String>(configurationNames);
 	}
 }

@@ -8,8 +8,10 @@
 <%@ page import="fr.ippon.wip.config.WIPConfiguration" %>
 <%@ page import="fr.ippon.wip.config.WIPConfigurationManager" %>
 <%@ page import="fr.ippon.wip.http.Request" %>
+<%@ page import="fr.ippon.wip.portlet.Pages" %>
+<%@page import="fr.ippon.wip.portlet.Attributes"%>
 <%@ page import="fr.ippon.wip.util.WIPUtil" %>
-<%@ page import="fr.ippon.wip.portlet.Attributes" %>
+<%@ page import="fr.ippon.wip.portlet.WIPConfigurationPortlet" %>
 <%@ page import="org.apache.commons.lang.StringEscapeUtils" %>
 <%@ page import="javax.portlet.PortletMode" %>
 <%@ page import="javax.portlet.PortletResponse" %>
@@ -18,21 +20,23 @@
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Locale" %>
 <%@ page import="java.util.Map" %>
-<%@ page import="java.util.logging.Logger" %>
 
 <portlet:defineObjects/>
 <%
-    Locale locale = request.getLocale();
+	Locale locale = request.getLocale();
     request.setAttribute("localeCode", locale.getLanguage());
     RenderRequest pReq = (RenderRequest) request.getAttribute("javax.portlet.request");
     PortletResponse pRsp = (PortletResponse) request.getAttribute("javax.portlet.response");
+
+    Pages selectedPage = (Pages) portletSession.getAttribute(Attributes.PAGE.name());
     WIPConfiguration wipConf = (WIPConfiguration) portletSession.getAttribute(Attributes.CONFIGURATION.name());
+    
     Map<String, String> errors = (Map<String, String>) session.getAttribute("errors");
-    if (errors == null) errors = new HashMap<String, String>();
+    if (errors == null)
+    	errors = new HashMap<String, String>();
 %>
 
-<%!
-    String printError(String key, Map<String, String> e) {
+<%!String printError(String key, Map<String, String> e) {
         String r = "";
         if (e != null && e.containsKey(key))
             r = "<span class=\"error\">" + e.get(key) + "</span>";
@@ -46,11 +50,24 @@
         r += "<span style=\"display:none\">" + WIPUtil.getMessage(key, locale) + "</span>";
         r += "</span>";
         return r;
-    }
-%>
+    }%>
 
 <fmt:setLocale value="${localeCode}" scope="session"/>
 <fmt:setBundle basename="content.Language"/>
+
+<div class="config_menu">
+    <a href="<portlet:actionURL><portlet:param name="<%= Attributes.PAGE.name() %>" value="<%= Pages.GENERAL_SETTINGS.name() %>"/></portlet:actionURL>" title="Current config">
+        <fmt:message key="wip.config.current"/>
+    </a>
+    <a href="<portlet:actionURL><portlet:param name="<%= Attributes.PAGE.name() %>" value="<%= Pages.EXISTING_CONFIG.name() %>"/></portlet:actionURL>"
+       title="Saved config">
+        <fmt:message key="wip.config.existing"/>
+    </a>
+    <a href="<portlet:actionURL><portlet:param name="<%= Attributes.PAGE.name() %>" value="<%= Pages.SAVE_CONFIG.name() %>"/></portlet:actionURL>"
+       title="Saving config">
+        <fmt:message key="wip.config.savecurrent"/>
+    </a>
+</div>
 
 <style>
     #wipconfig_error {
