@@ -7,9 +7,4 @@
         <portlet-name>WIP</portlet-name>
         <instanceable>true</instanceable>
     </portlet>
-    
-    <portlet>
-        <portlet-name>WIPConfiguration</portlet-name>
-        <instanceable>true</instanceable>
-    </portlet>
 </liferay-portlet-app>
