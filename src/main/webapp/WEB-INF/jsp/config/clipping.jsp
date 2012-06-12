@@ -1,47 +1,5 @@
 <%@include file="/WEB-INF/jsp/config/header.jsp" %>
 
-<script type="text/javascript">
-
-    function display(name) {
-        if (name == 'none') {
-            window.document.getElementById('xpathform').style.display = 'none';
-            window.document.getElementById('xsltform').style.display = 'none';
-        }
-        if (name == 'xpath') {
-            window.document.getElementById('xsltform').style.display = 'none';
-            window.document.getElementById('xpathform').style.display = 'block';
-        }
-        if (name == 'xslt') {
-            window.document.getElementById('xpathform').style.display = 'none';
-            window.document.getElementById('xsltform').style.display = 'block';
-        }
-        return true;
-    }
-
-    function reset() {
-        window.document.getElementById('xsltClipping').value = '';
-        window.document.wipform.submit();
-    }
-
-    function toggleSourceUrl() {
-        var div = document.getElementById('sourceUrl');
-        if (div.style.display == 'none')
-            div.style.display = '';
-        else
-            div.style.display = 'none';
-    }
-
-    function toggleOtherUrl() {
-        var div = document.getElementById('otherUrl');
-        if (div.style.display == 'none')
-            div.style.display = '';
-        else
-            div.style.display = 'none';
-    }
-
-</script>
-
-
 <div id="editForm">
     <div id="editHeader">
         <div class="left">
@@ -108,11 +66,9 @@
         </div>
         <div id="xsltform" <% if (!wipConf.getClippingType().equals("xslt") || (errors.containsKey("xPath"))) { %>
              style="display:none;" <% } %>>
+            <p style="font-weight: bold"><fmt:message key="wip.config.xsltclipping"/> : (<a href="#" onclick="reset();">reset</a>)</p>
             <p class="line">
-                <label for="xsltClipping"><fmt:message key="wip.config.xsltclipping"/> : (<a href="#"
-                                                                                             onclick="reset();">reset</a>)</label>
-                <textarea name="xsltClipping" id="xsltClipping"><%= wipConf.getXsltClipping() %>
-                </textarea>
+                <textarea name="xsltClipping" id="xsltClipping"><%= wipConf.getXsltClipping() %></textarea>
                 <%= printHelp("wip.help.xsltclipping", locale) %>
                 <br/>
             </p>
@@ -141,3 +97,47 @@
     </div>
     <% session.removeAttribute("errors"); %>
 </div>
+
+<script type="text/javascript">
+	// code editor integration: code mirror provide syntax coloration
+	var myCodeMirror = CodeMirror.fromTextArea(document.getElementById('xsltClipping'));
+	
+    function display(name) {
+        if (name == 'none') {
+            window.document.getElementById('xpathform').style.display = 'none';
+            window.document.getElementById('xsltform').style.display = 'none';
+        }
+        if (name == 'xpath') {
+            window.document.getElementById('xsltform').style.display = 'none';
+            window.document.getElementById('xpathform').style.display = 'block';
+        }
+        if (name == 'xslt') {
+            window.document.getElementById('xpathform').style.display = 'none';
+            window.document.getElementById('xsltform').style.display = 'block';
+            myCodeMirror.refresh();
+        }
+        return true;
+    }
+
+    function reset() {
+        window.document.getElementById('xsltClipping').value = '';
+        window.document.wipform.submit();
+    }
+
+    function toggleSourceUrl() {
+        var div = document.getElementById('sourceUrl');
+        if (div.style.display == 'none')
+            div.style.display = '';
+        else
+            div.style.display = 'none';
+    }
+
+    function toggleOtherUrl() {
+        var div = document.getElementById('otherUrl');
+        if (div.style.display == 'none')
+            div.style.display = '';
+        else
+            div.style.display = 'none';
+    }
+
+</script>

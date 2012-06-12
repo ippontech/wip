@@ -21,7 +21,6 @@ package fr.ippon.wip.config;
 import fr.ippon.wip.http.Request;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.*;

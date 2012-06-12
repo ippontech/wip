@@ -9,7 +9,7 @@
 <%@ page import="fr.ippon.wip.config.WIPConfigurationManager" %>
 <%@ page import="fr.ippon.wip.http.Request" %>
 <%@ page import="fr.ippon.wip.portlet.Pages" %>
-<%@page import="fr.ippon.wip.portlet.Attributes"%>
+<%@ page import="fr.ippon.wip.portlet.Attributes"%>
 <%@ page import="fr.ippon.wip.util.WIPUtil" %>
 <%@ page import="fr.ippon.wip.portlet.WIPConfigurationPortlet" %>
 <%@ page import="org.apache.commons.lang.StringEscapeUtils" %>
@@ -70,6 +70,11 @@
 </div>
 
 <style>
+	.CodeMirror {
+		border-style: solid;
+		border-width: thin;
+	}
+			
     #wipconfig_error {
         background: url(<%= request.getContextPath() + "/img/alert.png" %>) no-repeat scroll 6px 50% #FFC;
         border: 1px solid #FC0;
@@ -170,10 +175,6 @@
 
     .wip_form li {
         height: 25px;
-    }
-
-    .wip_form span {
-        margin-left: 22px;
     }
 
     .wip_form img {

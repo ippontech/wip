@@ -1,12 +1,5 @@
 <%@include file="/WEB-INF/jsp/config/header.jsp" %>
 
-<script type="text/javascript">
-    function reset() {
-        window.document.getElementById('xsltTransform').value = '';
-        window.document.wipform.submit();
-    }
-</script>
-
 <div id="editForm">
     <div id="editHeader">
         <div class="left">
@@ -29,12 +22,10 @@
     </div>
     <form method="POST" action="<portlet:actionURL/>" name="wipform" class="wip_form">
         <input type="hidden" name="form" value="3"/>
-
-        <p class="line">
-            <label for="xsltTransform"><fmt:message key="wip.config.xslttransform"/> : (<a href="#" onclick="reset();">reset</a>)</label>
-            <textarea name="xsltTransform" id="xsltTransform"><%= wipConf.getXsltTransform() %>
-            </textarea>
-            <%= printHelp("wip.help.xslttransform", locale) %>
+        <p style="font-weight: bold"><fmt:message key="wip.config.xslttransform"/> : (<a href="#" onclick="reset();">reset</a>)</p>
+         <p class="line">
+            <textarea name="xsltTransform" id="xsltTransform"><%= wipConf.getXsltTransform() %></textarea>
+             <%= printHelp("wip.help.xslttransform", locale) %>
             <br/>
         </p>
 
@@ -44,3 +35,14 @@
     </form>
     <% session.removeAttribute("errors"); %>
 </div>
+
+<script type="text/javascript">
+	//code editor integration: code mirror provide syntax coloration
+	var myCodeMirror = CodeMirror.fromTextArea(document.getElementById('xsltTransform'));
+	
+    function reset() {
+        window.document.getElementById('xsltTransform').value = '';
+        window.document.wipform.submit();
+    }
+</script>
+
