@@ -2,11 +2,15 @@
 
 <configuration>
 
+		<name>default-config</name>
+		
         <initUrl>http://blog.ippon.fr</initUrl>
 
         <enableUrlRewriting>true</enableUrlRewriting>
 
-        <domainsToProxy>http://blog.ippon.fr</domainsToProxy>
+		<domainsToProxy>
+			<string>http://blog.ippon.fr</string>
+		</domainsToProxy>
 
         <portletTitle>Blog Ippon</portletTitle>
 
@@ -26,19 +30,17 @@
 
         <customCss></customCss>
 
-        <javascriptUrls></javascriptUrls>
-
-        <scriptsToIgnore></scriptsToIgnore>
-
-        <scriptsToDelete>js/jquery/jquery.js</scriptsToDelete>
+		<scriptsToDelete>
+			<string>js/jquery/jquery.js</string>
+		</scriptsToDelete>
+		
+		<scriptsToIgnore></scriptsToIgnore>
+		
+		<javascriptUrls></javascriptUrls>
 
         <clippingType>none</clippingType>
 
         <xPath></xPath>
-
-        <xsltClipping></xsltClipping>
-
-        <xsltTransform></xsltTransform>
 
         <!-- Caching -->
 

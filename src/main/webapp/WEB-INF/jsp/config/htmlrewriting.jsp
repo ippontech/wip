@@ -30,7 +30,9 @@
         </p>
 
         <p class="submit">
-            <input type="submit" value="<fmt:message key='wip.config.save' />"/>
+       		<%if(!WIPConfigurationDAO.DEFAULT_CONFIG_NAME.equals(wipConf.getName())) { %>
+	            <input type="submit" value="<fmt:message key='wip.config.save' />"/>
+    	    <%} %>
         </p>
     </form>
     <% session.removeAttribute("errors"); %>

@@ -19,7 +19,6 @@
 package fr.ippon.wip.transformers;
 
 import fr.ippon.wip.config.WIPConfiguration;
-import fr.ippon.wip.config.WIPConfigurationManager;
 import fr.ippon.wip.http.Request;
 import fr.ippon.wip.util.WIPUtil;
 
@@ -87,7 +86,7 @@ public class JSTransformer extends AbstractTransformer {
 
         //---------------------------------------------------------------------------
 
-        Map<String, Request.ResourceType> jsUrls = wipConfig.getJavascriptUrls();
+        Map<String, Request.ResourceType> jsUrls = wipConfig.getJavascriptResourcesMap();
         for (String jsUrl : jsUrls.keySet()) {
             url = jsUrl;
             // Add \\ for regex characters like "?"

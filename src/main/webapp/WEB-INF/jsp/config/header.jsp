@@ -6,7 +6,8 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
 
 <%@ page import="fr.ippon.wip.config.WIPConfiguration" %>
-<%@ page import="fr.ippon.wip.config.WIPConfigurationManager" %>
+<%@ page import="fr.ippon.wip.config.WIPConfigurationDAO" %>
+<%@ page import="fr.ippon.wip.config.XMLWIPConfigurationDAO" %>
 <%@ page import="fr.ippon.wip.http.Request" %>
 <%@ page import="fr.ippon.wip.portlet.Pages" %>
 <%@ page import="fr.ippon.wip.portlet.Attributes"%>

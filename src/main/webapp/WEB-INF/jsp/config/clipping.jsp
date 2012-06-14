@@ -54,7 +54,6 @@
                 <td></td>
             </tr>
         </table>
-        </p>
         <div id="xpathform" <% if (!(errors.containsKey("xPath") || wipConf.getClippingType().equals("xpath"))) { %>
              style="display:none;" <% } %>>
             <p class="line">
@@ -75,7 +74,9 @@
         </div>
 
         <p class="submit">
-            <input type="submit" value="<fmt:message key='wip.config.save' />"/>
+		<%if(!WIPConfigurationDAO.DEFAULT_CONFIG_NAME.equals(wipConf.getName())) { %>
+			<input type="submit" value="<fmt:message key='wip.config.save' />"/>
+    	<%} %>
         </p>
     </form>
     <div>

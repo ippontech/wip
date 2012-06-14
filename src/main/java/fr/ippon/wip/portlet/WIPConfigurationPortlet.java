@@ -1,9 +1,26 @@
+/*
+ *	Copyright 2010,2011 Ippon Technologies 
+ *  
+ *	This file is part of Web Integration Portlet (WIP).
+ *	Web Integration Portlet (WIP) is free software: you can redistribute it and/or modify
+ *	it under the terms of the GNU Lesser General Public License as published by
+ *	the Free Software Foundation, either version 3 of the License, or
+ *	(at your option) any later version.
+ *
+ *	Web Integration Portlet (WIP) is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *	GNU Lesser General Public License for more details.
+ *
+ *	You should have received a copy of the GNU Lesser General Public License
+ *	along with Web Integration Portlet (WIP).  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package fr.ippon.wip.portlet;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -23,12 +40,13 @@ import javax.portlet.RenderResponse;
 import org.apache.commons.lang.StringUtils;
 
 import fr.ippon.wip.config.WIPConfiguration;
-import fr.ippon.wip.config.WIPConfigurationManager;
+import fr.ippon.wip.config.WIPConfigurationDAO;
+import fr.ippon.wip.config.XMLWIPConfigurationDAO;
 import fr.ippon.wip.util.WIPUtil;
 
 public class WIPConfigurationPortlet extends GenericPortlet {
 
-	private WIPConfigurationManager configManager;
+	private WIPConfigurationDAO configManager;
 
 	/**
 	 * This class will try to build an URL from a string and store an error if
@@ -44,18 +62,17 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	 *            The resource bundle used to set the error message
 	 * @return The URL built from the given String
 	 */
-	private URL buildURLIfNotEmpty(String varName, String urlAsString, Map<String, String> errors, ResourceBundle rb) {
-		URL result = null;
-		if (!urlAsString.equals("")) {
-			try {
-				result = new URL(urlAsString);
-			} catch (MalformedURLException e1) {
-				errors.put(varName, rb.getString("wip.errors." + varName + ".malformed"));
-			}
-		} else {
+	private void checkURL(String varName, String urlAsString, Map<String, String> errors, ResourceBundle rb) {
+		if (StringUtils.isEmpty(urlAsString)) {
 			errors.put(varName, rb.getString("wip.errors." + varName + ".empty"));
+			return;
 		}
-		return result;
+		
+		try {
+			new URL(urlAsString);
+		} catch (MalformedURLException e1) {
+			errors.put(varName, rb.getString("wip.errors." + varName + ".malformed"));
+		}
 	}
 
 	/**
@@ -72,12 +89,9 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	 *            The resource bundle used to set the error message
 	 * @return A list of the URLs contained in the given String
 	 */
-	private List<URL> buildURLList(String varName, String urlListAsString, Map<String, String> errors, ResourceBundle rb, WIPConfiguration wipConfig) {
-		List<URL> result = new ArrayList<URL>();
-		if (!urlListAsString.equals("")) {
-			result = wipConfig.setDomainsFromString(urlListAsString);
-		}
-		return result;
+	private void checkURLs(String varName, String urlListAsString, Map<String, String> errors, ResourceBundle rb, WIPConfiguration wipConfig) {
+		for(String urlAsString : urlListAsString.split(";"))
+			checkURL(varName, urlAsString, errors, rb);
 	}
 
 	/**
@@ -195,17 +209,17 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 			} else {
 				wipConfig.setXPath(xPath);
 				wipConfig.setClippingType(clippingType);
-				wipConfig.save();
+				configManager.update(wipConfig);
 			}
 		} else if (clippingType.equals("xslt")) {
 			String xsltClipping = request.getParameter("xsltClipping");
 			wipConfig.setXsltClipping(xsltClipping);
 			wipConfig.setClippingType(clippingType);
-			wipConfig.save();
+			configManager.update(wipConfig);
 
 		} else {
 			wipConfig.setClippingType(clippingType);
-			wipConfig.save();
+			configManager.update(wipConfig);
 		}
 
 		// Sending errors to the portlet session
@@ -262,7 +276,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 		wipConfig.setEnableCssRetrieving(enableCssRetrieving);
 		wipConfig.setEnableCssRewriting(enableCssRewriting);
 		wipConfig.setCustomCss(customCss);
-		wipConfig.save();
+		configManager.update(wipConfig);
 
 		// Sending errors to the portlet session
 		request.getPortletSession().setAttribute("errors", errors, PortletSession.APPLICATION_SCOPE);
@@ -287,11 +301,11 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 		Map<String, String> errors = new HashMap<String, String>();
 
 		// Getting the parameters from the request
-		String tmpInitUrl = request.getParameter("initUrl");
-		URL initUrl = buildURLIfNotEmpty("initUrl", tmpInitUrl, errors, rb);
+		String initUrl = request.getParameter("initUrl");
+		checkURL("initUrl", initUrl, errors, rb);
 
-		String tmpDomainsToProxy = request.getParameter("domainsToProxy");
-		List<URL> domainsToProxy = buildURLList("domainsToProxy", tmpDomainsToProxy, errors, rb, wipConfig);
+		String domainsToProxy = request.getParameter("domainsToProxy");
+		checkURLs("domainsToProxy", domainsToProxy, errors, rb, wipConfig);
 
 		String tmpEnableUrlRewriting = request.getParameter("enableUrlRewriting");
 		boolean enableUrlRewriting = true;
@@ -303,12 +317,15 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 		// Saving the new configuration
 		if (initUrl != null)
 			wipConfig.setInitUrl(initUrl);
-		if (domainsToProxy != null)
-			wipConfig.setDomainsToProxy(domainsToProxy);
+		if (domainsToProxy != null) {
+			List<String> list = Arrays.asList(domainsToProxy.split(";"));
+			wipConfig.setDomainsToProxy(list);
+		}
 		if (portletTitle != null)
 			wipConfig.setPortletTitle(portletTitle);
+		
 		wipConfig.setEnableUrlRewriting(enableUrlRewriting);
-		wipConfig.save();
+		configManager.update(wipConfig);
 
 		// Sending errors to the portlet session
 		request.getPortletSession().setAttribute("errors", errors, PortletSession.APPLICATION_SCOPE);
@@ -335,7 +352,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 
 		// Saving the new configuration
 		wipConfig.setXsltTransform(xsltTransform);
-		wipConfig.save();
+		configManager.update(wipConfig);
 
 		// Sending the page to display to the portlet session
 		request.getPortletSession().setAttribute("editPage", "htmlrewriting");
@@ -346,7 +363,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	 * from the configuration form. Save them in the portlet configuartion.
 	 * 
 	 * @param request
-	 *            The ActionRequest sent to WIPortlet in edit mode
+	 *            The ActionRequest shttp://www.developpez.com/ent to WIPortlet in edit mode
 	 * @param response
 	 *            The ActionResponse sent to WIPortlet in edit mode
 	 */
@@ -375,7 +392,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 		wipConfig.setJavascriptUrls(javascriptUrls);
 		wipConfig.setScriptsToIgnore(scriptsToIgnore);
 		wipConfig.setScriptsToDelete(scriptsToDelete);
-		wipConfig.save();
+		configManager.update(wipConfig);
 
 		// Sending errors to the portlet session
 		request.getPortletSession().setAttribute("errors", errors, PortletSession.APPLICATION_SCOPE);
@@ -401,7 +418,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 		wipConfig.setLtpaSsoAuthentication(ltpaSsoAuthentication);
 		wipConfig.setLtpaSecretProviderClassName(ltpaSecretProviderClassName);
 		wipConfig.setCredentialProviderClassName(credentialProviderClassName);
-		wipConfig.save();
+		configManager.update(wipConfig);
 
 		// Sending errors to the portlet session
 		request.getPortletSession().setAttribute("errors", errors, PortletSession.APPLICATION_SCOPE);
@@ -413,7 +430,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	@Override
 	public void init() throws PortletException {
 		super.init();
-		configManager = WIPConfigurationManager.getInstance();
+		configManager = XMLWIPConfigurationDAO.getInstance();
 	}
 
 	/**
@@ -429,24 +446,26 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 			return;
 		}
 
-		configName = request.getParameter(Attributes.ACTION_DELETE.name());
-		if(!StringUtils.isEmpty(configName)) {
-			configManager.deleteConfiguration(configName);
-			return;
-		}
-
 		configName = request.getParameter(Attributes.ACTION_SELECT.name());
 		if(!StringUtils.isEmpty(configName)) {
-			session.setAttribute(Attributes.CONFIGURATION.name(), configManager.getConfiguration(configName));
+			session.setAttribute(Attributes.CONFIGURATION.name(), configManager.read(configName));
 			session.setAttribute(Attributes.PAGE.name(), Pages.GENERAL_SETTINGS);
 			return;
 		}
 		
+		configName = request.getParameter(Attributes.ACTION_DELETE.name());
+		if(!StringUtils.isEmpty(configName)) {
+			configManager.delete(configManager.read(configName));
+			return;
+		}
+
 		configName = request.getParameter(Attributes.ACTION_SAVE.name());
 		if(!StringUtils.isEmpty(configName)) {
-			WIPConfiguration configuration = (WIPConfiguration) session.getAttribute(Attributes.CONFIGURATION.name());
-			configuration = configManager.createConfiguration(configName, configuration);
-			session.setAttribute(Attributes.CONFIGURATION.name(), configuration);
+			WIPConfiguration actualConfiguration = (WIPConfiguration) session.getAttribute(Attributes.CONFIGURATION.name());
+			WIPConfiguration newConfiguration = (WIPConfiguration) actualConfiguration.clone();
+			newConfiguration.setName(configName);
+			newConfiguration = configManager.create(newConfiguration);
+			session.setAttribute(Attributes.CONFIGURATION.name(), newConfiguration);
 			session.setAttribute(Attributes.PAGE.name(), Pages.GENERAL_SETTINGS);
 			return;
 		}

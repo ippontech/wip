@@ -1,3 +1,5 @@
+<%@page import="org.apache.commons.lang.StringUtils"%>
+<%@page import="org.apache.commons.collections.CollectionUtils"%>
 <%@include file="/WEB-INF/jsp/config/header.jsp" %>
 
 <script type="text/javascript">
@@ -42,11 +44,11 @@
             <%= printError("initUrl", errors) %>
         </p>
 
-        <p class="line" id="domainstoproxydiv" <% if (!wipConf.getEnableUrlRewriting())
+        <p class="line" id="domainstoproxydiv" <% if (!wipConf.isEnableUrlRewriting())
             out.print("style=\"display:none;\""); %>>
             <label for="domainsToProxy"><fmt:message key="wip.config.domainstoproxy"/> :</label>
             <input type="text" name="domainsToProxy" id="domainsToProxy"
-                   value="<%= wipConf.getDomainsAsString(wipConf.getDomainsToProxy()) %>"/>
+                   value="<%= StringUtils.join(wipConf.getDomainsToProxy(), ";") %>"/>
             <%= printHelp("wip.help.domainstoproxy", locale) %>
             <%= printError("domainsToProxy", errors) %>
         </p>
@@ -54,7 +56,7 @@
         <p class="line">
             <label for="enableUrlRewriting"><fmt:message key="wip.config.enableurlrewriting"/> :</label>
             <input type="checkbox" name="enableUrlRewriting"
-                   id="enableUrlRewriting" <% if (wipConf.getEnableUrlRewriting()) out.print("checked"); %> />
+                   id="enableUrlRewriting" <% if (wipConf.isEnableUrlRewriting()) out.print("checked"); %> />
             <%= printHelp("wip.help.enableurlrewriting", locale) %>
         </p>
 
@@ -65,7 +67,9 @@
         </p>
 
         <p class="submit">
-            <input type="submit" value="<fmt:message key='wip.config.save' />"/>
+       		<%if(!WIPConfigurationDAO.DEFAULT_CONFIG_NAME.equals(wipConf.getName())) { %>
+	            <input type="submit" value="<fmt:message key='wip.config.save' />"/>
+    	    <%} %>
         </p>
     </form>
     <% session.removeAttribute("errors"); %>

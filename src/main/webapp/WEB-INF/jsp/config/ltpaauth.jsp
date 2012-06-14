@@ -28,7 +28,7 @@
         <p class="line">
             <label for="ltpaSsoAuthentication"><fmt:message key="wip.config.ltpassoauthentication"/> :</label>
             <input type="checkbox" name="ltpaSsoAuthentication"
-                   id="ltpaSsoAuthentication" <% if (wipConf.getLtpaSsoAuthentication()) out.print("checked"); %> />
+                   id="ltpaSsoAuthentication" <% if (wipConf.isLtpaSsoAuthentication()) out.print("checked"); %> />
             <%= printHelp("wip.help.ltpassoauthentication", locale) %>
         </p>
 
@@ -50,9 +50,11 @@
             <%= printError("ltpaSecretProviderClassName", errors) %>
         </p>
 
+		<%if(!WIPConfigurationDAO.DEFAULT_CONFIG_NAME.equals(wipConf.getName())) { %>
         <p class="submit">
             <input type="submit" value="<fmt:message key='wip.config.save' />"/>
         </p>
+        <%} %>
     </form>
     <% session.removeAttribute("errors"); %>
 </div>

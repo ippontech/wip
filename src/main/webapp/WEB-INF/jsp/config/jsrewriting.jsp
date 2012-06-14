@@ -38,7 +38,7 @@
                     <%= printHelp("wip.help.urllistajax", locale) %>
                     <ul id="javascriptUrlList">
                         <%
-                            Map<String, Request.ResourceType> l = wipConf.getJavascriptUrls();
+                            Map<String, Request.ResourceType> l = wipConf.getJavascriptResourcesMap();
                             for (String s : l.keySet()) {
                                 String entry = s + "::::" + l.get(s).name();
                                 out.println(
@@ -46,7 +46,7 @@
                                                 + "<a href=\"JavaScript:removeUrl('javascriptUrl" + entry + "')\">"
                                                 + "<img src=\"" + src + "\" alt=\"remove\" />"
                                                 + "</a>"
-                                                + "<span>" + s + " - " + l.get(s).name() + "</span>"
+                                                + "<span style='padding-left:15px'>" + s + " - " + l.get(s).name() + "</span>"
                                                 + "</li>"
                                 );
                             }
@@ -77,7 +77,7 @@
                                                 + "<a href=\"JavaScript:removeUrl('scriptIgnoredUrl" + s + "')\">"
                                                 + "<img src=\"" + src + "\" alt=\"remove\" />"
                                                 + "</a>"
-                                                + "<span>" + s + "</span>"
+                                                + "<span style='padding-left:15px'>" + s + "</span>"
                                                 + "</li>"
                                 );
                             }
@@ -89,6 +89,7 @@
                     </a>
                 </td>
              </tr>
+             <tr>
                 <td>
                     <label><fmt:message key="wip.config.scriptdeletedurls"/></label>
                     <%= printHelp("wip.help.deletelist", locale) %>
@@ -101,7 +102,7 @@
                                                 + "<a href=\"JavaScript:removeUrl('scriptDeletedUrl" + s + "')\">"
                                                 + "<img src=\"" + src + "\" alt=\"remove\" />"
                                                 + "</a>"
-                                                + "<span>" + s + "</span>"
+                                                + "<span style='padding-left:15px'>" + s + "</span>"
                                                 + "</li>"
                                 );
                             }
@@ -118,6 +119,9 @@
             <input type="hidden" name="javascriptUrls" id="javascriptUrlToSave"/>
             <input type="hidden" name="scriptIgnoredUrls" id="scriptIgnoredUrlToSave"/>
             <input type="hidden" name="scriptDeletedUrls" id="scriptDeletedUrlToSave"/>
+       		<%if(!WIPConfigurationDAO.DEFAULT_CONFIG_NAME.equals(wipConf.getName())) { %>
+	            <input type="submit" value="<fmt:message key='wip.config.save' />"/>
+    	    <%} %>
             <input type="submit" value="<fmt:message key='wip.config.save' />"/>
         </p>
     </form>
