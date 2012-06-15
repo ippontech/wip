@@ -2,7 +2,7 @@
 
 <table class="wip_table">
     <%
-        List<String> confs = XMLWIPConfigurationDAO.getInstance().getConfigurationsNames();
+        List<String> confs = wipConfigurationDAO.getConfigurationsNames();
         if (confs.size() == 0) {
             out.print("<fmt:message key=\"wip.config.noconfig\" />");
         } else {

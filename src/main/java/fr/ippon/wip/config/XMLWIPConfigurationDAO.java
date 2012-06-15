@@ -23,10 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -62,43 +59,18 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 	private XStream xstream;
 
 	/**
-	 * The WIPConfigurationManager singleton.
-	 */
-	private static WIPConfigurationDAO instance = null;
-
-	/**
-	 * A map that contains the configurations associated to their names.
-	 */
-	private final Map<String, WIPConfiguration> configurationsCache;
-
-	/**
 	 * Configuration files location
 	 */
 	private String pathConfigFiles;
-
-	/**
-	 * Get the WIPConfigurationManager singleton.
-	 * 
-	 * @return the class singleton
-	 */
-	public static synchronized WIPConfigurationDAO getInstance() {
-		try {
-			if (instance == null)
-				instance = new XMLWIPConfigurationDAO();
-
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
-
-		return instance;
-	}
 
 	/**
 	 * The private constructor that initializes the singleton.
 	 * 
 	 * @throws URISyntaxException
 	 */
-	private XMLWIPConfigurationDAO() throws URISyntaxException {
+	public XMLWIPConfigurationDAO(String pathConfigFiles) {
+		this.pathConfigFiles = pathConfigFiles;
+		
 		// initialization and configuration of xstream
 		xstream = new XStream();
 		xstream.alias("configuration", WIPConfiguration.class);
@@ -106,12 +78,6 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 		xstream.omitField(WIPConfiguration.class, "xsltClipping");
 		xstream.omitField(WIPConfiguration.class, "xsltTransform");
 		xstream.omitField(WIPConfiguration.class, "javascriptResourcesMap");
-
-		configurationsCache = new HashMap<String, WIPConfiguration>();
-
-		// set the configuration files location
-		URL url = getClass().getResource("/configurations");
-		pathConfigFiles = new File(url.toURI()).toString();
 
 		// save the names of all the configurations
 		for (String filename : new File(pathConfigFiles).list())
@@ -136,26 +102,26 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 		configurationNames.add(name);
 		Collections.sort(configurationNames);
 
-		update(configuration);
-		return read(name);
+		return update(configuration);
 	}
-
+	
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public synchronized void delete(WIPConfiguration configuration) {
+	public synchronized boolean delete(WIPConfiguration configuration) {
 		String name = configuration.getName();
 
 		if (DEFAULT_CONFIG_NAME.equals(name))
-			return;
+			return false;
 
-		if (configurationNames.remove(name)) {
-			configurationsCache.put(name, null);
-			getConfigurationFile(name, FILE_NAME_CONFIG).delete();
-			getConfigurationFile(name, FILE_NAME_CLIPPING).delete();
-			getConfigurationFile(name, FILE_NAME_TRANSFORM).delete();
-		}
+		if(!configurationNames.remove(name))
+			return false;
+		
+		getConfigurationFile(name, FILE_NAME_CONFIG).delete();
+		getConfigurationFile(name, FILE_NAME_CLIPPING).delete();
+		getConfigurationFile(name, FILE_NAME_TRANSFORM).delete();
+		return true;
 	}
 
 	/**
@@ -192,27 +158,23 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 		if (!configurationNames.contains(name))
 			return null;
 
-		WIPConfiguration configuration = configurationsCache.get(name);
-		if (configuration != null)
-			return (WIPConfiguration) configuration.clone();
-
 		File configurationFile = getConfigurationFile(name, FILE_NAME_CONFIG);
 		File clippingFile = getConfigurationFile(name, FILE_NAME_CLIPPING);
 		File transformFile = getConfigurationFile(name, FILE_NAME_TRANSFORM);
 
 		try {
-			configuration = (WIPConfiguration) xstream.fromXML(configurationFile);
+			WIPConfiguration configuration = (WIPConfiguration) xstream.fromXML(configurationFile);
 			configuration.setXsltClipping(FileUtils.readFileToString(clippingFile));
 			configuration.setXsltTransform(FileUtils.readFileToString(transformFile));
-			configurationsCache.put(name, configuration);
-
+			return (WIPConfiguration) configuration.clone();
+			
 		} catch (FileNotFoundException e) {
 			LOG.log(Level.WARNING, "An error occured during the access of the configuration named " + name, e);
 		} catch (IOException e) {
 			LOG.log(Level.WARNING, "An error occured during the access of the configuration named " + name, e);
 		}
 
-		return (WIPConfiguration) configuration.clone();
+		return null;
 	}
 
 	/**
@@ -228,7 +190,7 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 		// the configuration must have been created first before it can be
 		// updated
 		if (!configurationNames.contains(name))
-			return configuration;
+			return null;
 
 		File configurationFile = getConfigurationFile(name, FILE_NAME_CONFIG);
 		File clippingFile = getConfigurationFile(name, FILE_NAME_CLIPPING);
@@ -236,15 +198,15 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 
 		try {
 			xstream.toXML(configuration, new FileWriter(configurationFile));
-
 			FileUtils.writeStringToFile(clippingFile, configuration.getXsltClipping());
 			FileUtils.writeStringToFile(transformFile, configuration.getXsltTransform());
-			configurationsCache.put(name, configuration);
+			
+			return configuration;
 
 		} catch (IOException e) {
 			LOG.log(Level.WARNING, "An error occured during the saving of the configuration named " + name, e);
 		}
 
-		return configuration;
+		return null;
 	}
 }

@@ -75,7 +75,7 @@ public abstract class WIPConfigurationDAO {
 	 * @param name
 	 *            the configuration to delete
 	 */
-	public abstract void delete(WIPConfiguration configuration);
+	public abstract boolean delete(WIPConfiguration configuration);
 
 	/**
 	 * Get the list of names of the saved configurations.

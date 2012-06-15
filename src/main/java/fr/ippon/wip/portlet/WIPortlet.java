@@ -20,6 +20,7 @@ package fr.ippon.wip.portlet;
 
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.WIPConfigurationDAO;
+import fr.ippon.wip.config.WIPConfigurationDAOBuilder;
 import fr.ippon.wip.config.XMLWIPConfigurationDAO;
 import fr.ippon.wip.http.HttpExecutor;
 import fr.ippon.wip.http.Request;
@@ -59,7 +60,7 @@ public class WIPortlet extends GenericPortlet {
 	public static final String URL_CONCATENATION_KEY = "WIP_URL_CONCATENATION";
 
 	// Class attributes
-	private WIPConfigurationDAO wipConfigurationManager;
+	private WIPConfigurationDAO wipConfigurationDAO;
 	private HttpExecutor executor;
 
 	/**
@@ -73,7 +74,7 @@ public class WIPortlet extends GenericPortlet {
 	public void init(PortletConfig config) throws PortletException {
 		super.init(config);
 
-		wipConfigurationManager = XMLWIPConfigurationDAO.getInstance();
+		wipConfigurationDAO = WIPConfigurationDAOBuilder.getInstance().getXMLInstance();
 		executor = new HttpClientExecutor();
 	}
 
@@ -96,7 +97,7 @@ public class WIPortlet extends GenericPortlet {
 		// retrieve the configuration name associated to the portlet preferences
 		PortletPreferences preferences = request.getPreferences();
 		String configurationName = preferences.getValue(Attributes.CONFIGURATION_NAME.name(), WIPConfigurationDAO.DEFAULT_CONFIG_NAME);
-		configuration = wipConfigurationManager.read(configurationName);
+		configuration = wipConfigurationDAO.read(configurationName);
 
 		// update the session with the configuration
 		PortletSession session = request.getPortletSession();
@@ -180,7 +181,7 @@ public class WIPortlet extends GenericPortlet {
 			if (StringUtils.isEmpty(configurationName))
 				return;
 
-			WIPConfiguration configuration = XMLWIPConfigurationDAO.getInstance().read(configurationName);
+			WIPConfiguration configuration = wipConfigurationDAO.read(configurationName);
 			session.setAttribute(Attributes.CONFIGURATION.name(), configuration);
 
 			try {

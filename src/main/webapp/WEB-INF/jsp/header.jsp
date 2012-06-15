@@ -1,3 +1,4 @@
+<%@page import="fr.ippon.wip.config.WIPConfigurationDAOBuilder"%>
 <%@ page language="java" pageEncoding="UTF-8" contentType="text/html;charset=utf-8" %>
 
 <%-- JSTL from Sun --%>
@@ -7,7 +8,7 @@
 
 <%@ page import="fr.ippon.wip.config.WIPConfiguration" %>
 <%@ page import="fr.ippon.wip.config.WIPConfigurationDAO" %>
-<%@ page import="fr.ippon.wip.config.XMLWIPConfigurationDAO" %>
+<%@ page import="fr.ippon.wip.config.WIPConfigurationDAOBuilder" %>
 <%@ page import="fr.ippon.wip.http.Request" %>
 <%@ page import="fr.ippon.wip.util.WIPUtil" %>
 <%@ page import="fr.ippon.wip.portlet.Attributes" %>
@@ -27,6 +28,7 @@
     request.setAttribute("localeCode", locale.getLanguage());
     RenderRequest pReq = (RenderRequest) request.getAttribute("javax.portlet.request");
     PortletResponse pRsp = (PortletResponse) request.getAttribute("javax.portlet.response");
+    WIPConfigurationDAO wipConfigurationDAO = WIPConfigurationDAOBuilder.getInstance().getXMLInstance();
     WIPConfiguration wipConf = (WIPConfiguration) portletSession.getAttribute(Attributes.CONFIGURATION.name());
     Map<String, String> errors = (Map<String, String>) session.getAttribute("errors");
     if (errors == null) errors = new HashMap<String, String>();
