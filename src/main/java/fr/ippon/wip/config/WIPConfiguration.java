@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
@@ -39,8 +38,6 @@ import fr.ippon.wip.http.Request;
 public class WIPConfiguration implements Cloneable {
 
 	public static final String SEPARATOR = ";";
-
-	private static final Logger LOG = Logger.getLogger(WIPConfiguration.class.getName());
 
 	// if someday we use a database...
 	private int id;
@@ -537,7 +534,11 @@ public class WIPConfiguration implements Cloneable {
 	 *            The list of URL
 	 */
 	public void setDomainsToProxy(List<String> domainsToProxy) {
-		this.domainsToProxy = domainsToProxy;
+		/*
+		 * If the parameter has been built with Arrays.asList, it is not of the type of ArrayList but Arrays.ArrayList.
+		 * This can lead to problems, in particular with XStream library. So we make a defensive copy in ArrayList.
+		 */
+		this.domainsToProxy = new ArrayList<String>(domainsToProxy);
 	}
 
 	/**
@@ -621,7 +622,11 @@ public class WIPConfiguration implements Cloneable {
 	 *            the list of URLs to be rewritten
 	 */
 	public void setJavascriptUrls(List<String> javascriptUrls) {
-		this.javascriptUrls = javascriptUrls;
+		/*
+		 * If the parameter has been built with Arrays.asList, it is not of the type of ArrayList but Arrays.ArrayList.
+		 * This can lead to problems, in particular with XStream library. So we make a defensive copy in ArrayList.
+		 */
+		this.javascriptUrls = new ArrayList<String>(javascriptUrls);
 	}
 
 	/**
@@ -733,7 +738,12 @@ public class WIPConfiguration implements Cloneable {
 	 *            the list of URLs
 	 */
 	public void setScriptsToDelete(List<String> scriptsToDelete) {
-		this.scriptsToDelete = scriptsToDelete;
+		/*
+		 * If the parameter has been built with Arrays.asList, it is not of the type of ArrayList but Arrays.ArrayList.
+		 * This can lead to problems, in particular with XStream library. So we make a defensive copy in ArrayList.
+		 */
+		this.scriptsToDelete = new ArrayList<String>(scriptsToDelete);
+
 	}
 
 	/**
@@ -743,7 +753,11 @@ public class WIPConfiguration implements Cloneable {
 	 *            the list of URLs
 	 */
 	public void setScriptsToIgnore(List<String> scriptsToIgnore) {
-		this.scriptsToIgnore = scriptsToIgnore;
+		/*
+		 * If the parameter has been built with Arrays.asList, it is not of the type of ArrayList but Arrays.ArrayList.
+		 * This can lead to problems, in particular with XStream library. So we make a defensive copy in ArrayList.
+		 */
+		this.scriptsToIgnore = new ArrayList<String>(scriptsToIgnore);
 	}
 
 	/**

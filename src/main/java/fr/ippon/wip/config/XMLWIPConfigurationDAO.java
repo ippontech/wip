@@ -73,6 +73,7 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 		
 		// initialization and configuration of xstream
 		xstream = new XStream();
+//		xstream.addImplicitCollection(WIPConfiguration.class, "scriptsToDelete");
 		xstream.alias("configuration", WIPConfiguration.class);
 		xstream.omitField(WIPConfiguration.class, "id");
 		xstream.omitField(WIPConfiguration.class, "xsltClipping");
