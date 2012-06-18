@@ -22,27 +22,46 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This abstract Data Access Object defines the signatures of the CRUD method for configurations.
+ * This abstract Data Access Object defines the signatures of the CRUD method
+ * for configurations.
  * 
- * @author ylegat
- *
+ * @author Yohan Legat
+ * 
  */
 public abstract class WIPConfigurationDAO {
+
+	/**
+	 * The default configuration name.
+	 */
+	public static final String DEFAULT_CONFIG_NAME = "default-config";
 
 	/**
 	 * A list that contains the name of the configurations.
 	 */
 	protected final List<String> configurationNames;
-	
-	/**
-	 * The default configuration name.
-	 */
-	public static final String DEFAULT_CONFIG_NAME = "default-config";
-	
+
+	protected final ConfigurationDeployer deployer;
+
 	public WIPConfigurationDAO() {
-		configurationNames = new ArrayList<String>();
+		this(true);
 	}
 	
+	public WIPConfigurationDAO(boolean withWatcher) {
+		configurationNames = new ArrayList<String>();
+		deployer = withWatcher ? new ConfigurationDeployer() : null;
+	}
+
+	/**
+	 * Check the deploy directory for seeking new configurations
+	 */
+	public synchronized void deploy() {
+		List<WIPConfiguration> newConfigurations = deployer.checkDeploy();
+		for (WIPConfiguration configuration : newConfigurations)
+			create(configuration);
+		
+		resetConfigurationsNames();
+	}
+
 	/**
 	 * Return "name(x+1)" while "name(x)" already exists as a configuration
 	 * name.
@@ -56,10 +75,10 @@ public abstract class WIPConfigurationDAO {
 	protected String correctConfigurationName(String name, int increment) {
 		String incrementName = name + "(" + increment + ")";
 
-		boolean alreadyExists = configurationNames.contains(incrementName);
+		boolean alreadyExists = getConfigurationsNames().contains(incrementName);
 		return alreadyExists ? correctConfigurationName(name, increment + 1) : incrementName;
 	}
-	
+
 	/**
 	 * Save the given configuration.
 	 * 
@@ -82,26 +101,10 @@ public abstract class WIPConfigurationDAO {
 	 * 
 	 * @return the list of names
 	 */
-	public synchronized List<String> getConfigurationsNames() {
-		return new ArrayList<String>(configurationNames);
+	public List<String> getConfigurationsNames() {
+		return configurationNames;
 	}
-	
-	/**
-	 * Retrieve the configuration of the given name.
-	 * 
-	 * @param name
-	 *            the name of the configuration to retrieve
-	 * @return the configuration associated to the given name
-	 */
-	public abstract WIPConfiguration read(String name);
-	
-	/**
-	 * Save the modifications of the given configuration.
-	 * @param configuration the configuration to save
-	 * @return the saved configuration
-	 */
-	public abstract WIPConfiguration update(WIPConfiguration configuration);
-	
+
 	/**
 	 * Retrieve the default configuration
 	 * 
@@ -110,4 +113,27 @@ public abstract class WIPConfigurationDAO {
 	public WIPConfiguration getDefaultConfiguration() {
 		return read(DEFAULT_CONFIG_NAME);
 	}
+
+	/**
+	 * Retrieve the configuration of the given name.
+	 * 
+	 * @param name
+	 *            the name of the configuration to retrieve
+	 * @return the configuration associated to the given name
+	 */
+	public abstract WIPConfiguration read(String name);
+
+	/**
+	 * Save the modifications of the given configuration.
+	 * 
+	 * @param configuration
+	 *            the configuration to save
+	 * @return the saved configuration
+	 */
+	public abstract WIPConfiguration update(WIPConfiguration configuration);
+	
+	/**
+	 * Update the names of the configurations currently available.
+	 */
+	public abstract void resetConfigurationsNames();
 }

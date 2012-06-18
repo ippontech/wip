@@ -26,4 +26,5 @@ public enum Attributes {
 	ACTION_SHOW,
 	ACTION_DELETE,
 	ACTION_SAVE,
+	ACTION_DEPLOY
 }

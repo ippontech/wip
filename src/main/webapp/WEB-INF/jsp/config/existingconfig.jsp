@@ -37,6 +37,8 @@
     %>
 </table>
 
+<a href="<portlet:actionURL><portlet:param name="<%=Attributes.ACTION_DEPLOY.name() %>" value="true" /></portlet:actionURL>"><fmt:message key="wip.config.action.deploy"/></a>
+
 <style>
 
 	.wip_table {

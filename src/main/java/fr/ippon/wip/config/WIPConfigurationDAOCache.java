@@ -79,4 +79,20 @@ public class WIPConfigurationDAOCache extends WIPConfigurationDAO {
 	public synchronized List<String> getConfigurationsNames() {
 		return dao.getConfigurationsNames();
 	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void deploy() {
+		dao.deploy();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	 @Override
+	public void resetConfigurationsNames() {
+		dao.resetConfigurationsNames();
+	}
 }

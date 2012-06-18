@@ -1,4 +1,4 @@
-<%@page import="fr.ippon.wip.config.WIPConfigurationDAOBuilder"%>
+<%@page import="fr.ippon.wip.config.WIPConfigurationDAOFactory"%>
 <%@ page language="java" pageEncoding="UTF-8" contentType="text/html;charset=utf-8" %>
 
 <%-- JSTL from Sun --%>
@@ -8,7 +8,7 @@
 
 <%@ page import="fr.ippon.wip.config.WIPConfiguration" %>
 <%@ page import="fr.ippon.wip.config.WIPConfigurationDAO" %>
-<%@ page import="fr.ippon.wip.config.WIPConfigurationDAOBuilder" %>
+<%@ page import="fr.ippon.wip.config.WIPConfigurationDAOFactory" %>
 <%@ page import="fr.ippon.wip.http.Request" %>
 <%@ page import="fr.ippon.wip.util.WIPUtil" %>
 <%@ page import="fr.ippon.wip.portlet.Attributes" %>
@@ -24,18 +24,17 @@
 
 <portlet:defineObjects/>
 <%
-    Locale locale = request.getLocale();
+	Locale locale = request.getLocale();
     request.setAttribute("localeCode", locale.getLanguage());
     RenderRequest pReq = (RenderRequest) request.getAttribute("javax.portlet.request");
     PortletResponse pRsp = (PortletResponse) request.getAttribute("javax.portlet.response");
-    WIPConfigurationDAO wipConfigurationDAO = WIPConfigurationDAOBuilder.getInstance().getXMLInstance();
+    WIPConfigurationDAO wipConfigurationDAO = WIPConfigurationDAOFactory.getInstance().getXMLInstance();
     WIPConfiguration wipConf = (WIPConfiguration) portletSession.getAttribute(Attributes.CONFIGURATION.name());
     Map<String, String> errors = (Map<String, String>) session.getAttribute("errors");
     if (errors == null) errors = new HashMap<String, String>();
 %>
 
-<%!
-    String printError(String key, Map<String, String> e) {
+<%!String printError(String key, Map<String, String> e) {
         String r = "";
         if (e != null && e.containsKey(key))
             r = "<span class=\"error\">" + e.get(key) + "</span>";
@@ -49,8 +48,7 @@
         r += "<span style=\"display:none\">" + WIPUtil.getMessage(key, locale) + "</span>";
         r += "</span>";
         return r;
-    }
-%>
+    }%>
 
 <fmt:setLocale value="${localeCode}" scope="session"/>
 <fmt:setBundle basename="content.Language"/>

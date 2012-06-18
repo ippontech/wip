@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -49,11 +50,11 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 	private static final Logger LOG = Logger.getLogger(XMLWIPConfigurationDAO.class.getName());
 
 	// type of file: general configuration, clipping or transformation
-	private static final int FILE_NAME_CONFIG = 0;
+	public static final int FILE_NAME_CONFIG = 0;
 
-	private static final int FILE_NAME_CLIPPING = 1;
+	public static final int FILE_NAME_CLIPPING = 1;
 
-	private static final int FILE_NAME_TRANSFORM = 2;
+	public static final int FILE_NAME_TRANSFORM = 2;
 
 	// the resource used to marshall and unmarshal configuration as xml
 	private XStream xstream;
@@ -68,24 +69,20 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 	 * 
 	 * @throws URISyntaxException
 	 */
-	public XMLWIPConfigurationDAO(String pathConfigFiles) {
+	public XMLWIPConfigurationDAO(String pathConfigFiles, boolean withWatcher) {
+		super(withWatcher);
+		
 		this.pathConfigFiles = pathConfigFiles;
 		
 		// initialization and configuration of xstream
 		xstream = new XStream();
-//		xstream.addImplicitCollection(WIPConfiguration.class, "scriptsToDelete");
 		xstream.alias("configuration", WIPConfiguration.class);
 		xstream.omitField(WIPConfiguration.class, "id");
 		xstream.omitField(WIPConfiguration.class, "xsltClipping");
 		xstream.omitField(WIPConfiguration.class, "xsltTransform");
 		xstream.omitField(WIPConfiguration.class, "javascriptResourcesMap");
 
-		// save the names of all the configurations
-		for (String filename : new File(pathConfigFiles).list())
-			if (filename.endsWith(".xml"))
-				configurationNames.add(filename.substring(0, filename.length() - 4));
-
-		Collections.sort(configurationNames);
+		resetConfigurationsNames();
 	}
 
 	/**
@@ -105,7 +102,7 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 
 		return update(configuration);
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -113,9 +110,11 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 	public synchronized boolean delete(WIPConfiguration configuration) {
 		String name = configuration.getName();
 
+		// can't delete the default configuration
 		if (DEFAULT_CONFIG_NAME.equals(name))
 			return false;
 
+		// can't remove a non-existing configuration
 		if(!configurationNames.remove(name))
 			return false;
 		
@@ -124,7 +123,7 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 		getConfigurationFile(name, FILE_NAME_TRANSFORM).delete();
 		return true;
 	}
-
+	
 	/**
 	 * Return the file associated to the given configuration name.
 	 * 
@@ -132,7 +131,7 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 	 *            the name of the configuration
 	 * @return the file associated to the configuration
 	 */
-	private File getConfigurationFile(String name, int fileType) {
+	public File getConfigurationFile(String name, int fileType) {
 		switch (fileType) {
 		case FILE_NAME_CONFIG:
 			return new File(pathConfigFiles + "/" + name + ".xml");
@@ -143,6 +142,10 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 		}
 
 		return null;
+	}
+
+	public String getPathConfigFiles() {
+		return pathConfigFiles;
 	}
 
 	/**
@@ -209,5 +212,20 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 		}
 
 		return null;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public synchronized void resetConfigurationsNames() {
+		configurationNames.clear();
+		
+		// retrieve the names of all the configurations
+		for (String filename : new File(pathConfigFiles).list())
+			if (filename.endsWith(".xml"))
+				configurationNames.add(FilenameUtils.getBaseName(filename));
+
+		Collections.sort(configurationNames);
 	}
 }

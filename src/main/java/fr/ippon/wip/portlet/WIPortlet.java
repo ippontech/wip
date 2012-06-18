@@ -20,7 +20,7 @@ package fr.ippon.wip.portlet;
 
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.WIPConfigurationDAO;
-import fr.ippon.wip.config.WIPConfigurationDAOBuilder;
+import fr.ippon.wip.config.WIPConfigurationDAOFactory;
 import fr.ippon.wip.config.XMLWIPConfigurationDAO;
 import fr.ippon.wip.http.HttpExecutor;
 import fr.ippon.wip.http.Request;
@@ -74,7 +74,7 @@ public class WIPortlet extends GenericPortlet {
 	public void init(PortletConfig config) throws PortletException {
 		super.init(config);
 
-		wipConfigurationDAO = WIPConfigurationDAOBuilder.getInstance().getXMLInstance();
+		wipConfigurationDAO = WIPConfigurationDAOFactory.getInstance().getXMLInstance();
 		executor = new HttpClientExecutor();
 	}
 

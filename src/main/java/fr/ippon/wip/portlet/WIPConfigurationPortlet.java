@@ -41,8 +41,7 @@ import org.apache.commons.lang.StringUtils;
 
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.WIPConfigurationDAO;
-import fr.ippon.wip.config.WIPConfigurationDAOBuilder;
-import fr.ippon.wip.config.XMLWIPConfigurationDAO;
+import fr.ippon.wip.config.WIPConfigurationDAOFactory;
 import fr.ippon.wip.util.WIPUtil;
 
 public class WIPConfigurationPortlet extends GenericPortlet {
@@ -75,7 +74,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 			errors.put(varName, rb.getString("wip.errors." + varName + ".malformed"));
 		}
 	}
-
+	
 	/**
 	 * This class will try to build a list of URLs from a string and store an
 	 * error if an URL is malformed
@@ -431,7 +430,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	@Override
 	public void init() throws PortletException {
 		super.init();
-		wipConfigurationDAO = WIPConfigurationDAOBuilder.getInstance().getXMLInstance();
+		wipConfigurationDAO = WIPConfigurationDAOFactory.getInstance().getXMLInstance();
 	}
 
 	/**
@@ -441,6 +440,12 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	public void processAction(ActionRequest request, ActionResponse response) throws PortletException, IOException {
 		PortletSession session = request.getPortletSession();
 
+		String action = request.getParameter(Attributes.ACTION_DEPLOY.name());
+		if(!StringUtils.isEmpty(action)) {
+			wipConfigurationDAO.deploy();
+			session.setAttribute(Attributes.PAGE.name(), Pages.EXISTING_CONFIG);
+		}
+		
 		String configName = request.getParameter(Attributes.PAGE.name());
 		if (configName != null) {
 			session.setAttribute(Attributes.PAGE.name(), Pages.valueOf(configName));
