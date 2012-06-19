@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.zip.ZipOutputStream;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -36,12 +37,16 @@ import javax.portlet.PortletRequestDispatcher;
 import javax.portlet.PortletSession;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
+import javax.portlet.ResourceRequest;
+import javax.portlet.ResourceResponse;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.WIPConfigurationDAO;
 import fr.ippon.wip.config.WIPConfigurationDAOFactory;
+import fr.ippon.wip.config.ZipConfiguration;
 import fr.ippon.wip.util.WIPUtil;
 
 public class WIPConfigurationPortlet extends GenericPortlet {
@@ -67,14 +72,14 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 			errors.put(varName, rb.getString("wip.errors." + varName + ".empty"));
 			return;
 		}
-		
+
 		try {
 			new URL(urlAsString);
 		} catch (MalformedURLException e1) {
 			errors.put(varName, rb.getString("wip.errors." + varName + ".malformed"));
 		}
 	}
-	
+
 	/**
 	 * This class will try to build a list of URLs from a string and store an
 	 * error if an URL is malformed
@@ -90,12 +95,14 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	 * @return A list of the URLs contained in the given String
 	 */
 	private void checkURLs(String varName, String urlListAsString, Map<String, String> errors, ResourceBundle rb, WIPConfiguration wipConfig) {
-		for(String urlAsString : urlListAsString.split(";"))
+		for (String urlAsString : urlListAsString.split(";"))
 			checkURL(varName, urlAsString, errors, rb);
 	}
 
 	/**
-	 * Set if necessary the default configuration and page display in the session.
+	 * Set if necessary the default configuration and page display in the
+	 * session.
+	 * 
 	 * @param request
 	 */
 	private void checkOrSetSession(PortletRequest request) {
@@ -323,7 +330,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 		}
 		if (portletTitle != null)
 			wipConfig.setPortletTitle(portletTitle);
-		
+
 		wipConfig.setEnableUrlRewriting(enableUrlRewriting);
 		wipConfigurationDAO.update(wipConfig);
 
@@ -363,7 +370,8 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	 * from the configuration form. Save them in the portlet configuartion.
 	 * 
 	 * @param request
-	 *            The ActionRequest shttp://www.developpez.com/ent to WIPortlet in edit mode
+	 *            The ActionRequest shttp://www.developpez.com/ent to WIPortlet
+	 *            in edit mode
 	 * @param response
 	 *            The ActionResponse sent to WIPortlet in edit mode
 	 */
@@ -428,45 +436,64 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	}
 
 	@Override
+	public void serveResource(ResourceRequest request, ResourceResponse response) throws PortletException, IOException {
+		String configName = request.getParameter(Attributes.ACTION_EXPORT.name());
+		if (StringUtils.isEmpty(configName))
+			return;
+		
+		response.setContentType("multipart/x-zip");
+		response.setProperty("Content-Disposition", "attachment; filename=" + configName + ".zip");
+		
+		WIPConfiguration configuration = wipConfigurationDAO.read(configName);
+		ZipConfiguration zip = new ZipConfiguration(FileUtils.getTempDirectoryPath());
+		ZipOutputStream out = new ZipOutputStream(response.getPortletOutputStream());
+		zip.zip(configuration, out);
+		out.flush();
+		out.close();
+	}
+
+	@Override
 	public void init() throws PortletException {
 		super.init();
 		wipConfigurationDAO = WIPConfigurationDAOFactory.getInstance().getXMLInstance();
 	}
 
 	/**
-	 * Process the user action: a configuration can be deleted, selected or saved.
+	 * Process the user action: a configuration can be deleted, selected or
+	 * saved.
 	 */
 	@Override
 	public void processAction(ActionRequest request, ActionResponse response) throws PortletException, IOException {
 		PortletSession session = request.getPortletSession();
 
 		String action = request.getParameter(Attributes.ACTION_DEPLOY.name());
-		if(!StringUtils.isEmpty(action)) {
+		if (!StringUtils.isEmpty(action)) {
 			wipConfigurationDAO.deploy();
 			session.setAttribute(Attributes.PAGE.name(), Pages.EXISTING_CONFIG);
+			return;
 		}
-		
+
 		String configName = request.getParameter(Attributes.PAGE.name());
-		if (configName != null) {
+		if (!StringUtils.isEmpty(configName)) {
 			session.setAttribute(Attributes.PAGE.name(), Pages.valueOf(configName));
 			return;
 		}
 
 		configName = request.getParameter(Attributes.ACTION_SELECT.name());
-		if(!StringUtils.isEmpty(configName)) {
+		if (!StringUtils.isEmpty(configName)) {
 			session.setAttribute(Attributes.CONFIGURATION.name(), wipConfigurationDAO.read(configName));
 			session.setAttribute(Attributes.PAGE.name(), Pages.GENERAL_SETTINGS);
 			return;
 		}
-		
+
 		configName = request.getParameter(Attributes.ACTION_DELETE.name());
-		if(!StringUtils.isEmpty(configName)) {
+		if (!StringUtils.isEmpty(configName)) {
 			wipConfigurationDAO.delete(wipConfigurationDAO.read(configName));
 			return;
 		}
 
 		configName = request.getParameter(Attributes.ACTION_SAVE.name());
-		if(!StringUtils.isEmpty(configName)) {
+		if (!StringUtils.isEmpty(configName)) {
 			WIPConfiguration actualConfiguration = (WIPConfiguration) session.getAttribute(Attributes.CONFIGURATION.name());
 			WIPConfiguration newConfiguration = (WIPConfiguration) actualConfiguration.clone();
 			newConfiguration.setName(configName);

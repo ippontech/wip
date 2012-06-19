@@ -71,9 +71,9 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 	 */
 	public XMLWIPConfigurationDAO(String pathConfigFiles, boolean withWatcher) {
 		super(withWatcher);
-		
+
 		this.pathConfigFiles = pathConfigFiles;
-		
+
 		// initialization and configuration of xstream
 		xstream = new XStream();
 		xstream.alias("configuration", WIPConfiguration.class);
@@ -115,32 +115,38 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 			return false;
 
 		// can't remove a non-existing configuration
-		if(!configurationNames.remove(name))
+		if (!configurationNames.remove(name))
 			return false;
-		
+
 		getConfigurationFile(name, FILE_NAME_CONFIG).delete();
 		getConfigurationFile(name, FILE_NAME_CLIPPING).delete();
 		getConfigurationFile(name, FILE_NAME_TRANSFORM).delete();
 		return true;
 	}
-	
+
 	/**
 	 * Return the file associated to the given configuration name.
 	 * 
 	 * @param name
 	 *            the name of the configuration
+	 * @param addPath
+	 *            append the path to the file name if true
 	 * @return the file associated to the configuration
 	 */
 	public File getConfigurationFile(String name, int fileType) {
+		return new File(pathConfigFiles + "/" + getConfigurationName(name, fileType));
+	}
+	
+	public static String getConfigurationName(String name, int fileType) {
 		switch (fileType) {
 		case FILE_NAME_CONFIG:
-			return new File(pathConfigFiles + "/" + name + ".xml");
+			return name + ".xml";
 		case FILE_NAME_CLIPPING:
-			return new File(pathConfigFiles + "/" + name + "_clipping.xslt");
+			return name + "_clipping.xslt";
 		case FILE_NAME_TRANSFORM:
-			return new File(pathConfigFiles + "/" + name + "_transform.xslt");
+			return name + "_transform.xslt";
 		}
-
+		
 		return null;
 	}
 
@@ -171,7 +177,7 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 			configuration.setXsltClipping(FileUtils.readFileToString(clippingFile));
 			configuration.setXsltTransform(FileUtils.readFileToString(transformFile));
 			return (WIPConfiguration) configuration.clone();
-			
+
 		} catch (FileNotFoundException e) {
 			LOG.log(Level.WARNING, "An error occured during the access of the configuration named " + name, e);
 		} catch (IOException e) {
@@ -204,7 +210,7 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 			xstream.toXML(configuration, new FileWriter(configurationFile));
 			FileUtils.writeStringToFile(clippingFile, configuration.getXsltClipping());
 			FileUtils.writeStringToFile(transformFile, configuration.getXsltTransform());
-			
+
 			return configuration;
 
 		} catch (IOException e) {
@@ -220,7 +226,7 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 	@Override
 	public synchronized void resetConfigurationsNames() {
 		configurationNames.clear();
-		
+
 		// retrieve the names of all the configurations
 		for (String filename : new File(pathConfigFiles).list())
 			if (filename.endsWith(".xml"))

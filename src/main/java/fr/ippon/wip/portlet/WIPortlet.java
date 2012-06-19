@@ -21,7 +21,6 @@ package fr.ippon.wip.portlet;
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.WIPConfigurationDAO;
 import fr.ippon.wip.config.WIPConfigurationDAOFactory;
-import fr.ippon.wip.config.XMLWIPConfigurationDAO;
 import fr.ippon.wip.http.HttpExecutor;
 import fr.ippon.wip.http.Request;
 import fr.ippon.wip.http.Response;
