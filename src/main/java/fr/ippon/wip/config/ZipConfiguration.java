@@ -11,6 +11,12 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
+/**
+ * Allow zip and unzip operations over configurations.
+ * 
+ * @author Yohan Legat
+ * 
+ */
 public class ZipConfiguration {
 
 	private XMLWIPConfigurationDAO xmlDAO;
@@ -19,6 +25,62 @@ public class ZipConfiguration {
 		xmlDAO = new XMLWIPConfigurationDAO(path, false);
 	}
 
+	/**
+	 * Copy the data from an InputStream toward an OutputStream
+	 * 
+	 * @param src
+	 * @param dest
+	 * @throws IOException
+	 */
+	private void copy(InputStream src, OutputStream dest) throws IOException {
+		byte[] buffer = new byte[1024];
+		int length;
+		while ((length = src.read(buffer)) != -1)
+			dest.write(buffer, 0, length);
+	}
+
+	/**
+	 * Unzip and return a configuration from a zip archive.
+	 * 
+	 * @param zipFile
+	 *            the archive
+	 * @param configurationName
+	 *            the name of the configuration to retrieve
+	 * @return the configuration to retrieve
+	 */
+	public WIPConfiguration unzip(ZipFile zipFile, String configurationName) {
+		WIPConfiguration configuration = xmlDAO.read(configurationName);
+		if (configuration != null)
+			xmlDAO.delete(configuration);
+
+		configuration = null;
+		int[] types = new int[] { XMLWIPConfigurationDAO.FILE_NAME_CLIPPING, XMLWIPConfigurationDAO.FILE_NAME_TRANSFORM, XMLWIPConfigurationDAO.FILE_NAME_CONFIG };
+		try {
+			for (int type : types) {
+				File file = xmlDAO.getConfigurationFile(configurationName, type);
+				file.createNewFile();
+				ZipEntry entry = zipFile.getEntry(FilenameUtils.getBaseName(file.getName()));
+				if (entry == null)
+					return null;
+
+				copy(zipFile.getInputStream(entry), FileUtils.openOutputStream(file));
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return configuration;
+	}
+
+	/**
+	 * Create a zip archive from a configuration.
+	 * 
+	 * @param configuration
+	 *            the configuration to zip
+	 * @param out
+	 *            the stream to be used
+	 */
 	public void zip(WIPConfiguration configuration, ZipOutputStream out) {
 		String configName = configuration.getName();
 		xmlDAO.delete(configuration);
@@ -36,44 +98,5 @@ public class ZipConfiguration {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-	public WIPConfiguration unzip(ZipFile zipFile, String configurationName) {
-		WIPConfiguration configuration = xmlDAO.read(configurationName);
-		if (configuration != null)
-			xmlDAO.delete(configuration);
-
-		configuration = null;
-		int[] types = new int[] { XMLWIPConfigurationDAO.FILE_NAME_CLIPPING, XMLWIPConfigurationDAO.FILE_NAME_TRANSFORM, XMLWIPConfigurationDAO.FILE_NAME_CONFIG };
-		try {
-			for (int type : types) {
-				File file = xmlDAO.getConfigurationFile(configurationName, type);
-				file.createNewFile();
-				ZipEntry entry = zipFile.getEntry(FilenameUtils.getBaseName(file.getName()));
-				if(entry == null)
-					return null;
-				
-				copy(zipFile.getInputStream(entry), FileUtils.openOutputStream(file));
-			}
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		return configuration;
-	}
-
-	/**
-	 * Copy the data from an InputStream toward an OutputStream
-	 * 
-	 * @param src
-	 * @param dest
-	 * @throws IOException
-	 */
-	private void copy(InputStream src, OutputStream dest) throws IOException {
-		byte[] buffer = new byte[1024];
-		int length;
-		while ((length = src.read(buffer)) != -1)
-			dest.write(buffer, 0, length);
 	}
 }
