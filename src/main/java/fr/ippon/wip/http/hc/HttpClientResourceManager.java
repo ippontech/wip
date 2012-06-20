@@ -25,7 +25,6 @@ import fr.ippon.wip.util.WIPUtil;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.cache.HttpCacheStorage;
 import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.conn.scheme.PlainSocketFactory;
 import org.apache.http.conn.scheme.Scheme;
@@ -36,7 +35,6 @@ import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.client.cache.BasicHttpCacheStorage;
 import org.apache.http.impl.client.cache.CacheConfig;
 import org.apache.http.impl.client.cache.CachingHttpClient;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
@@ -91,18 +89,12 @@ class HttpClientResourceManager {
             connectionManager = new PoolingClientConnectionManager(registry);
             connectionManager.setDefaultMaxPerRoute(10);
             connectionManager.setMaxTotal(100);
-
             DefaultHttpClient defaultHttpClient = new DefaultHttpClient(connectionManager);
-
-            CacheConfig cacheConfig = new CacheConfig();
 
             // TODO add Ehcache configuration
             //Ehcache ehCache = CacheManager.getInstance().addCacheIfAbsent("wip.shared.cached");
             //EhcacheHttpCacheStorage cacheStorage = new EhcacheHttpCacheStorage (ehCache);
-            HttpCacheStorage cacheStorage = new BasicHttpCacheStorage(cacheConfig);
-
-            HttpClient sharedCacheClient = new CachingHttpClient(defaultHttpClient, cacheStorage, cacheConfig);
-
+            HttpClient sharedCacheClient = new CachingHttpClient(defaultHttpClient);
             HttpClientDecorator decoratedClient = new HttpClientDecorator(sharedCacheClient);
             decoratedClient.addPreProcessor(new LtpaRequestInterceptor());
             decoratedClient.addPostProcessor(new TransformerResponseInterceptor());
@@ -139,9 +131,9 @@ class HttpClientResourceManager {
                 if (config.isPageCachePrivate()) {
                     client = rootClient;
                 } else {
-                    CacheConfig cacheConfig = new CacheConfig();
-                    cacheConfig.setSharedCache(false);
-                    client = new CachingHttpClient(rootClient);
+                	CacheConfig cacheConfig = new CacheConfig();
+                	cacheConfig.setSharedCache(false);
+                    client = new CachingHttpClient(rootClient, cacheConfig);
                 }
                 perUserClientMap.put(userSessionId, client);
             }
