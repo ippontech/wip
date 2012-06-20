@@ -128,7 +128,7 @@ class HttpClientResourceManager {
             client = perUserClientMap.get(userSessionId);
             if (client == null) {
                 WIPConfiguration config = WIPUtil.extractConfiguration(request);
-                if (config.isPageCachePrivate()) {
+                if (!config.isPageCachePrivate()) {
                     client = rootClient;
                 } else {
                 	CacheConfig cacheConfig = new CacheConfig();
