@@ -27,10 +27,14 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
+import fr.ippon.wip.transformers.HTMLTransformer;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class uses the decorator pattern to inject preProcessor (HttpRequestInterceptor)
@@ -40,6 +44,9 @@ import java.util.List;
  * @author François Prot
  */
 class HttpClientDecorator implements HttpClient {
+	
+	private static final Logger LOG = Logger.getLogger(HttpClientDecorator.class.getName());
+			
     private final HttpClient backend;
 
     private final List<HttpRequestInterceptor> preProcessors = new LinkedList<HttpRequestInterceptor>();
@@ -125,6 +132,7 @@ class HttpClientDecorator implements HttpClient {
             for (HttpResponseInterceptor postProcessor : postProcessors) {
                 postProcessor.process(response, context);
             }
+            
             return response;
         } catch (HttpException he) {
             throw new RuntimeException(he);

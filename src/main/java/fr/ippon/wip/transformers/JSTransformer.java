@@ -80,6 +80,7 @@ public class JSTransformer extends AbstractTransformer {
      * @return a string corresponding to the transformed JavaScript code
      */
     public String transform(String input) throws SAXException, IOException {
+    	LOG.log(Level.INFO, "Processing Javascript for transformation.");
         String url;
 
         // CUSTOM ------------------------------------------------------------------

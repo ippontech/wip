@@ -51,7 +51,7 @@ class LtpaRequestInterceptor implements HttpRequestInterceptor {
                 String[] valueAndDomain = LtpaCookieUtil.getCookieValueAndDomain(portletRequest, wipConfig);
                 if (valueAndDomain != null) {
                     BasicClientCookie ltpaCookie = new BasicClientCookie(LtpaCookieUtil.COOKIE_NAME, valueAndDomain[0]);
-                    if (valueAndDomain[1] != null & !valueAndDomain[1].equals("")) {
+                    if (valueAndDomain[1] != null && !valueAndDomain[1].equals("")) {
                         ltpaCookie.setDomain(valueAndDomain[1]);
                     }
                     CookieStore cookieStore = (CookieStore) context.getAttribute(ClientContext.COOKIE_STORE);

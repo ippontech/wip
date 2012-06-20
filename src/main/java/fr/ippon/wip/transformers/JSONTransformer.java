@@ -21,6 +21,8 @@ package fr.ippon.wip.transformers;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * JSONTransformer implements the WIPTransformer interface that defines the
@@ -31,11 +33,15 @@ import java.io.IOException;
  */
 public class JSONTransformer implements WIPTransformer {
 
+	private static final Logger LOG = Logger.getLogger(JSONTransformer.class.getName());
+	
     public JSONTransformer() {
     }
 
     public String transform(String input) throws SAXException, IOException {
 
+    	LOG.log(Level.INFO, "Processing JSON for transformation.");
+    	
         // CUSTOM -----------------------------------------------
         int i = input.indexOf("api/node");
         if (i > -1)

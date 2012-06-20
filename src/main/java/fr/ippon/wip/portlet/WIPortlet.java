@@ -32,10 +32,15 @@ import fr.ippon.wip.util.WIPUtil;
 import javax.portlet.*;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.util.UUID;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 /**
  * WIPortlet enables web application integration within a portlet. It override
@@ -72,6 +77,18 @@ public class WIPortlet extends GenericPortlet {
 	@Override
 	public void init(PortletConfig config) throws PortletException {
 		super.init(config);
+		
+		try {
+			Handler fileHandler = new FileHandler("%h/transformers_%g.txt", true);
+			fileHandler.setFormatter(new SimpleFormatter());
+			Logger.getLogger("fr.ippon.wip.transformers").addHandler(fileHandler);
+			Logger.getLogger("fr.ippon.wip.http.hc").addHandler(fileHandler);
+			
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 		wipConfigurationDAO = WIPConfigurationDAOFactory.getInstance().getXMLInstance();
 		executor = new HttpClientExecutor();

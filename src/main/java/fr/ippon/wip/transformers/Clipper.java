@@ -81,6 +81,7 @@ public class Clipper implements WIPTransformer {
      * @throws TransformerException
      */
     public String transform(String input) throws SAXException, IOException, TransformerException {
+    	LOG.log(Level.INFO, "Processing clipping.");
         // Parsing the content into XHTML
         input = HTMLTransformer.htmlToXhtml(input);
 

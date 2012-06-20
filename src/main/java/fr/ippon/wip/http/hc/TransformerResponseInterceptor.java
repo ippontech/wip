@@ -66,7 +66,7 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
 
         if (httpResponse == null) {
             // No response -> no transformation
-            LOG.warning("No response to transform for URI: " + request.getRequestedURL());
+            LOG.warning("No response to transform.");
             return;
         }
 
@@ -84,9 +84,10 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
         HttpHost actualHost = (HttpHost) context.getAttribute(ExecutionContext.HTTP_TARGET_HOST);
         String actualURI = actualHost.toURI() + actualRequest.getRequestLine().getUri();
         if (!config.isProxyURI(actualURI)) {
+            LOG.log(Level.INFO, "Response doesn't need to be transformed.");
             return;
         }
-
+        
         // Creates an instance of Transformer depending on ResourceType and MimeType
         // May returns directly if no transformation is need
         WIPTransformer transformer = null;
@@ -95,6 +96,7 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
             case HTML:
                 if (!mimeType.equals("text/html") && !mimeType.equals("application/xhtml+xml")) {
                     // No transformation
+                	LOG.log(Level.INFO, "Response won't be transformed.");
                     return;
                 } else {
                     // HTML transformation
@@ -107,10 +109,11 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
                 // Empty content
                 if (((JSTransformer) transformer).isDeletedScript(actualURI)) {
                     // Send à 404 empty response
+                	LOG.log(Level.INFO, "Javascript resource deleted: transformed to 404 empty response.");
                     emtpyResponse(httpResponse);
                     return;
                 } else if (((JSTransformer) transformer).isIgnoredScript(actualURI)) {
-                    // No transformation
+                	LOG.log(Level.INFO, "Javascript response ignored.");
                     return;
                 }
                 break;
@@ -120,7 +123,7 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
                 break;
             case AJAX:
                 if (mimeType == null) {
-                    // No transformation
+                	LOG.log(Level.INFO, "Response won't be transformed: MIME type is null.");
                     return;
                 } else if (mimeType.equals("text/html") || mimeType.equals("application/xhtml+xml")) {
                     // HTML transformation
@@ -133,14 +136,16 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
                     transformer = new JSONTransformer();
                 } else {
                     // No transformation
+                	LOG.log(Level.INFO, "Reponse won't be transformed.");
                     return;
                 }
                 break;
             case RAW:
+            	LOG.log(Level.INFO, "Reponse won't be transformed.");
                 // No transformation
                 return;
         }
-
+        
         // Call WIPTransformer#transform method and update the response Entity object
         try {
             String transformedContent = transformer.transform(EntityUtils.toString(entity));
@@ -157,6 +162,8 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
         } catch (TransformerException e) {
         	LOG.log(Level.SEVERE, e.getMessage(), e);
         }
+        
+        LOG.log(Level.INFO, "TransformerResponseInterceptor ends response processing.");
     }
 
     private void emtpyResponse(HttpResponse httpResponse) {

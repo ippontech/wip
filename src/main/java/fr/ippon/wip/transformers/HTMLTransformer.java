@@ -119,6 +119,7 @@ public class HTMLTransformer extends AbstractTransformer {
         }
 
         // Parsing html content to xhtml
+        LOG.log(Level.INFO, "Parsing html to xhtml");
         input = htmlToXhtml(input);
         InputSource xhtml = new InputSource(new ByteArrayInputStream(input.getBytes()));
 
@@ -155,6 +156,7 @@ public class HTMLTransformer extends AbstractTransformer {
             transformer.setParameter("rewriteUrl", "false");
 
         // Processing the transformation
+        LOG.log(Level.INFO, "Processing XSLT for HTML content transformation.");
         ByteArrayOutputStream resultOutputStream = new ByteArrayOutputStream();
         transformer.transform(new DOMSource(doc), new StreamResult(resultOutputStream));
 

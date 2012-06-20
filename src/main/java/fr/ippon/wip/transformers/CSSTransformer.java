@@ -74,6 +74,7 @@ public class CSSTransformer extends AbstractTransformer {
      * @return a string corresponding to the transformed CSS code
      */
     public String transform(String input) throws SAXException, IOException {
+    	LOG.log(Level.INFO, "Processing CSS for transformation.");
         if (wipConfig.isEnableCssRewriting()) {
             // Getting prefix
             String wip = "\n." + wipConfig.getPortletDivId() + " ";
