@@ -27,5 +27,10 @@
             <short-title>WIP</short-title>
             <keywords>WIP</keywords>
         </portlet-info>
+        
+        <init-param>
+        	<name>RESPONSE_STORE_MAX_ENTRIES</name>
+        	<value>100</value>
+        </init-param>
     </portlet>
 </portlet-app>

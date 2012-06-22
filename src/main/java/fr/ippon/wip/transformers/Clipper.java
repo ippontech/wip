@@ -19,7 +19,6 @@
 package fr.ippon.wip.transformers;
 
 import fr.ippon.wip.config.WIPConfiguration;
-import fr.ippon.wip.config.WIPConfigurationManager;
 import fr.ippon.wip.util.CachedDTD;
 import fr.ippon.wip.util.WIPUtil;
 
@@ -82,6 +81,7 @@ public class Clipper implements WIPTransformer {
      * @throws TransformerException
      */
     public String transform(String input) throws SAXException, IOException, TransformerException {
+    	LOG.log(Level.INFO, "Processing clipping.");
         // Parsing the content into XHTML
         input = HTMLTransformer.htmlToXhtml(input);
 

@@ -1,3 +1,21 @@
+/*
+ *	Copyright 2010,2011 Ippon Technologies 
+ *  
+ *	This file is part of Web Integration Portlet (WIP).
+ *	Web Integration Portlet (WIP) is free software: you can redistribute it and/or modify
+ *	it under the terms of the GNU Lesser General Public License as published by
+ *	the Free Software Foundation, either version 3 of the License, or
+ *	(at your option) any later version.
+ *
+ *	Web Integration Portlet (WIP) is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *	GNU Lesser General Public License for more details.
+ *
+ *	You should have received a copy of the GNU Lesser General Public License
+ *	along with Web Integration Portlet (WIP).  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package fr.ippon.wip.http.hc;
 
 import fr.ippon.wip.http.HttpExecutor;
@@ -29,6 +47,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -39,6 +59,8 @@ import java.util.Map;
  */
 public class HttpClientExecutor implements HttpExecutor {
 
+	private static final Logger LOG = Logger.getLogger(HttpClientExecutor.class.getName());
+	
     /**
      * Send an HTTP request to the remote site and process the returned HTTP response
      * This method:
@@ -57,6 +79,7 @@ public class HttpClientExecutor implements HttpExecutor {
      * @throws IOException
      */
     public Response execute(Request request, PortletRequest portletRequest, PortletResponse portletResponse) throws IOException {
+    	LOG.log(Level.INFO, "Requesting on " + request.getRequestedURL() + ".");
         Response response = null;
         HttpClientResourceManager resourceManager = HttpClientResourceManager.getInstance();
         try {
@@ -66,8 +89,10 @@ public class HttpClientExecutor implements HttpExecutor {
             HttpUriRequest httpRequest;
             // Create HttpRequest object
             if (request.getHttpMethod() == Request.HttpMethod.POST) {
+            	LOG.log(Level.INFO, "Method request is POST");
                 httpRequest = createPostRequest(request);
             } else {
+            	LOG.log(Level.INFO, "Method request is GET");
                 httpRequest = createGetRequest(request);
             }
 
@@ -94,7 +119,7 @@ public class HttpClientExecutor implements HttpExecutor {
 
                 // Updates authentication state
                 AuthState authState = (AuthState) context.getAttribute(ClientContext.TARGET_AUTH_STATE);
-                portletWindow.setAuthenticated(authState != null & authState.getCredentials() != null);
+                portletWindow.setAuthenticated(authState != null && authState.getCredentials() != null);
 
                 // Get final URL (ie. perhaps redirected)
                 HttpUriRequest actualRequest = (HttpUriRequest) context.getAttribute(

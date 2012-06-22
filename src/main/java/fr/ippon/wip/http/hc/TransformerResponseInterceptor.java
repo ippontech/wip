@@ -1,7 +1,24 @@
+/*
+ *	Copyright 2010,2011 Ippon Technologies 
+ *  
+ *	This file is part of Web Integration Portlet (WIP).
+ *	Web Integration Portlet (WIP) is free software: you can redistribute it and/or modify
+ *	it under the terms of the GNU Lesser General Public License as published by
+ *	the Free Software Foundation, either version 3 of the License, or
+ *	(at your option) any later version.
+ *
+ *	Web Integration Portlet (WIP) is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *	GNU Lesser General Public License for more details.
+ *
+ *	You should have received a copy of the GNU Lesser General Public License
+ *	along with Web Integration Portlet (WIP).  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package fr.ippon.wip.http.hc;
 
 import fr.ippon.wip.config.WIPConfiguration;
-import fr.ippon.wip.config.WIPConfigurationManager;
 import fr.ippon.wip.http.Request;
 import fr.ippon.wip.transformers.*;
 import fr.ippon.wip.util.WIPUtil;
@@ -49,7 +66,7 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
 
         if (httpResponse == null) {
             // No response -> no transformation
-            LOG.warning("No response to transform for URI: " + request.getRequestedURL());
+            LOG.warning("No response to transform.");
             return;
         }
 
@@ -66,10 +83,12 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
         HttpRequest actualRequest = (HttpRequest) context.getAttribute(ExecutionContext.HTTP_REQUEST);
         HttpHost actualHost = (HttpHost) context.getAttribute(ExecutionContext.HTTP_TARGET_HOST);
         String actualURI = actualHost.toURI() + actualRequest.getRequestLine().getUri();
+        LOG.log(Level.INFO, "Processing of " + actualURI);
         if (!config.isProxyURI(actualURI)) {
+            LOG.log(Level.INFO, "Response doesn't need to be transformed.");
             return;
         }
-
+        
         // Creates an instance of Transformer depending on ResourceType and MimeType
         // May returns directly if no transformation is need
         WIPTransformer transformer = null;
@@ -78,6 +97,7 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
             case HTML:
                 if (!mimeType.equals("text/html") && !mimeType.equals("application/xhtml+xml")) {
                     // No transformation
+                	LOG.log(Level.INFO, "Response won't be transformed.");
                     return;
                 } else {
                     // HTML transformation
@@ -90,10 +110,11 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
                 // Empty content
                 if (((JSTransformer) transformer).isDeletedScript(actualURI)) {
                     // Send à 404 empty response
+                	LOG.log(Level.INFO, "Javascript resource deleted: transformed to 404 empty response.");
                     emtpyResponse(httpResponse);
                     return;
                 } else if (((JSTransformer) transformer).isIgnoredScript(actualURI)) {
-                    // No transformation
+                	LOG.log(Level.INFO, "Javascript response ignored.");
                     return;
                 }
                 break;
@@ -103,7 +124,7 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
                 break;
             case AJAX:
                 if (mimeType == null) {
-                    // No transformation
+                	LOG.log(Level.INFO, "Response won't be transformed: MIME type is null.");
                     return;
                 } else if (mimeType.equals("text/html") || mimeType.equals("application/xhtml+xml")) {
                     // HTML transformation
@@ -116,14 +137,16 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
                     transformer = new JSONTransformer();
                 } else {
                     // No transformation
+                	LOG.log(Level.INFO, "Reponse won't be transformed.");
                     return;
                 }
                 break;
             case RAW:
+            	LOG.log(Level.INFO, "Reponse won't be transformed.");
                 // No transformation
                 return;
         }
-
+        
         // Call WIPTransformer#transform method and update the response Entity object
         try {
             String transformedContent = transformer.transform(EntityUtils.toString(entity));

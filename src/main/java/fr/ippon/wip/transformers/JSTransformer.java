@@ -19,7 +19,6 @@
 package fr.ippon.wip.transformers;
 
 import fr.ippon.wip.config.WIPConfiguration;
-import fr.ippon.wip.config.WIPConfigurationManager;
 import fr.ippon.wip.http.Request;
 import fr.ippon.wip.util.WIPUtil;
 
@@ -81,13 +80,14 @@ public class JSTransformer extends AbstractTransformer {
      * @return a string corresponding to the transformed JavaScript code
      */
     public String transform(String input) throws SAXException, IOException {
+    	LOG.log(Level.INFO, "Processing Javascript for transformation.");
         String url;
 
         // CUSTOM ------------------------------------------------------------------
 
         //---------------------------------------------------------------------------
 
-        Map<String, Request.ResourceType> jsUrls = wipConfig.getJavascriptUrls();
+        Map<String, Request.ResourceType> jsUrls = wipConfig.getJavascriptResourcesMap();
         for (String jsUrl : jsUrls.keySet()) {
             url = jsUrl;
             // Add \\ for regex characters like "?"

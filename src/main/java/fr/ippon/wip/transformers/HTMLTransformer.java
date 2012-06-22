@@ -19,7 +19,7 @@
 package fr.ippon.wip.transformers;
 
 import fr.ippon.wip.config.WIPConfiguration;
-import fr.ippon.wip.config.WIPConfigurationManager;
+import fr.ippon.wip.config.XMLWIPConfigurationDAO;
 import fr.ippon.wip.util.CachedDTD;
 import fr.ippon.wip.util.WIPUtil;
 
@@ -119,6 +119,7 @@ public class HTMLTransformer extends AbstractTransformer {
         }
 
         // Parsing html content to xhtml
+        LOG.log(Level.INFO, "Parsing html to xhtml");
         input = htmlToXhtml(input);
         InputSource xhtml = new InputSource(new ByteArrayInputStream(input.getBytes()));
 
@@ -145,16 +146,17 @@ public class HTMLTransformer extends AbstractTransformer {
         transformer.setParameter("request", request);
         transformer.setParameter("response", response);
         transformer.setParameter("wip_divClassName", wipConfig.getPortletDivId());
-        if (wipConfig.getEnableCssRetrieving())
+        if (wipConfig.isEnableCssRetrieving())
             transformer.setParameter("retrieveCss", "true");
         else
             transformer.setParameter("retrieveCss", "false");
-        if (wipConfig.getEnableUrlRewriting())
+        if (wipConfig.isEnableUrlRewriting())
             transformer.setParameter("rewriteUrl", "true");
         else
             transformer.setParameter("rewriteUrl", "false");
 
         // Processing the transformation
+        LOG.log(Level.INFO, "Processing XSLT for HTML content transformation.");
         ByteArrayOutputStream resultOutputStream = new ByteArrayOutputStream();
         transformer.transform(new DOMSource(doc), new StreamResult(resultOutputStream));
 

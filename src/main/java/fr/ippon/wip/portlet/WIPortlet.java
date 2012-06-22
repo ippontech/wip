@@ -19,7 +19,8 @@
 package fr.ippon.wip.portlet;
 
 import fr.ippon.wip.config.WIPConfiguration;
-import fr.ippon.wip.config.WIPConfigurationManager;
+import fr.ippon.wip.config.WIPConfigurationDAO;
+import fr.ippon.wip.config.WIPConfigurationDAOFactory;
 import fr.ippon.wip.http.HttpExecutor;
 import fr.ippon.wip.http.Request;
 import fr.ippon.wip.http.Response;
@@ -30,9 +31,14 @@ import fr.ippon.wip.util.WIPUtil;
 
 import javax.portlet.*;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.io.IOException;
 import java.util.UUID;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 /**
  * WIPortlet enables web application integration within a portlet. It override
@@ -56,7 +62,7 @@ public class WIPortlet extends GenericPortlet {
 	public static final String URL_CONCATENATION_KEY = "WIP_URL_CONCATENATION";
 
 	// Class attributes
-	private WIPConfigurationManager wipConfigurationManager;
+	private WIPConfigurationDAO wipConfigurationDAO;
 	private HttpExecutor executor;
 
 	/**
@@ -69,8 +75,23 @@ public class WIPortlet extends GenericPortlet {
 	@Override
 	public void init(PortletConfig config) throws PortletException {
 		super.init(config);
+		
+		try {
+			Handler fileHandler = new FileHandler("%h/transformers.log", true);
+			fileHandler.setFormatter(new SimpleFormatter());
+			Logger.getLogger("fr.ippon.wip.transformers").addHandler(fileHandler);
+			Logger.getLogger("fr.ippon.wip.http.hc").addHandler(fileHandler);
+			
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
-		wipConfigurationManager = WIPConfigurationManager.getInstance();
+		int responseStoreMaxEntries = Integer.parseInt(config.getInitParameter("RESPONSE_STORE_MAX_ENTRIES"));
+		ResponseStore.getInstance().setMaxEntries(responseStoreMaxEntries);
+		
+		wipConfigurationDAO = WIPConfigurationDAOFactory.getInstance().getXMLInstance();
 		executor = new HttpClientExecutor();
 	}
 
@@ -92,12 +113,12 @@ public class WIPortlet extends GenericPortlet {
 
 		// retrieve the configuration name associated to the portlet preferences
 		PortletPreferences preferences = request.getPreferences();
-		String configurationName = preferences.getValue("configurationName", WIPConfigurationManager.DEFAULT_CONFIG_NAME);
-		configuration = wipConfigurationManager.getConfiguration(configurationName);
+		String configurationName = preferences.getValue(Attributes.CONFIGURATION_NAME.name(), WIPConfigurationDAO.DEFAULT_CONFIG_NAME);
+		configuration = wipConfigurationDAO.read(configurationName);
 
 		// update the session with the configuration
 		PortletSession session = request.getPortletSession();
-		session.setAttribute("configuration", configuration);
+		session.setAttribute(Attributes.CONFIGURATION.name(), configuration);
 		return configuration;
 	}
 
@@ -130,7 +151,7 @@ public class WIPortlet extends GenericPortlet {
 			// Check state for current URI
 			if (windowState.getCurrentURL() == null) {
 				// Create first request for this portlet window
-				requestUrl = wipConfig.getInitUrlAsString();
+				requestUrl = wipConfig.getInitUrl();
 				// Update state
 				windowState.setCurrentURL(requestUrl);
 			} else {
@@ -148,7 +169,7 @@ public class WIPortlet extends GenericPortlet {
 		// Check if authentication is requested by remote host
 		if (windowState.getRequestedAuthSchemes() != null) {
 			// Redirecting to the form
-			String location = "/WEB-INF/jsp/auth.jsp";
+			String location = Pages.AUTH.getPath();
 			PortletRequestDispatcher portletRequestDispatcher = getPortletContext().getRequestDispatcher(location);
 			portletRequestDispatcher.include(request, response);
 		} else {
@@ -171,12 +192,34 @@ public class WIPortlet extends GenericPortlet {
 
 		// If in edit mode, delegates processing to WIPEdit
 		if (request.getPortletMode().equals(PortletMode.EDIT)) {
-			WIPEdit.processAction(request, response);
+			PortletSession session = request.getPortletSession();
+
+			String configurationName = request.getParameter(Attributes.ACTION_SELECT.name());
+			if (StringUtils.isEmpty(configurationName))
+				return;
+
+			WIPConfiguration configuration = wipConfigurationDAO.read(configurationName);
+			session.setAttribute(Attributes.CONFIGURATION.name(), configuration);
+
+			try {
+				request.getPreferences().setValue(Attributes.CONFIGURATION_NAME.name(), configurationName);
+				request.getPreferences().store();
+
+			} catch (ReadOnlyException e) {
+				e.printStackTrace();
+			} catch (ValidatorException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			PortletWindow.clearInstance(request);
 			return;
 		}
+		
 		// If request comes from authentication form, process credentials and go
 		// in RENDER phase
-		else if (request.getParameter("auth") != null && request.getParameter(WIPortlet.LINK_URL_KEY) == null) {
+		if (request.getParameter("auth") != null && request.getParameter(WIPortlet.LINK_URL_KEY) == null) {
 			manageAuthentication(request, response);
 			return;
 		}
@@ -241,22 +284,8 @@ public class WIPortlet extends GenericPortlet {
 	 */
 	@Override
 	protected void doEdit(RenderRequest request, RenderResponse response) throws PortletException, IOException {
-		PortletSession session = request.getPortletSession();
-
-		if (session.getAttribute("editPage") != null && !session.getAttribute("editPage").equals("")) {
-			String location = "/WEB-INF/jsp/" + session.getAttribute("editPage") + ".jsp";
-			PortletRequestDispatcher portletRequestDispatcher = getPortletContext().getRequestDispatcher(location);
-			portletRequestDispatcher.include(request, response);
-		} else if (session.getAttribute("configPage") != null) {
-			PortletRequestDispatcher portletRequestDispatcher = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/existingconfig.jsp?configPage" + session.getAttribute("configPage"));
-			portletRequestDispatcher.include(request, response);
-		} else if (session.getAttribute("saveConfig") != null) {
-			PortletRequestDispatcher portletRequestDispatcher = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/saveconfig.jsp");
-			portletRequestDispatcher.include(request, response);
-		} else {
-			PortletRequestDispatcher portletRequestDispatcher = getPortletContext().getRequestDispatcher("/WEB-INF/jsp/generalsettings.jsp");
-			portletRequestDispatcher.include(request, response);
-		}
+		PortletRequestDispatcher portletRequestDispatcher = getPortletContext().getRequestDispatcher(Pages.SELECT_CONFIG.getPath());
+		portletRequestDispatcher.include(request, response);
 	}
 
 	/**

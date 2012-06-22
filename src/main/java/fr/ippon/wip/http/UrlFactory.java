@@ -1,7 +1,6 @@
 package fr.ippon.wip.http;
 
 import fr.ippon.wip.config.WIPConfiguration;
-import fr.ippon.wip.config.WIPConfigurationManager;
 import fr.ippon.wip.portlet.WIPortlet;
 import fr.ippon.wip.state.PortletWindow;
 import fr.ippon.wip.util.WIPUtil;

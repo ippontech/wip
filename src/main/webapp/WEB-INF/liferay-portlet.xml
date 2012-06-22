@@ -7,4 +7,13 @@
         <portlet-name>WIP</portlet-name>
         <instanceable>true</instanceable>
     </portlet>
+
+    <portlet>
+        <portlet-name>WIPConfiguration</portlet-name>
+        <instanceable>true</instanceable>
+        
+        <header-portlet-css>/CodeMirror-2.25/lib/codemirror.css</header-portlet-css>
+        <header-portlet-javascript>/CodeMirror-2.25/lib/codemirror.js</header-portlet-javascript>
+        <header-portlet-javascript>/CodeMirror-2.25/mode/xml/xml.js</header-portlet-javascript>
+    </portlet>
 </liferay-portlet-app>

@@ -19,7 +19,6 @@
 package fr.ippon.wip.transformers;
 
 import fr.ippon.wip.config.WIPConfiguration;
-import fr.ippon.wip.config.WIPConfigurationManager;
 import fr.ippon.wip.util.WIPUtil;
 
 import org.xml.sax.SAXException;
@@ -62,7 +61,6 @@ public class CSSTransformer extends AbstractTransformer {
      */
     public CSSTransformer(PortletRequest request, PortletResponse response) {
         super(request);
-        WIPConfigurationManager w = WIPConfigurationManager.getInstance();
         this.response = response;
         wipConfig = WIPUtil.extractConfiguration(request);
     }
@@ -76,7 +74,8 @@ public class CSSTransformer extends AbstractTransformer {
      * @return a string corresponding to the transformed CSS code
      */
     public String transform(String input) throws SAXException, IOException {
-        if (wipConfig.getEnableCssRewriting()) {
+    	LOG.log(Level.INFO, "Processing CSS for transformation.");
+        if (wipConfig.isEnableCssRewriting()) {
             // Getting prefix
             String wip = "\n." + wipConfig.getPortletDivId() + " ";
 
@@ -99,7 +98,7 @@ public class CSSTransformer extends AbstractTransformer {
             }
 
             // Parsing the file to add the wip prefix before selectors
-            if (wipConfig.getAddPrefix()) {
+            if (wipConfig.isAddPrefix()) {
                 String aux = "", imported = "";
                 String selector;
 
@@ -145,7 +144,7 @@ public class CSSTransformer extends AbstractTransformer {
             input = rewrite(regex, input, response);
 
             // Removing position: absolute;
-            if (!wipConfig.getAbsolutePositioning())
+            if (!wipConfig.isAbsolutePositioning())
                 input = input.replaceAll("absolute", "relative");
         }
         return input;

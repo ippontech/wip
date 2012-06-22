@@ -1,11 +1,29 @@
-package fr.ippon.wip.state;
+/*
+ *	Copyright 2010,2011 Ippon Technologies 
+ *  
+ *	This file is part of Web Integration Portlet (WIP).
+ *	Web Integration Portlet (WIP) is free software: you can redistribute it and/or modify
+ *	it under the terms of the GNU Lesser General Public License as published by
+ *	the Free Software Foundation, either version 3 of the License, or
+ *	(at your option) any later version.
+ *
+ *	Web Integration Portlet (WIP) is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *	GNU Lesser General Public License for more details.
+ *
+ *	You should have received a copy of the GNU Lesser General Public License
+ *	along with Web Integration Portlet (WIP).  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-import fr.ippon.wip.http.Response;
+package fr.ippon.wip.state;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
+
+import fr.ippon.wip.http.Response;
 
 /**
  * Singleton class used to store Response from ACTION to RENDER phase (or servlet)
@@ -20,22 +38,36 @@ import java.util.logging.Logger;
  * @author François Prot
  */
 public class ResponseStore extends LinkedHashMap<UUID, Response> {
+	
     private static final Logger LOG = Logger.getLogger(ResponseStore.class.getName());
 
     private static final ResponseStore instance = new ResponseStore();
 
-    // TODO: get max entries from portlet.xml
-    // TODO: manage max entries per host
-    // TODO: manage expiration dates
-    private static final int MAX_ENTRIES = 100;
-
-    private ResponseStore() {
-        super();
-    }
-
     public static ResponseStore getInstance() {
         return instance;
     }
+
+    // TODO: manage max entries per host
+    // TODO: manage expiration dates
+    private int maxEntries = 100;
+
+	private ResponseStore() {
+        super();
+    }
+
+    @Override
+    protected boolean removeEldestEntry(Map.Entry<UUID, Response> entry) {
+        if (size() > maxEntries) {
+            entry.getValue().dispose();
+            LOG.warning("Response evicted from store, URI was: " + entry.getValue().getUrl());
+            return true;
+        }
+        return false;
+    }
+
+    public void setMaxEntries(int maxEntries) {
+		this.maxEntries = maxEntries;
+	}
 
     /**
      * Store a Response object and return a corresponding UUID to retrieve it later
@@ -51,15 +83,5 @@ public class ResponseStore extends LinkedHashMap<UUID, Response> {
             put(id, response);
         }
         return id;
-    }
-
-    @Override
-    protected boolean removeEldestEntry(Map.Entry<UUID, Response> entry) {
-        if (size() > MAX_ENTRIES) {
-            entry.getValue().dispose();
-            LOG.warning("Response evicted from store, URI was: " + entry.getValue().getUrl());
-            return true;
-        }
-        return false;
     }
 }

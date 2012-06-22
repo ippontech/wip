@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<configuration>
+
+		<name>default-config</name>
+		
+        <initUrl>http://blog.ippon.fr</initUrl>
+
+        <enableUrlRewriting>true</enableUrlRewriting>
+
+		<domainsToProxy>
+			<string>http://blog.ippon.fr</string>
+		</domainsToProxy>
+
+        <portletTitle>Blog Ippon</portletTitle>
+
+        <cssRegex>(?:url\((?:'|")?(.*?)(?:'|")?\))|(?:@import\s+[^url](?:'|")?(.*?)(?:'|")|;|\s+|$)</cssRegex>
+
+        <jsRegex>open\('([^']*)'|open\("([^\"]*)"</jsRegex>
+
+        <enableCssRewriting>true</enableCssRewriting>
+
+        <enableCssRetrieving>true</enableCssRetrieving>
+
+        <portletDivId>wip</portletDivId>
+
+        <absolutePositioning>true</absolutePositioning>
+
+        <addPrefix>true</addPrefix>
+
+        <customCss></customCss>
+
+		<scriptsToDelete>
+			<string>js/jquery/jquery.js</string>
+		</scriptsToDelete>
+		
+		<scriptsToIgnore></scriptsToIgnore>
+		
+		<javascriptUrls></javascriptUrls>
+
+        <clippingType>none</clippingType>
+
+        <xPath></xPath>
+
+        <!-- Caching -->
+
+        <enableCache>false</enableCache>
+
+        <pageCachePrivate>false</pageCachePrivate>
+
+        <resourceCachePublic>false</resourceCachePublic>
+
+        <forcePageCaching>false</forcePageCaching>
+
+        <forceResourceCaching>false</forceResourceCaching>
+
+        <pageCacheTimeout>0</pageCacheTimeout>
+
+        <resourceCacheTimeout>0</resourceCacheTimeout>
+
+        <cacheDateRate>30</cacheDateRate>
+
+        <!-- LTPA SSO Authentication -->
+
+        <ltpaSsoAuthentication>false</ltpaSsoAuthentication>
+
+        <ltpaSecretProviderClassName></ltpaSecretProviderClassName>
+
+        <credentialProviderClassName></credentialProviderClassName>
+
+</configuration>

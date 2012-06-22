@@ -18,481 +18,775 @@
 
 package fr.ippon.wip.config;
 
-import fr.ippon.wip.http.Request;
-
-import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
+
+import fr.ippon.wip.http.Request;
+
 /**
- * Interface used to manage the configuration of the portlet.
- *
+ * The configuration parameters of a wip portlet.
+ * 
  * @author Anthony Luce
  * @author Quentin Thierry
+ * @author Yohan Legat
  */
-public interface WIPConfiguration {
-
-    /**
-     * Save the current configuration
-     */
-    public void save();
-
-    /**
-     * Get the configuration as a string.
-     *
-     * @return the configuration as a string
-     */
-    public String getConfigAsString();
-
-    /**
-     * Set the URL of the distant application to integrate in the portlet
-     *
-     * @param initUrl the initial URL
-     */
-    public void setInitUrl(URL initUrl);
-
-    /**
-     * Get the initial URL of the portlet, i.e. the URL of the application
-     * launched in the portlet.
-     *
-     * @return The URL of the initial URL
-     */
-    public URL getInitUrl();
-
-    /**
-     * Same method as the previous one, but returning the URL as a string.
-     *
-     * @return The String representation of the initial URL
-     */
-    public String getInitUrlAsString();
-
-    /**
-     * Set a list of URL to proxy. Every URL resource in the HTML code related
-     * to an URL given in the list will be rewrited to be treated through the portal.
-     *
-     * @param domainsToProxy The list of URL
-     */
-    public void setDomainsToProxy(List<URL> domainsToProxy);
-
-    /**
-     * Get the list of domains who will be proxied by the portlet
-     *
-     * @return The list of URL proxied
-     */
-    public List<URL> getDomainsToProxy();
-
-    /**
-     * Set the portlet title.
-     *
-     * @param title the portlet title
-     */
-    public void setPortletTitle(String title);
-
-    /**
-     * Get the portlet title.
-     *
-     * @return the portlet title
-     */
-    public String getPortletTitle();
-
-    /**
-     * Set the regular expression used to rewrite javascript code
-     *
-     * @param jsRegex The regular expression
-     */
-    public void setJsRegex(String jsRegex);
-
-    /**
-     * Get the regular expression used to rewrite the javascript code
-     *
-     * @return The regular expression
-     */
-    public String getJsRegex();
-
-    /**
-     * Set the regular expression used to rewrite CSS code
-     *
-     * @param cssRegex The regular expression
-     */
-    public void setCssRegex(String cssRegex);
-
-    /**
-     * Get the regular expression used to rewrite CSS code
-     *
-     * @return The regular expression
-     */
-    public String getCssRegex();
-
-    /**
-     * Set the id of the div containing the content of the distant application.
-     * This is useful to protect the CSS code of the portal from the CSS
-     * retrieved from the distant application
-     *
-     * @param portletDivId The id
-     */
-    public void setPortletDivId(String portletDivId);
-
-    /**
-     * Get the current id of the div containing the content of the distant application.
-     *
-     * @return The id
-     */
-    public String getPortletDivId();
-
-    /**
-     * Enable or not the add of the WIP prefix before CSS selectors to avoid CSS conflicts.
-     *
-     * @param b a boolean indicating if the prefix has to be added
-     */
-    public void setAddPrefix(boolean b);
-
-    /**
-     * Check if the prefix is added before CSS selectors.
-     *
-     * @return a boolean indicating if the prefix is added
-     */
-    public boolean getAddPrefix();
-
-    /**
-     * Enable or not to replace CSS absolute positioning by relative positioning.
-     *
-     * @param b a boolean indicating if the absolute positioning is kept or not
-     */
-    public void setAbsolutePositioning(boolean b);
-
-    /**
-     * Check if the absolute positioning is replaced.
-     *
-     * @return a boolean indicating if the absolute positioning is replaced
-     */
-    public boolean getAbsolutePositioning();
-
-    /**
-     * Set the custom CSS to be used to customize the style of the content of the portlet.
-     *
-     * @param customCss The custom CSS code
-     */
-    public void setCustomCss(String customCss);
-
-    /**
-     * Get the custom CSS used to customize the style of the content of the portlet.
-     *
-     * @return The custom CSS code
-     */
-    public String getCustomCss();
-
-    /**
-     * Fill a list of domains from a given String containing domains separated by ';'
-     *
-     * @param domains The String representation of the list
-     * @return The list of domains
-     */
-    public List<URL> setDomainsFromString(String domains);
-
-    /**
-     * Get a String containing the given domains separated by ';'
-     *
-     * @param domains The list of domains
-     * @return The list of domains in a String representation
-     */
-    public String getDomainsAsString(List<URL> domains);
-
-    /**
-     * Set the clipping type
-     *
-     * @param type the clipping type
-     */
-    public void setClippingType(String type);
-
-    /**
-     * Get the clipping type (none, basic, xslt)
-     *
-     * @return the clipping type
-     */
-    public String getClippingType();
-
-    /**
-     * Get the XPath used to proceed the XSLT transformation.
-     *
-     * @return the XPath
-     */
-    public String getXPath();
-
-    /**
-     * Set the XPath with the value defined by the user.
-     *
-     * @param xpath the XPath
-     */
-    public void setXPath(String xpath);
-
-    /**
-     * Set the XSLT code to proceed clipping
-     *
-     * @param xslt the XSLT code as a string
-     */
-    public void setXsltClipping(String xslt);
-
-    /**
-     * Get the XSLT code to proceed clipping
-     *
-     * @return the XSLT code as a string
-     */
-    public String getXsltClipping();
-
-    /**
-     * Set the XSLT code to proceed transformations
-     *
-     * @param xslt the XSLT code as a string
-     */
-    public void setXsltTransform(String xslt);
-
-    /**
-     * Get the XSLT code to proceed transformations
-     *
-     * @return the XSLT code as a string
-     */
-    public String getXsltTransform();
-
-    /**
-     * Set Ajax URLs to be rewritten during the JS transforming
-     *
-     * @param urls the list of URLs to be rewritten
-     */
-    public void setJavascriptUrls(List<String> urls);
-
-    /**
-     * Get Ajax URLs to be rewritten during the JS transforming
-     *
-     * @return the list of URLs to be rewritten
-     */
-    public Map<String, Request.ResourceType> getJavascriptUrls();
-
-    /**
-     * Set the URLs of the scripts that will not be transformed
-     *
-     * @param urls the list of URLs
-     */
-    public void setScriptsToIgnore(List<String> urls);
-
-    /**
-     * Get the URLs of the scripts that will not be transformed
-     *
-     * @return the list of URLs
-     */
-    public List<String> getScriptsToIgnore();
-
-    /**
-     * Set the URLs of the scripts that will be deleted
-     *
-     * @param urls the list of URLs
-     */
-    public void setScriptsToDelete(List<String> urls);
-
-    /**
-     * Get the URLs of the scripts that will be deleted
-     *
-     * @return the list of URLs
-     */
-    public List<String> getScriptsToDelete();
-
-    /**
-     * Enable or disable URLs rewriting.
-     *
-     * @param bool true to enable, else false
-     */
-    public void setEnableUrlRewriting(boolean bool);
-
-    /**
-     * Check if URLs rewriting is enable or disable.
-     *
-     * @return true if enable, else false
-     */
-    public boolean getEnableUrlRewriting();
-
-    /**
-     * Enable or disable CSS retrieving.
-     *
-     * @param bool true to enable, else false
-     */
-    public void setEnableCssRetrieving(boolean bool);
-
-    /**
-     * Check if CSS retrieving is enable or disable.
-     *
-     * @return true if enable, else false
-     */
-    public boolean getEnableCssRetrieving();
-
-    /**
-     * Enable or disable CSS rewriting.
-     *
-     * @param bool true to enable, else false
-     */
-    public void setEnableCssRewriting(boolean bool);
-
-    /**
-     * Check if CSS rewriting is enable or disable.
-     *
-     * @return true if enable, else false
-     */
-    public boolean getEnableCssRewriting();
-
-
-    // CACHE CONFIGURATION
-
-    /**
-     * Check if cache is enable or disable.
-     *
-     * @return true if enable, else false
-     */
-    public boolean getEnableCache();
-
-    /**
-     * Enable or disable caching.
-     *
-     * @param enable true to enable, else false
-     */
-    public void setEnableCache(boolean enable);
-
-    /**
-     * Check if pages have to be cached as private.
-     *
-     * @return true if private, else false
-     */
-    public boolean getPageCachePrivate();
-
-    /**
-     * Force the pages to be cached as private or not.
-     *
-     * @param b true to force private, else false
-     */
-    public void setPageCachePrivate(boolean b);
-
-    /**
-     * Check if resources have to be cached as public.
-     *
-     * @return true if public, else false
-     */
-    public boolean getResourceCachePublic();
-
-    /**
-     * Force the resources to be cached as public or not.
-     *
-     * @param b true to force public, else false
-     */
-    public void setResourceCachePublic(boolean b);
-
-    /**
-     * Check if the page caching is forced.
-     *
-     * @return true if forced, else false
-     */
-    public boolean getForcePageCaching();
-
-    /**
-     * Force page caching.
-     *
-     * @param b true to force caching, else false
-     */
-    public void setForcePageCaching(boolean b);
-
-    /**
-     * Check if the resource caching is forced.
-     *
-     * @return true if forced, else false
-     */
-    public boolean getForceResourceCaching();
-
-    /**
-     * Force resource caching.
-     *
-     * @param b true to force caching, else false
-     */
-    public void setForceResourceCaching(boolean b);
-
-    /**
-     * Get the timeout for page caching.
-     *
-     * @return the timeout
-     */
-    public int getPageCacheTimeout();
-
-    /**
-     * Set the timeout for page caching.
-     *
-     * @param timeout the timeout to set
-     */
-    public void setPageCacheTimeout(int timeout);
-
-    /**
-     * Get the timeout for resource caching.
-     *
-     * @return the timeout
-     */
-    public int getResourceCacheTimeout();
-
-    /**
-     * Set the timeout for resource caching.
-     *
-     * @param timeout the timeout to set
-     */
-    public void setResourceCacheTimeout(int timeout);
-
-    /**
-     * Get the date rate to determinate the freshness according to
-     * creation date, current date and last modification date.
-     *
-     * @return the cache date rate
-     */
-    public int getCacheDateRate();
-
-    /**
-     * Enable or disable LTPA SSO authentication
-     *
-     * @param b if enable then true else false
-     */
-    public void setLtpaSsoAuthentication(boolean b);
-
-    /**
-     * Is LTPA SSO authentication enabled
-     *
-     * @return if enable then true else false
-     */
-    public boolean getLtpaSsoAuthentication();
-
-    /**
-     * Set the LTPA secret provider class name
-     *
-     * @param name the class name
-     */
-    public void setLtpaSecretProviderClassName(String name);
-
-    /**
-     * Get the LTPA secret provider class name
-     *
-     * @return the class name
-     */
-    public String getLtpaSecretProviderClassName();
-
-    /**
-     * Set the credential provider class name
-     *
-     * @param name the class name
-     */
-    public void setCredentialProviderClassName(String name);
-
-    /**
-     * Get the credential provider class name
-     *
-     * @return the class name
-     */
-    public String getCredentialProviderClassName();
-
-    public boolean isProxyURI(String uri);
-    
-    /**
-     * Get the configuration name.
-     * @return the configuration name
-     */
-    public String getName();
+public class WIPConfiguration implements Cloneable {
+
+	public static final String SEPARATOR = ";";
+
+	// if someday we use a database...
+	private int id;
+
+	private String name;
+
+	private String credentialProviderClassName;
+
+	private String ltpaSecretProviderClassName;
+
+	private boolean ltpaSsoAuthentication;
+
+	private int resourceCacheTimeout;
+
+	private int pageCacheTimeout;
+
+	private boolean forceResourceCaching;
+
+	private boolean forcePageCaching;
+
+	private boolean resourceCachePublic;
+
+	private boolean pageCachePrivate;
+
+	private boolean enableCache;
+
+	private boolean enableCssRewriting;
+
+	private boolean enableCssRetrieving;
+
+	private boolean enableUrlRewriting;
+
+	private List<String> scriptsToDelete;
+
+	private List<String> scriptsToIgnore;
+
+	private String xsltClipping;
+
+	private String xPath;
+
+	private String clippingType;
+
+	private String customCss;
+
+	private boolean absolutePositioning;
+
+	private boolean addPrefix;
+
+	private String portletDivId;
+
+	private String cssRegex;
+
+	private String jsRegex;
+
+	private String portletTitle;
+
+	private String initUrl;
+
+	private List<String> domainsToProxy;
+
+	private String xsltTransform;
+
+	private int cacheDateRate;
+
+	private List<String> javascriptUrls;
+
+	private Map<String, Request.ResourceType> javascriptResourcesMap;
+
+	public WIPConfiguration() {
+		javascriptUrls = new ArrayList<String>();
+		scriptsToDelete = new ArrayList<String>();
+		scriptsToIgnore = new ArrayList<String>();
+		domainsToProxy = new ArrayList<String>();
+	}
+
+	@Override
+	public Object clone() {
+		WIPConfiguration clone = null;
+		try {
+			clone = (WIPConfiguration) super.clone();
+			clone.setScriptsToDelete(new ArrayList<String>(getScriptsToDelete()));
+			clone.setScriptsToIgnore(new ArrayList<String>(getScriptsToIgnore()));
+			clone.setDomainsToProxy(new ArrayList<String>(getDomainsToProxy()));
+			clone.setJavascriptUrls(new ArrayList<String>(getJavascriptUrls()));
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
+
+		return clone;
+	}
+
+	/**
+	 * Get the date rate to determinate the freshness according to creation
+	 * date, current date and last modification date.
+	 * 
+	 * @return the cache date rate
+	 */
+	public int getCacheDateRate() {
+		return cacheDateRate;
+	}
+
+	/**
+	 * Get the clipping type (none, basic, xslt)
+	 * 
+	 * @return the clipping type
+	 */
+	public String getClippingType() {
+		return clippingType;
+	}
+
+	/**
+	 * Get the credential provider class name
+	 * 
+	 * @return the class name
+	 */
+	public String getCredentialProviderClassName() {
+		return credentialProviderClassName;
+	}
+
+	/**
+	 * Get the regular expression used to rewrite CSS code
+	 * 
+	 * @return The regular expression
+	 */
+	public String getCssRegex() {
+		return cssRegex;
+	}
+
+	/**
+	 * Get the custom CSS used to customize the style of the content of the
+	 * portlet.
+	 * 
+	 * @return The custom CSS code
+	 */
+	public String getCustomCss() {
+		return customCss;
+	}
+
+	/**
+	 * Get the list of domains who will be proxied by the portlet
+	 * 
+	 * @return The list of URL proxied
+	 */
+	public List<String> getDomainsToProxy() {
+		return domainsToProxy;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	/**
+	 * Get the initial URL of the portlet as a string, i.e. the URL of the
+	 * application launched in the portlet.
+	 * 
+	 * @return the initial URL
+	 */
+	public String getInitUrl() {
+		return initUrl;
+	}
+
+	/**
+	 * Associate AJAX resources with their URLs.
+	 * 
+	 * @return the association between AJAX resources and their URLs as a map
+	 */
+	public synchronized Map<String, Request.ResourceType> getJavascriptResourcesMap() {
+		if (javascriptResourcesMap == null) {
+			javascriptResourcesMap = new HashMap<String, Request.ResourceType>();
+			List<String> javascriptUrlsClone = new ArrayList<String>(javascriptUrls);
+
+			if (javascriptUrlsClone.size() == 1 && javascriptUrlsClone.get(0).equals(""))
+				javascriptUrlsClone = new ArrayList<String>();
+
+			for (String input : javascriptUrlsClone) {
+				String tmp[] = input.split("::::");
+				if (tmp.length == 2) {
+					String url = tmp[0];
+					Request.ResourceType type = Request.ResourceType.valueOf(tmp[1]);
+					javascriptResourcesMap.put(url, type);
+				}
+			}
+		}
+
+		return javascriptResourcesMap;
+	}
+
+	/**
+	 * Get Ajax URLs to be rewritten during the JS transforming
+	 * 
+	 * @return the list of URLs to be rewritten
+	 */
+	public List<String> getJavascriptUrls() {
+		return javascriptUrls;
+	}
+
+	/**
+	 * Get the regular expression used to rewrite the javascript code
+	 * 
+	 * @return The regular expression
+	 */
+	public String getJsRegex() {
+		return jsRegex;
+	}
+
+	/**
+	 * Get the LTPA secret provider class name
+	 * 
+	 * @return the class name
+	 */
+	public String getLtpaSecretProviderClassName() {
+		return ltpaSecretProviderClassName;
+	}
+
+	/**
+	 * Get the configuration name.
+	 * 
+	 * @return the configuration name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * Get the timeout for page caching.
+	 * 
+	 * @return the timeout
+	 */
+	public int getPageCacheTimeout() {
+		return pageCacheTimeout;
+	}
+
+	/**
+	 * Get the current id of the div containing the content of the distant
+	 * application.
+	 * 
+	 * @return The id
+	 */
+	public String getPortletDivId() {
+		return portletDivId;
+	}
+
+	/**
+	 * Get the portlet title.
+	 * 
+	 * @return the portlet title
+	 */
+	public String getPortletTitle() {
+		return portletTitle;
+	}
+
+	/**
+	 * Get the timeout for resource caching.
+	 * 
+	 * @return the timeout
+	 */
+	public int getResourceCacheTimeout() {
+		return resourceCacheTimeout;
+	}
+
+	/**
+	 * Get the URLs of the scripts that will be deleted
+	 * 
+	 * @return the list of URLs
+	 */
+	public List<String> getScriptsToDelete() {
+		return scriptsToDelete;
+	}
+
+	/**
+	 * Get the URLs of the scripts that will not be transformed
+	 * 
+	 * @return the list of URLs
+	 */
+	public List<String> getScriptsToIgnore() {
+		return scriptsToIgnore;
+	}
+
+	/**
+	 * Get the XPath used to proceed the XSLT transformation.
+	 * 
+	 * @return the XPath
+	 */
+	public String getXPath() {
+		return xPath;
+	}
+
+	/**
+	 * Get the XSLT code to proceed clipping
+	 * 
+	 * @return the XSLT code as a string
+	 */
+	public String getXsltClipping() {
+		return xsltClipping;
+	}
+
+	/**
+	 * Get the XSLT code to proceed transformations
+	 * 
+	 * @return the XSLT code as a string
+	 */
+	public String getXsltTransform() {
+		return xsltTransform;
+	}
+
+	/**
+	 * Check if the absolute positioning is replaced.
+	 * 
+	 * @return a boolean indicating if the absolute positioning is replaced
+	 */
+	public boolean isAbsolutePositioning() {
+		return absolutePositioning;
+	}
+
+	/**
+	 * Check if the prefix is added before CSS selectors.
+	 * 
+	 * @return a boolean indicating if the prefix is added
+	 */
+	public boolean isAddPrefix() {
+		return addPrefix;
+	}
+
+	/**
+	 * Check if cache is enable or disable.
+	 * 
+	 * @return true if enable, else false
+	 */
+	public boolean isEnableCache() {
+		return enableCache;
+	}
+
+	/**
+	 * Check if CSS retrieving is enable or disable.
+	 * 
+	 * @return true if enable, else false
+	 */
+	public boolean isEnableCssRetrieving() {
+		return enableCssRetrieving;
+	}
+
+	/**
+	 * Check if CSS rewriting is enable or disable.
+	 * 
+	 * @return true if enable, else false
+	 */
+	public boolean isEnableCssRewriting() {
+		return enableCssRewriting;
+	}
+
+	/**
+	 * Check if URLs rewriting is enable or disable.
+	 * 
+	 * @return true if enable, else false
+	 */
+	public boolean isEnableUrlRewriting() {
+		return enableUrlRewriting;
+	}
+
+	/**
+	 * Check if the page caching is forced.
+	 * 
+	 * @return true if forced, else false
+	 */
+	public boolean isForcePageCaching() {
+		return forcePageCaching;
+	}
+
+	/**
+	 * Check if the resource caching is forced.
+	 * 
+	 * @return true if forced, else false
+	 */
+	public boolean isForceResourceCaching() {
+		return forceResourceCaching;
+	}
+
+	/**
+	 * Is LTPA SSO authentication enabled
+	 * 
+	 * @return if enable then true else false
+	 */
+	public boolean isLtpaSsoAuthentication() {
+		return ltpaSsoAuthentication;
+	}
+
+	/**
+	 * Check if pages have to be cached as private.
+	 * 
+	 * @return true if private, else false
+	 */
+	public boolean isPageCachePrivate() {
+		return pageCachePrivate;
+	}
+
+	/**
+	 * Check if the given uri has to be proxied
+	 * 
+	 * @param uri
+	 * @return true if the uri has to be proxied
+	 */
+	public boolean isProxyURI(final String uri) {
+		return CollectionUtils.exists(getDomainsToProxy(), new Predicate() {
+
+			public boolean evaluate(Object object) {
+				return uri.startsWith(object.toString());
+			}
+		});
+	}
+
+	/**
+	 * Check if resources have to be cached as public.
+	 * 
+	 * @return true if public, else false
+	 */
+	public boolean isResourceCachePublic() {
+		return resourceCachePublic;
+	}
+
+	/**
+	 * Enable or not to replace CSS absolute positioning by relative
+	 * positioning.
+	 * 
+	 * @param absolutePositioning
+	 *            a boolean indicating if the absolute positioning is kept or
+	 *            not
+	 */
+	public void setAbsolutePositioning(boolean absolutePositioning) {
+		this.absolutePositioning = absolutePositioning;
+	}
+
+	/**
+	 * Enable or not the add of the WIP prefix before CSS selectors to avoid CSS
+	 * conflicts.
+	 * 
+	 * @param addPrefix
+	 *            a boolean indicating if the prefix has to be added
+	 */
+	public void setAddPrefix(boolean addPrefix) {
+		this.addPrefix = addPrefix;
+	}
+
+	public void setCacheDateRate(int cacheDateRate) {
+		this.cacheDateRate = cacheDateRate;
+	}
+
+	/**
+	 * Set the clipping type
+	 * 
+	 * @param clippingType
+	 *            the clipping type
+	 */
+	public void setClippingType(String clippingType) {
+		this.clippingType = clippingType;
+	}
+
+	/**
+	 * Set the credential provider class name
+	 * 
+	 * @param ltpaSecretProviderClassName
+	 *            the class name
+	 */
+	public void setCredentialProviderClassName(String ltpaSecretProviderClassName) {
+		this.credentialProviderClassName = ltpaSecretProviderClassName;
+	}
+
+	/**
+	 * Set the regular expression used to rewrite CSS code
+	 * 
+	 * @param cssRegex
+	 *            The regular expression
+	 */
+	public void setCssRegex(String cssRegex) {
+		this.cssRegex = cssRegex;
+	}
+
+	/**
+	 * Set the custom CSS to be used to customize the style of the content of
+	 * the portlet.
+	 * 
+	 * @param customCss
+	 *            The custom CSS code
+	 */
+	public void setCustomCss(String customCss) {
+		this.customCss = customCss;
+	}
+
+	/**
+	 * Set a list of URL to proxy. Every URL resource in the HTML code related
+	 * to an URL given in the list will be rewrited to be treated through the
+	 * portal.
+	 * 
+	 * @param domainsToProxy
+	 *            The list of URL
+	 */
+	public void setDomainsToProxy(List<String> domainsToProxy) {
+		/*
+		 * If the parameter has been built with Arrays.asList, it is not of the type of ArrayList but Arrays.ArrayList.
+		 * This can lead to problems, in particular with XStream library. So we make a defensive copy in ArrayList.
+		 */
+		this.domainsToProxy = new ArrayList<String>(domainsToProxy);
+	}
+
+	/**
+	 * Enable or disable caching.
+	 * 
+	 * @param enableCache
+	 *            true to enable, else false
+	 */
+	public void setEnableCache(boolean enableCache) {
+		this.enableCache = enableCache;
+	}
+
+	/**
+	 * Enable or disable CSS retrieving.
+	 * 
+	 * @param enableCssRetrieving
+	 *            true to enable, else false
+	 */
+	public void setEnableCssRetrieving(boolean enableCssRetrieving) {
+		this.enableCssRetrieving = enableCssRetrieving;
+	}
+
+	/**
+	 * Enable or disable CSS rewriting.
+	 * 
+	 * @param enableCssRewriting
+	 *            true to enable, else false
+	 */
+	public void setEnableCssRewriting(boolean enableCssRewriting) {
+		this.enableCssRewriting = enableCssRewriting;
+	}
+
+	/**
+	 * Enable or disable URLs rewriting.
+	 * 
+	 * @param enableUrlRewriting
+	 *            true to enable, else false
+	 */
+	public void setEnableUrlRewriting(boolean enableUrlRewriting) {
+		this.enableUrlRewriting = enableUrlRewriting;
+	}
+
+	/**
+	 * Force page caching.
+	 * 
+	 * @param forcePageCaching
+	 *            true to force caching, else false
+	 */
+	public void setForcePageCaching(boolean forcePageCaching) {
+		this.forcePageCaching = forcePageCaching;
+	}
+
+	/**
+	 * Force resource caching.
+	 * 
+	 * @param forceResourceCaching
+	 *            true to force caching, else false
+	 */
+	public void setForceResourceCaching(boolean forceResourceCaching) {
+		this.forceResourceCaching = forceResourceCaching;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	/**
+	 * Set the URL of the distant application to integrate in the portlet
+	 * 
+	 * @param initUrl
+	 *            the initial URL
+	 */
+	public void setInitUrl(String initUrl) {
+		this.initUrl = initUrl;
+	}
+
+	/**
+	 * Set Ajax URLs to be rewritten during the JS transforming
+	 * 
+	 * @param javascriptUrls
+	 *            the list of URLs to be rewritten
+	 */
+	public void setJavascriptUrls(List<String> javascriptUrls) {
+		/*
+		 * If the parameter has been built with Arrays.asList, it is not of the type of ArrayList but Arrays.ArrayList.
+		 * This can lead to problems, in particular with XStream library. So we make a defensive copy in ArrayList.
+		 */
+		this.javascriptUrls = new ArrayList<String>(javascriptUrls);
+	}
+
+	/**
+	 * Set the regular expression used to rewrite javascript code
+	 * 
+	 * @param jsRegex
+	 *            The regular expression
+	 */
+	public void setJsRegex(String jsRegex) {
+		this.jsRegex = jsRegex;
+	}
+
+	/**
+	 * Set the LTPA secret provider class name
+	 * 
+	 * @param ltpaSecretProviderClassName
+	 *            the class name
+	 */
+	public void setLtpaSecretProviderClassName(String ltpaSecretProviderClassName) {
+		this.ltpaSecretProviderClassName = ltpaSecretProviderClassName;
+	}
+
+	/**
+	 * Enable or disable LTPA SSO authentication
+	 * 
+	 * @param ltpaSsoAuthentication
+	 *            if enable then true else false
+	 */
+	public void setLtpaSsoAuthentication(boolean ltpaSsoAuthentication) {
+		this.ltpaSsoAuthentication = ltpaSsoAuthentication;
+	}
+
+	/**
+	 * Set the name of the configuration
+	 * 
+	 * @param the
+	 *            name of the configuration
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	/**
+	 * Force the pages to be cached as private or not.
+	 * 
+	 * @param pageCachePrivate
+	 *            true to force private, else false
+	 */
+	public void setPageCachePrivate(boolean pageCachePrivate) {
+		this.pageCachePrivate = pageCachePrivate;
+	}
+
+	/**
+	 * Set the timeout for page caching.
+	 * 
+	 * @param pageCacheTimeout
+	 *            the timeout to set
+	 */
+	public void setPageCacheTimeout(int pageCacheTimeout) {
+		this.pageCacheTimeout = pageCacheTimeout;
+	}
+
+	/**
+	 * Set the id of the div containing the content of the distant application.
+	 * This is useful to protect the CSS code of the portal from the CSS
+	 * retrieved from the distant application
+	 * 
+	 * @param portletDivId
+	 *            The id
+	 */
+	public void setPortletDivId(String portletDivId) {
+		this.portletDivId = portletDivId;
+	}
+
+	/**
+	 * Set the portlet title.
+	 * 
+	 * @param portletTitle
+	 *            the portlet title
+	 */
+	public void setPortletTitle(String portletTitle) {
+		this.portletTitle = portletTitle;
+	}
+
+	/**
+	 * Force the resources to be cached as public or not.
+	 * 
+	 * @param resourceCachePublic
+	 *            true to force public, else false
+	 */
+	public void setResourceCachePublic(boolean resourceCachePublic) {
+		this.resourceCachePublic = resourceCachePublic;
+	}
+
+	/**
+	 * Set the timeout for resource caching.
+	 * 
+	 * @param resourceCacheTimeout
+	 *            the timeout to set
+	 */
+	public void setResourceCacheTimeout(int resourceCacheTimeout) {
+		this.resourceCacheTimeout = resourceCacheTimeout;
+	}
+
+	/**
+	 * Set the URLs of the scripts that will be deleted
+	 * 
+	 * @param scriptsToDelete
+	 *            the list of URLs
+	 */
+	public void setScriptsToDelete(List<String> scriptsToDelete) {
+		/*
+		 * If the parameter has been built with Arrays.asList, it is not of the type of ArrayList but Arrays.ArrayList.
+		 * This can lead to problems, in particular with XStream library. So we make a defensive copy in ArrayList.
+		 */
+		this.scriptsToDelete = new ArrayList<String>(scriptsToDelete);
+
+	}
+
+	/**
+	 * Set the URLs of the scripts that will not be transformed
+	 * 
+	 * @param scriptsToIgnore
+	 *            the list of URLs
+	 */
+	public void setScriptsToIgnore(List<String> scriptsToIgnore) {
+		/*
+		 * If the parameter has been built with Arrays.asList, it is not of the type of ArrayList but Arrays.ArrayList.
+		 * This can lead to problems, in particular with XStream library. So we make a defensive copy in ArrayList.
+		 */
+		this.scriptsToIgnore = new ArrayList<String>(scriptsToIgnore);
+	}
+
+	/**
+	 * Set the XPath with the value defined by the user.
+	 * 
+	 * @param xpath
+	 *            the XPath
+	 */
+	public void setXPath(String xpath) {
+		this.xPath = xpath;
+	}
+
+	/**
+	 * Set the XSLT code to proceed clipping
+	 * 
+	 * @param xsltClipping
+	 *            the XSLT code as a string
+	 */
+	public void setXsltClipping(String xsltClipping) {
+		this.xsltClipping = xsltClipping;
+	}
+
+	/**
+	 * Set the XSLT code to proceed transformations
+	 * 
+	 * @param xsltTransform
+	 *            the XSLT code as a string
+	 */
+	public void setXsltTransform(String xsltTransform) {
+		this.xsltTransform = xsltTransform;
+	}
 }
