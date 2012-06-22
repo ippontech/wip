@@ -77,7 +77,7 @@ public class WIPortlet extends GenericPortlet {
 		super.init(config);
 		
 		try {
-			Handler fileHandler = new FileHandler("%h/transformers.txt", true);
+			Handler fileHandler = new FileHandler("%h/transformers.log", true);
 			fileHandler.setFormatter(new SimpleFormatter());
 			Logger.getLogger("fr.ippon.wip.transformers").addHandler(fileHandler);
 			Logger.getLogger("fr.ippon.wip.http.hc").addHandler(fileHandler);

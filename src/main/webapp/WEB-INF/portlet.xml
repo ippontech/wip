@@ -32,7 +32,6 @@
         	<name>RESPONSE_STORE_MAX_ENTRIES</name>
         	<value>100</value>
         </init-param>
-        
     </portlet>
     
     <portlet>

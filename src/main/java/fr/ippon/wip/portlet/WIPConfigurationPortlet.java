@@ -457,7 +457,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 		response.setProperty("Content-Disposition", "attachment; filename=" + configName + ".zip");
 		
 		WIPConfiguration configuration = wipConfigurationDAO.read(configName);
-		ZipConfiguration zip = new ZipConfiguration(FileUtils.getTempDirectoryPath());
+		ZipConfiguration zip = new ZipConfiguration();
 		ZipOutputStream out = new ZipOutputStream(response.getPortletOutputStream());
 		zip.zip(configuration, out);
 		out.flush();

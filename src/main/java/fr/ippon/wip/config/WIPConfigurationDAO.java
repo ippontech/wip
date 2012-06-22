@@ -91,11 +91,21 @@ public abstract class WIPConfigurationDAO {
 	/**
 	 * Delete the given configuration.
 	 * 
-	 * @param name
+	 * @param configuration
 	 *            the configuration to delete
 	 */
-	public abstract boolean delete(WIPConfiguration configuration);
+	public boolean delete(WIPConfiguration configuration) {
+		return delete(configuration.getName());
+	}
 
+	/**
+	 * Delete the configuration related to the given name.
+	 * 
+	 * @param name
+	 *            the name of the configuration to delete
+	 */
+	public abstract boolean delete(String name);
+	
 	/**
 	 * Get the list of names of the saved configurations.
 	 * 

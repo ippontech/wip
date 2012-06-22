@@ -38,18 +38,6 @@ public class WIPConfigurationDAOCache extends WIPConfigurationDAO {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public boolean delete(WIPConfiguration configuration) {
-		if(!dao.delete(configuration))
-			return false;
-		
-		cache.put(configuration.getName(), null);
-		return true;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
 	public WIPConfiguration read(String name) {
 		WIPConfiguration configuration = cache.get(name);
 		if (configuration != null) 
@@ -94,5 +82,14 @@ public class WIPConfigurationDAOCache extends WIPConfigurationDAO {
 	 @Override
 	public void resetConfigurationsNames() {
 		dao.resetConfigurationsNames();
+	}
+
+	@Override
+	public boolean delete(String name) {
+		if(!dao.delete(name))
+			return false;
+		
+		cache.put(name, null);
+		return true;
 	}
 }

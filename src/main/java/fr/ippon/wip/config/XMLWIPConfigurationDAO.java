@@ -107,9 +107,7 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public synchronized boolean delete(WIPConfiguration configuration) {
-		String name = configuration.getName();
-
+	public synchronized boolean delete(String name) {
 		// can't delete the default configuration
 		if (DEFAULT_CONFIG_NAME.equals(name))
 			return false;
@@ -123,7 +121,7 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 		getConfigurationFile(name, FILE_NAME_TRANSFORM).delete();
 		return true;
 	}
-
+	
 	/**
 	 * Return the file associated to the given configuration name.
 	 * 

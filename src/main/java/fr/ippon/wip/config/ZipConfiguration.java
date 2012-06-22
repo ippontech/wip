@@ -9,7 +9,6 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 
 /**
  * Allow zip and unzip operations over configurations.
@@ -21,8 +20,8 @@ public class ZipConfiguration {
 
 	private XMLWIPConfigurationDAO xmlDAO;
 
-	public ZipConfiguration(String path) {
-		xmlDAO = new XMLWIPConfigurationDAO(path, false);
+	public ZipConfiguration() {
+		xmlDAO = new XMLWIPConfigurationDAO(FileUtils.getTempDirectoryPath(), false);
 	}
 
 	/**
@@ -33,7 +32,7 @@ public class ZipConfiguration {
 	 * @throws IOException
 	 */
 	private void copy(InputStream src, OutputStream dest) throws IOException {
-		byte[] buffer = new byte[1024];
+		byte[] buffer = new byte[8192];
 		int length;
 		while ((length = src.read(buffer)) != -1)
 			dest.write(buffer, 0, length);
@@ -47,34 +46,44 @@ public class ZipConfiguration {
 	 * @param configurationName
 	 *            the name of the configuration to retrieve
 	 * @return the configuration to retrieve
+	 * @throws IOException 
 	 */
-	public WIPConfiguration unzip(ZipFile zipFile, String configurationName) {
+	public WIPConfiguration unzip(ZipFile zipFile, String configurationName) throws IOException {
 		xmlDAO.resetConfigurationsNames();
 		WIPConfiguration configuration = xmlDAO.read(configurationName);
 		if (configuration != null)
 			xmlDAO.delete(configuration);
 
-		configuration = null;
-		int[] types = new int[] { XMLWIPConfigurationDAO.FILE_NAME_CLIPPING, XMLWIPConfigurationDAO.FILE_NAME_TRANSFORM, XMLWIPConfigurationDAO.FILE_NAME_CONFIG };
-		try {
-			for (int type : types) {
-				File file = xmlDAO.getConfigurationFile(configurationName, type);
-				file.createNewFile();
-				ZipEntry entry = zipFile.getEntry(file.getName());
-				if (entry == null)
-					return null; 
+		if (!extract(zipFile, configurationName))
+			return null;
 
-				copy(zipFile.getInputStream(entry), FileUtils.openOutputStream(file));
-			}
-			
-			xmlDAO.resetConfigurationsNames();
-			configuration = xmlDAO.read(configurationName);
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		xmlDAO.resetConfigurationsNames();
+		configuration = xmlDAO.read(configurationName);
 
 		return configuration;
+	}
+
+	/**
+	 * Extract the files related to the configuration of the given name.
+	 * @param zipFile
+	 * @param configurationName
+	 * @return
+	 * @throws IOException
+	 */
+	private boolean extract(ZipFile zipFile, String configurationName) throws IOException {
+		File file;
+		ZipEntry entry;
+		int[] types = new int[] { XMLWIPConfigurationDAO.FILE_NAME_CLIPPING, XMLWIPConfigurationDAO.FILE_NAME_TRANSFORM, XMLWIPConfigurationDAO.FILE_NAME_CONFIG };
+		for (int type : types) {
+			file = xmlDAO.getConfigurationFile(configurationName, type);
+			entry = zipFile.getEntry(file.getName());
+			if (entry == null)
+				return false;
+
+			copy(zipFile.getInputStream(entry), FileUtils.openOutputStream(file));
+		}
+
+		return true;
 	}
 
 	/**
@@ -89,6 +98,7 @@ public class ZipConfiguration {
 		String configName = configuration.getName();
 		xmlDAO.delete(configuration);
 		xmlDAO.create(configuration);
+
 		try {
 			int[] types = new int[] { XMLWIPConfigurationDAO.FILE_NAME_CLIPPING, XMLWIPConfigurationDAO.FILE_NAME_TRANSFORM, XMLWIPConfigurationDAO.FILE_NAME_CONFIG };
 			for (int type : types) {

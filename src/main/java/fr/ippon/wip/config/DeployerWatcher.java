@@ -3,8 +3,6 @@ package fr.ippon.wip.config;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -48,14 +46,7 @@ public class DeployerWatcher {
 	private ZipConfiguration zip;
 
 	public DeployerWatcher() {
-		try {
-			URL url = getClass().getResource("/deploy");
-			deployPath = new File(url.toURI());
-			zip = new ZipConfiguration(deployPath.getAbsolutePath());
-
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
+		zip = new ZipConfiguration();
 	}
 
 	/**
@@ -106,11 +97,16 @@ public class DeployerWatcher {
 		Collection<ZipEntry> xmlEntries = CollectionUtils.select(entries, xmlPredicate);
 
 		for (ZipEntry xmlEntry : xmlEntries) {
-			String configName = FilenameUtils.getBaseName(xmlEntry.getName());
-			WIPConfiguration configuration = zip.unzip(zipFile, configName);
-			
-			if(configuration != null)
-				configurations.add(configuration);
+			try {
+				String configName = FilenameUtils.getBaseName(xmlEntry.getName());
+				WIPConfiguration configuration = zip.unzip(zipFile, configName);
+
+				if (configuration != null)
+					configurations.add(configuration);
+
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 
 		return configurations;
