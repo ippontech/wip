@@ -18,12 +18,12 @@
 
 package fr.ippon.wip.state;
 
-import fr.ippon.wip.http.Response;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
+
+import fr.ippon.wip.http.Response;
 
 /**
  * Singleton class used to store Response from ACTION to RENDER phase (or servlet)
@@ -38,22 +38,36 @@ import java.util.logging.Logger;
  * @author François Prot
  */
 public class ResponseStore extends LinkedHashMap<UUID, Response> {
+	
     private static final Logger LOG = Logger.getLogger(ResponseStore.class.getName());
 
     private static final ResponseStore instance = new ResponseStore();
 
-    // TODO: get max entries from portlet.xml
-    // TODO: manage max entries per host
-    // TODO: manage expiration dates
-    private static final int MAX_ENTRIES = 100;
-
-    private ResponseStore() {
-        super();
-    }
-
     public static ResponseStore getInstance() {
         return instance;
     }
+
+    // TODO: manage max entries per host
+    // TODO: manage expiration dates
+    private int maxEntries = 100;
+
+	private ResponseStore() {
+        super();
+    }
+
+    @Override
+    protected boolean removeEldestEntry(Map.Entry<UUID, Response> entry) {
+        if (size() > maxEntries) {
+            entry.getValue().dispose();
+            LOG.warning("Response evicted from store, URI was: " + entry.getValue().getUrl());
+            return true;
+        }
+        return false;
+    }
+
+    public void setMaxEntries(int maxEntries) {
+		this.maxEntries = maxEntries;
+	}
 
     /**
      * Store a Response object and return a corresponding UUID to retrieve it later
@@ -69,15 +83,5 @@ public class ResponseStore extends LinkedHashMap<UUID, Response> {
             put(id, response);
         }
         return id;
-    }
-
-    @Override
-    protected boolean removeEldestEntry(Map.Entry<UUID, Response> entry) {
-        if (size() > MAX_ENTRIES) {
-            entry.getValue().dispose();
-            LOG.warning("Response evicted from store, URI was: " + entry.getValue().getUrl());
-            return true;
-        }
-        return false;
     }
 }

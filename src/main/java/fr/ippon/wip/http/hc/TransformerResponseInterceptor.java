@@ -83,6 +83,7 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
         HttpRequest actualRequest = (HttpRequest) context.getAttribute(ExecutionContext.HTTP_REQUEST);
         HttpHost actualHost = (HttpHost) context.getAttribute(ExecutionContext.HTTP_TARGET_HOST);
         String actualURI = actualHost.toURI() + actualRequest.getRequestLine().getUri();
+        LOG.log(Level.INFO, "Processing of " + actualURI);
         if (!config.isProxyURI(actualURI)) {
             LOG.log(Level.INFO, "Response doesn't need to be transformed.");
             return;
@@ -162,8 +163,6 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
         } catch (TransformerException e) {
         	LOG.log(Level.SEVERE, e.getMessage(), e);
         }
-        
-        LOG.log(Level.INFO, "TransformerResponseInterceptor ends response processing.");
     }
 
     private void emtpyResponse(HttpResponse httpResponse) {

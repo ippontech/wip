@@ -40,7 +40,7 @@ public abstract class WIPConfigurationDAO {
 	 */
 	protected final List<String> configurationNames;
 
-	protected final ConfigurationDeployer deployer;
+	protected final DeployerWatcher deployerWatcher;
 
 	public WIPConfigurationDAO() {
 		this(true);
@@ -48,14 +48,14 @@ public abstract class WIPConfigurationDAO {
 	
 	public WIPConfigurationDAO(boolean withWatcher) {
 		configurationNames = new ArrayList<String>();
-		deployer = withWatcher ? new ConfigurationDeployer() : null;
+		deployerWatcher = withWatcher ? new DeployerWatcher() : null;
 	}
 
 	/**
 	 * Check the deploy directory for seeking new configurations
 	 */
 	public synchronized void deploy() {
-		List<WIPConfiguration> newConfigurations = deployer.checkDeploy();
+		List<WIPConfiguration> newConfigurations = deployerWatcher.checkDeploy();
 		for (WIPConfiguration configuration : newConfigurations)
 			create(configuration);
 		

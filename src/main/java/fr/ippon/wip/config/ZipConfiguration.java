@@ -49,6 +49,7 @@ public class ZipConfiguration {
 	 * @return the configuration to retrieve
 	 */
 	public WIPConfiguration unzip(ZipFile zipFile, String configurationName) {
+		xmlDAO.resetConfigurationsNames();
 		WIPConfiguration configuration = xmlDAO.read(configurationName);
 		if (configuration != null)
 			xmlDAO.delete(configuration);
@@ -59,12 +60,15 @@ public class ZipConfiguration {
 			for (int type : types) {
 				File file = xmlDAO.getConfigurationFile(configurationName, type);
 				file.createNewFile();
-				ZipEntry entry = zipFile.getEntry(FilenameUtils.getBaseName(file.getName()));
+				ZipEntry entry = zipFile.getEntry(file.getName());
 				if (entry == null)
-					return null;
+					return null; 
 
 				copy(zipFile.getInputStream(entry), FileUtils.openOutputStream(file));
 			}
+			
+			xmlDAO.resetConfigurationsNames();
+			configuration = xmlDAO.read(configurationName);
 
 		} catch (IOException e) {
 			e.printStackTrace();

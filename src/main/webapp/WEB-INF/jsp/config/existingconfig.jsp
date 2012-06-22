@@ -1,5 +1,10 @@
 <%@include file="/WEB-INF/jsp/config/header.jsp" %>
 
+<form action="<portlet:actionURL/>" method="post" enctype="multipart/form-data">
+	<input type="file" name="configuration">
+	 <input type="submit" value="<fmt:message key='wip.config.save' />"/>
+</form>
+
 <table class=wip_table>
     <%
         List<String> confs = wipConfigurationDAO.getConfigurationsNames();

@@ -18,14 +18,18 @@
 
 package fr.ippon.wip.portlet;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipOutputStream;
 
 import javax.portlet.ActionRequest;
@@ -40,6 +44,10 @@ import javax.portlet.RenderResponse;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.portlet.PortletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
@@ -51,7 +59,11 @@ import fr.ippon.wip.util.WIPUtil;
 
 public class WIPConfigurationPortlet extends GenericPortlet {
 
+	private static final Logger LOG = Logger.getLogger(WIPConfigurationPortlet.class.getName());
+	
 	private WIPConfigurationDAO wipConfigurationDAO;
+	
+	private PortletFileUpload fileUploadPortlet;
 
 	/**
 	 * This class will try to build an URL from a string and store an error if
@@ -456,6 +468,9 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	public void init() throws PortletException {
 		super.init();
 		wipConfigurationDAO = WIPConfigurationDAOFactory.getInstance().getXMLInstance();
+
+		DiskFileItemFactory factory = new DiskFileItemFactory();
+		fileUploadPortlet = new PortletFileUpload(factory);
 	}
 
 	/**
@@ -466,13 +481,37 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	public void processAction(ActionRequest request, ActionResponse response) throws PortletException, IOException {
 		PortletSession session = request.getPortletSession();
 
+		if(PortletFileUpload.isMultipartContent(request)) {
+			try {
+				URL url = getClass().getResource("/deploy");
+				String deployPath = new File(url.toURI()).toString();
+				List<DiskFileItem> files = fileUploadPortlet.parseRequest(request);
+				for(DiskFileItem file : files) {
+					File deployFile = new File(deployPath + "/" + file.getName());
+					FileUtils.copyInputStreamToFile(file.getInputStream(), deployFile);
+				}
+				
+				request.setAttribute(Attributes.ACTION_DEPLOY.name(), "true");
+				LOG.log(Level.FINE, "Configurations have been uploaded.");
+				
+			} catch (FileUploadException e) {
+				LOG.log(Level.WARNING, "The file upload has failed.", e);
+				return;
+			} catch (URISyntaxException e) {
+				LOG.log(Level.WARNING, "The file upload has failed.", e);
+				return;
+			}
+		}
+		
 		String action = request.getParameter(Attributes.ACTION_DEPLOY.name());
+		if(StringUtils.isEmpty(action))
+			action = (String) request.getAttribute(Attributes.ACTION_DEPLOY.name());
 		if (!StringUtils.isEmpty(action)) {
 			wipConfigurationDAO.deploy();
 			session.setAttribute(Attributes.PAGE.name(), Pages.EXISTING_CONFIG);
 			return;
 		}
-
+		
 		String configName = request.getParameter(Attributes.PAGE.name());
 		if (!StringUtils.isEmpty(configName)) {
 			session.setAttribute(Attributes.PAGE.name(), Pages.valueOf(configName));

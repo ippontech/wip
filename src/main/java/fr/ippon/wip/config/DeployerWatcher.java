@@ -23,7 +23,7 @@ import org.apache.commons.io.FilenameUtils;
  * @author Yohan Legat
  * 
  */
-public class ConfigurationDeployer {
+public class DeployerWatcher {
 
 	// accept all files except the README one.
 	private FileFilter fileFilterForDeletation = new FileFilter() {
@@ -47,7 +47,7 @@ public class ConfigurationDeployer {
 
 	private ZipConfiguration zip;
 
-	public ConfigurationDeployer() {
+	public DeployerWatcher() {
 		try {
 			URL url = getClass().getResource("/deploy");
 			deployPath = new File(url.toURI());
@@ -69,7 +69,7 @@ public class ConfigurationDeployer {
 		for (File file : deployPath.listFiles()) {
 			if (file.getName().endsWith(".zip")) {
 				try {
-					deployedConfigurations = extractZipFile(new ZipFile(file));
+					deployedConfigurations = unzip(new ZipFile(file));
 
 				} catch (ZipException e) {
 					e.printStackTrace();
@@ -97,7 +97,7 @@ public class ConfigurationDeployer {
 	 * @param zipFile
 	 *            the file containing the configurations
 	 */
-	private List<WIPConfiguration> extractZipFile(ZipFile zipFile) {
+	private List<WIPConfiguration> unzip(ZipFile zipFile) {
 		List<WIPConfiguration> configurations = new ArrayList<WIPConfiguration>();
 		List<ZipEntry> entries = new ArrayList<ZipEntry>();
 		CollectionUtils.addAll(entries, zipFile.entries());
