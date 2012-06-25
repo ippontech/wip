@@ -65,6 +65,9 @@ public class WIPortlet extends GenericPortlet {
 	private WIPConfigurationDAO wipConfigurationDAO;
 	private HttpExecutor executor;
 
+	// file handler for logging
+	private Handler fileHandler;
+	
 	/**
 	 * Initialize configuration and create an instance of HttpExecutor
 	 * 
@@ -77,10 +80,11 @@ public class WIPortlet extends GenericPortlet {
 		super.init(config);
 		
 		try {
-			Handler fileHandler = new FileHandler("%h/transformers.log", true);
+			fileHandler = new FileHandler("%h/transformers.log", true);
 			fileHandler.setFormatter(new SimpleFormatter());
 			Logger.getLogger("fr.ippon.wip.transformers").addHandler(fileHandler);
 			Logger.getLogger("fr.ippon.wip.http.hc").addHandler(fileHandler);
+			Logger.getLogger("org.apache.http.impl.client.cache").addHandler(fileHandler);
 			
 		} catch (SecurityException e) {
 			e.printStackTrace();
@@ -295,6 +299,7 @@ public class WIPortlet extends GenericPortlet {
 	public void destroy() {
 		super.destroy();
 		executor.destroy();
+		fileHandler.close();
 	}
 
 	private void manageAuthentication(ActionRequest actionRequest, ActionResponse actionResponse) {
