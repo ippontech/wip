@@ -125,6 +125,7 @@ class HttpClientDecorator implements HttpClient {
             for (HttpRequestInterceptor preProcessor : preProcessors) {
                 preProcessor.process(request, context);
             }
+            
             HttpResponse response = backend.execute(target, request, context);
             for (HttpResponseInterceptor postProcessor : postProcessors) {
                 postProcessor.process(response, context);

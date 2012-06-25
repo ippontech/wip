@@ -3,5 +3,6 @@
 <display>
     <category name="category.integration">
         <portlet id="WIP"/>
+        <portlet id="WIPConfiguration"/>
     </category>
 </display>

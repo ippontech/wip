@@ -44,16 +44,19 @@ import org.apache.http.protocol.HttpContext;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * This class implements the Singleton pattern and manages all Apache HttpComponents resources
  *
  * @author François Prot
  */
-class HttpClientResourceManager {
+public class HttpClientResourceManager {
 
     private static final HttpClientResourceManager instance = new HttpClientResourceManager();
 
+    private static final Logger LOG = Logger.getLogger(HttpClientResourceManager.class.getName());
+    
     private final Map<String, HttpClient> perUserClientMap;
     private final Map<String, CookieStore> perUserCookieStoreMap;
     private final Map<String, CredentialsProvider> perUserWindowCredentialProviderMap;

@@ -1,8 +1,12 @@
 package fr.ippon.wip.http;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.portlet.WIPortlet;
 import fr.ippon.wip.state.PortletWindow;
+import fr.ippon.wip.transformers.HTMLTransformer;
 import fr.ippon.wip.util.WIPUtil;
 
 import javax.portlet.BaseURL;
@@ -24,6 +28,7 @@ public class UrlFactory {
     private static final String TEMP_URL_SEPARATOR = "&#128;";
     public static final String TEMP_URL_ENCODED_SEPARATOR = "&amp;#128;";
     private static final String[] TOKENS = {"<", "$"};
+    private static final Logger LOG = Logger.getLogger(HTMLTransformer.class.getName());
 
     private final String currentUrl;
     private final WIPConfiguration configuration;
@@ -98,6 +103,8 @@ public class UrlFactory {
             // Create a temp URL
             proxyUrl = TEMP_URL_SEPARATOR + absoluteUrl + TOKENS[0] + httpMethod.name() + TOKENS[0] + resourceType.name() + TEMP_URL_SEPARATOR;
         }
+        
+        LOG.log(Level.INFO, url + " proxied as " + proxyUrl);
         return proxyUrl;
     }
 
@@ -105,21 +112,25 @@ public class UrlFactory {
         if (url.startsWith("http://") || url.startsWith("https://")) {
             return url;
         } else {
+        	String newUrl = null;
             if (url.startsWith("/")) {
                 // Add protocol & host/port
                 int firstSlashIndex = currentUrl.indexOf("/", "https://".length());
                 if (firstSlashIndex < 0) {
                     firstSlashIndex = currentUrl.length();
                 }
-                return currentUrl.substring(0, firstSlashIndex) + url;
+                newUrl = currentUrl.substring(0, firstSlashIndex) + url;
             } else {
                 // Add base URL
                 int lastSlashIndex = currentUrl.lastIndexOf("/", "https://".length());
                 if (lastSlashIndex < 0) {
                     lastSlashIndex = currentUrl.length();
                 }
-                return currentUrl.substring(0, lastSlashIndex) + "/" + url;
+                newUrl = currentUrl.substring(0, lastSlashIndex) + "/" + url;
             }
+            
+            LOG.log(Level.INFO, url + " transformed to " + newUrl + ".");
+            return newUrl;
         }
     }
 }

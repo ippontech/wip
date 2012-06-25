@@ -39,32 +39,8 @@ public class ZipConfiguration {
 	}
 
 	/**
-	 * Unzip and return a configuration from a zip archive.
-	 * 
-	 * @param zipFile
-	 *            the archive
-	 * @param configurationName
-	 *            the name of the configuration to retrieve
-	 * @return the configuration to retrieve
-	 * @throws IOException 
-	 */
-	public WIPConfiguration unzip(ZipFile zipFile, String configurationName) throws IOException {
-		xmlDAO.resetConfigurationsNames();
-		WIPConfiguration configuration = xmlDAO.read(configurationName);
-		if (configuration != null)
-			xmlDAO.delete(configuration);
-
-		if (!extract(zipFile, configurationName))
-			return null;
-
-		xmlDAO.resetConfigurationsNames();
-		configuration = xmlDAO.read(configurationName);
-
-		return configuration;
-	}
-
-	/**
 	 * Extract the files related to the configuration of the given name.
+	 * 
 	 * @param zipFile
 	 * @param configurationName
 	 * @return
@@ -84,6 +60,31 @@ public class ZipConfiguration {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Unzip and return a configuration from a zip archive.
+	 * 
+	 * @param zipFile
+	 *            the archive
+	 * @param configurationName
+	 *            the name of the configuration to retrieve
+	 * @return the configuration to retrieve
+	 * @throws IOException
+	 */
+	public WIPConfiguration unzip(ZipFile zipFile, String configurationName) throws IOException {
+		xmlDAO.resetConfigurationsNames();
+		WIPConfiguration configuration = xmlDAO.read(configurationName);
+		if (configuration != null)
+			xmlDAO.delete(configuration);
+
+		if (!extract(zipFile, configurationName))
+			return null;
+
+		xmlDAO.resetConfigurationsNames();
+		configuration = xmlDAO.read(configurationName);
+
+		return configuration;
 	}
 
 	/**
