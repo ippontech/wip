@@ -119,7 +119,7 @@ public class UrlFactory {
      * @return the absolute url
      */
     private String toAbsolute(String relativeUrl) {
-        if (relativeUrl.startsWith("http://") || relativeUrl.startsWith("https://"))
+        if (StringUtils.isEmpty(relativeUrl) || relativeUrl.startsWith("http://") || relativeUrl.startsWith("https://"))
             return relativeUrl;
         
         String protocol = currentUrl.getProtocol();

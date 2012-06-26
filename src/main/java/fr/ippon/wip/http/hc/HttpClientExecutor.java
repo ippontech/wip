@@ -108,6 +108,8 @@ public class HttpClientExecutor implements HttpExecutor {
                 PortletWindow portletWindow = PortletWindow.getInstance(portletRequest);
                 int statusCode = httpResponse.getStatusLine().getStatusCode();
                 List<String> schemes;
+                // TODO: process proxy auth requests HttpStatus.SC_PROXY_AUTHENTICATION_REQUIRED (407) ?
+                // TODO: also needs a custom implementation of RoutePlanner to select proxy per-application ?
                 if (statusCode == HttpStatus.SC_UNAUTHORIZED) {
                     // Check what authentication scheme are required
                     schemes = new ArrayList<String>();
@@ -227,7 +229,22 @@ public class HttpClientExecutor implements HttpExecutor {
     }
 
     private HttpUriRequest createGetRequest(Request request) {
-        return new HttpGet(request.getRequestedURL());
+        String uri = request.getRequestedURL();
+
+        Map<String, String[]> paramMap = request.getParameterMap();
+
+        if (paramMap != null && paramMap.size() > 0) {
+            String prefix = uri.contains("?") ? "&" : "?";
+            List<NameValuePair> httpParams = new LinkedList<NameValuePair>();
+            for (Map.Entry<String, String[]> entry : paramMap.entrySet()) {
+                for (String value : entry.getValue()) {
+                    uri += prefix + entry.getKey() + "=" + value;
+                    prefix = "&";
+                }
+            }
+        }
+
+        return new HttpGet(uri);
     }
 
     private Response createResponse(HttpResponse httpResponse, String url, boolean portalUrlComputed) throws IOException {

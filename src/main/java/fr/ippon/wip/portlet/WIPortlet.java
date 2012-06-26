@@ -151,19 +151,11 @@ public class WIPortlet extends GenericPortlet {
 
 		// If no pending response, create a new request
 		if (wipResponse == null) {
-			String requestUrl;
-			// Check state for current URI
-			if (windowState.getCurrentURL() == null) {
-				// Create first request for this portlet window
-				requestUrl = wipConfig.getInitUrl();
-				// Update state
-				windowState.setCurrentURL(requestUrl);
-			} else {
-				// Re-create request with current URI
-				requestUrl = windowState.getCurrentURL();
-			}
+			String requestUrl = windowState.getCurrentURL();
 			Request wipRequest = new Request(requestUrl, Request.HttpMethod.GET, Request.ResourceType.HTML, null);
 
+			// TODO: copy global parameters from PortletRequest ?
+			
 			// Execute request
 			wipResponse = executor.execute(wipRequest, request, response);
 		}

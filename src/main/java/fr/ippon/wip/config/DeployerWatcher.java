@@ -6,15 +6,16 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
 import org.apache.commons.io.FilenameUtils;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterators;
 
 /**
  * The purpose of this class is to extract configurations put in the deploy
@@ -34,11 +35,11 @@ public class DeployerWatcher {
 		}
 	};
 
-	// accept al xml files.
-	private Predicate xmlPredicate = new Predicate() {
+	// filter all xml entries.
+	private Predicate<ZipEntry> xmlPredicate = new Predicate<ZipEntry>() {
 
-		public boolean evaluate(Object object) {
-			return ((ZipEntry) object).getName().endsWith(".xml");
+		public boolean apply(ZipEntry entry) {
+			return entry.getName().endsWith(".xml");
 		}
 	};
 
@@ -101,15 +102,11 @@ public class DeployerWatcher {
 	 */
 	private List<WIPConfiguration> unzip(ZipFile zipFile) {
 		List<WIPConfiguration> configurations = new ArrayList<WIPConfiguration>();
-		List<ZipEntry> entries = new ArrayList<ZipEntry>();
-		CollectionUtils.addAll(entries, zipFile.entries());
+		Iterator<? extends ZipEntry> xmlEntries = Iterators.filter(Iterators.forEnumeration(zipFile.entries()), xmlPredicate);
 
-		@SuppressWarnings("unchecked")
-		Collection<ZipEntry> xmlEntries = CollectionUtils.select(entries, xmlPredicate);
-
-		for (ZipEntry xmlEntry : xmlEntries) {
+		while (xmlEntries.hasNext()) {
 			try {
-				String configName = FilenameUtils.getBaseName(xmlEntry.getName());
+				String configName = FilenameUtils.getBaseName(xmlEntries.next().getName());
 				WIPConfiguration configuration = zip.unzip(zipFile, configName);
 
 				if (configuration != null)

@@ -20,13 +20,16 @@ package fr.ippon.wip.config;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import fr.ippon.wip.http.Request;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 
-import fr.ippon.wip.http.Request;
 
 /**
  * The configuration parameters of a wip portlet.
@@ -35,6 +38,7 @@ import fr.ippon.wip.http.Request;
  * @author Quentin Thierry
  * @author Yohan Legat
  */
+
 public class WIPConfiguration implements Cloneable {
 
 	public static final String SEPARATOR = ";";
@@ -128,6 +132,10 @@ public class WIPConfiguration implements Cloneable {
 
 		return clone;
 	}
+	
+    public InputStream getXsltTransformStream () {
+    	return new ByteArrayInputStream(xsltTransform.getBytes());
+    }
 
 	/**
 	 * Get the date rate to determinate the freshness according to creation
@@ -440,10 +448,10 @@ public class WIPConfiguration implements Cloneable {
 	 * @return true if the uri has to be proxied
 	 */
 	public boolean isProxyURI(final String uri) {
-		return CollectionUtils.exists(getDomainsToProxy(), new Predicate() {
+		return Iterables.any(getDomainsToProxy(), new Predicate<String>() {
 
-			public boolean evaluate(Object object) {
-				return uri.startsWith(object.toString());
+			public boolean apply(String value) {
+				return uri.startsWith(value);
 			}
 		});
 	}

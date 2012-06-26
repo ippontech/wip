@@ -158,18 +158,21 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
         // Call WIPTransformer#transform method and update the response Entity object
         try {
             String transformedContent = transformer.transform(EntityUtils.toString(entity));
-            HttpEntity transformedEntity;
+            StringEntity transformedEntity;
             if (contentType.getCharset() != null) {
                 transformedEntity = new StringEntity(transformedContent, ContentType.getOrDefault(entity));
             } else {
                 transformedEntity = new StringEntity(transformedContent);
             }
+            transformedEntity.setContentType(contentType.toString());
             httpResponse.setEntity(transformedEntity);
 
         } catch (SAXException e) {
-            LOG.log(Level.SEVERE, e.getMessage(), e);
+            LOG.log(Level.SEVERE, "Could not transform HTML", e);
+            throw new IllegalArgumentException(e);
         } catch (TransformerException e) {
-        	LOG.log(Level.SEVERE, e.getMessage(), e);
+            LOG.log(Level.SEVERE, "Could not transform HTML", e);
+            throw new IllegalArgumentException(e);
         }
     }
 
