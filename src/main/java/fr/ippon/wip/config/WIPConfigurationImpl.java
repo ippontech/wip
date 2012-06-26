@@ -25,10 +25,7 @@ import org.apache.commons.configuration.XMLConfiguration;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -318,7 +315,7 @@ public class WIPConfigurationImpl implements WIPConfiguration {
     @SuppressWarnings("unchecked")
     public Map<String, Request.ResourceType> getJavascriptUrls() {
         Map<String, Request.ResourceType> map = new HashMap<String, Request.ResourceType>();
-        List<String> l = config.getList(instance + ".javascriptUrls");
+        List<String> l = Arrays.asList(config.getStringArray(instance + ".javascriptUrls"));
         if (l.size() == 1 && l.get(0).equals("")) l = new ArrayList<String>();
         for (String input : l) {
             String tmp[] = input.split("::::");
@@ -337,7 +334,7 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 
     @SuppressWarnings("unchecked")
     public List<String> getScriptsToIgnore() {
-        List<String> l = config.getList(instance + ".scriptsToIgnore");
+        List<String> l = Arrays.asList(config.getStringArray(instance + ".scriptsToIgnore"));
         if (l.size() == 1 && l.get(0).equals("")) l = new ArrayList<String>();
         return l;
     }
@@ -352,7 +349,7 @@ public class WIPConfigurationImpl implements WIPConfiguration {
 
     @SuppressWarnings("unchecked")
     public List<String> getScriptsToDelete() {
-        List<String> l = config.getList(instance + ".scriptsToDelete");
+        List<String> l = Arrays.asList(config.getStringArray(instance + ".scriptsToDelete"));
         if (l.size() == 1 && l.get(0).equals("")) l = new ArrayList<String>();
         return l;
     }
@@ -382,7 +379,7 @@ public class WIPConfigurationImpl implements WIPConfiguration {
             result = config.getString(instance + ".xsltClipping");
         } else {
             try {
-                BufferedInputStream is = (BufferedInputStream) getClass().getResource("/xslt/clipping.xslt").getContent();
+                BufferedInputStream is = (BufferedInputStream) getClass().getResource("/xslt/default-clipping.xslt").getContent();
                 StringWriter writer = new StringWriter();
                 InputStreamReader streamReader = new InputStreamReader(is);
                 BufferedReader buffer = new BufferedReader(streamReader);
@@ -408,7 +405,7 @@ public class WIPConfigurationImpl implements WIPConfiguration {
             result = config.getString(instance + ".xsltTransform");
         } else {
             try {
-                BufferedInputStream is = new BufferedInputStream(getClass().getResource("/xslt/default.xslt").openConnection().getInputStream());
+                BufferedInputStream is = new BufferedInputStream(getClass().getResource("/xslt/default-rewrite.xslt").openConnection().getInputStream());
                 StringWriter writer = new StringWriter();
                 InputStreamReader streamReader = new InputStreamReader(is);
                 BufferedReader buffer = new BufferedReader(streamReader);
@@ -422,6 +419,14 @@ public class WIPConfigurationImpl implements WIPConfiguration {
             }
         }
         return result;
+    }
+
+    public InputStream getXsltTransformStream () {
+        if (!config.getString(instance + ".xsltTransform").equals("")) {
+            return new ByteArrayInputStream(config.getString(instance + ".xsltTransform").getBytes());
+        } else {
+            return getClass().getClassLoader().getResourceAsStream("/xslt/default-rewrite.xslt");
+        }
     }
 
     public void setXsltTransform(String xslt) {

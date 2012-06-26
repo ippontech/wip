@@ -20,6 +20,7 @@ package fr.ippon.wip.config;
 
 import fr.ippon.wip.http.Request;
 
+import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -253,6 +254,7 @@ public interface WIPConfiguration {
      */
     public String getXsltTransform();
 
+    public InputStream getXsltTransformStream ();
     /**
      * Set Ajax URLs to be rewritten during the JS transforming
      *

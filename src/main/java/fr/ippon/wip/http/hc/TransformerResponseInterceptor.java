@@ -17,6 +17,7 @@ import javax.portlet.PortletResponse;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -124,18 +125,21 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
         // Call WIPTransformer#transform method and update the response Entity object
         try {
             String transformedContent = transformer.transform(EntityUtils.toString(entity));
-            HttpEntity transformedEntity;
+            StringEntity transformedEntity;
             if (contentType.getCharset() != null) {
                 transformedEntity = new StringEntity(transformedContent, ContentType.getOrDefault(entity));
             } else {
                 transformedEntity = new StringEntity(transformedContent);
             }
+            transformedEntity.setContentType(contentType.toString());
             httpResponse.setEntity(transformedEntity);
 
         } catch (SAXException e) {
-            // TODO: log exception
+            LOG.log(Level.SEVERE, "Could not transform HTML", e);
+            throw new IllegalArgumentException(e);
         } catch (TransformerException e) {
-            // TODO: log exception
+            LOG.log(Level.SEVERE, "Could not transform HTML", e);
+            throw new IllegalArgumentException(e);
         }
     }
 

@@ -15,9 +15,9 @@
             <id>liferay-tomcat</id>
             <dependencies>
                 <dependency>
-                    <groupId>nekohtml</groupId>
+                    <groupId>net.sourceforge.nekohtml</groupId>
                     <artifactId>nekohtml</artifactId>
-                    <version>1.9.6</version>
+                    <version>1.9.15</version>
                 </dependency>
                 <dependency>
                     <groupId>xalan</groupId>
@@ -30,9 +30,9 @@
             <id>liferay-jboss</id>
             <dependencies>
                 <dependency>
-                    <groupId>nekohtml</groupId>
+                    <groupId>net.sourceforge.nekohtml</groupId>
                     <artifactId>nekohtml</artifactId>
-                    <version>1.9.6</version>
+                    <version>1.9.15</version>
                     <exclusions>
                         <exclusion>
                             <groupId>xerces</groupId>
@@ -46,14 +46,14 @@
 
     <dependencies>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>jstl</artifactId>
-            <version>1.1.2</version>
+            <groupId>commons-configuration</groupId>
+            <artifactId>commons-configuration</artifactId>
+            <version>1.8</version>
         </dependency>
         <dependency>
-            <groupId>taglibs</groupId>
-            <artifactId>standard</artifactId>
-            <version>1.1.2</version>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.3</version>
         </dependency>
         <dependency>
             <groupId>javax.portlet</groupId>
@@ -63,14 +63,20 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.5</version>
+            <groupId>javax.servlet</groupId>
+            <artifactId>jstl</artifactId>
+            <version>1.1.2</version>
         </dependency>
         <dependency>
-            <groupId>commons-configuration</groupId>
-            <artifactId>commons-configuration</artifactId>
-            <version>1.6</version>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.5</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.6</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -83,27 +89,15 @@
             <version>4.2</version>
         </dependency>
         <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.3</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-            <version>1.1.1</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.5</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.portals.pluto</groupId>
+            <groupId>org.apache.pluto</groupId>
             <artifactId>pluto-taglib</artifactId>
-            <version>2.0.2</version>
+            <version>1.1.7</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>taglibs</groupId>
+            <artifactId>standard</artifactId>
+            <version>1.1.2</version>
         </dependency>
     </dependencies>
     <build>

@@ -117,7 +117,7 @@ class HttpClientResourceManager {
             client = perUserClientMap.get(userSessionId);
             if (client == null) {
                 WIPConfiguration config = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
-                if (config.getPageCachePrivate()) {
+                if (!config.getPageCachePrivate()) {
                     client = rootClient;
                 } else {
                     CacheConfig cacheConfig = new CacheConfig();

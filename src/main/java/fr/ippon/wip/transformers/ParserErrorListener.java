@@ -29,7 +29,8 @@ import java.util.logging.Logger;
  * @author Anthony Luce
  * @author Quentin Thierry
  */
-class ParserErrorListener implements ErrorListener {
+class ParserErrorListener implements ErrorListener
+{
 
     private static final Logger LOG = Logger.getLogger(ParserErrorListener.class.getName());
 
@@ -37,21 +38,20 @@ class ParserErrorListener implements ErrorListener {
      * Error message
      */
     public void error(TransformerException ex) throws TransformerException {
-        LOG.log(Level.INFO, "Error parsing HTML: ", ex);
+        LOG.log(Level.WARNING, "XSL parsing error: ", ex);
     }
 
     /**
      * Fatal error message
      */
     public void fatalError(TransformerException ex) throws TransformerException {
-        LOG.log(Level.WARNING, "Error parsing HTML: ", ex);
+        LOG.log(Level.SEVERE, "XSL parsing fatal error: ", ex);
     }
 
     /**
      * Warning message
      */
     public void warning(TransformerException ex) throws TransformerException {
-        LOG.log(Level.FINE, "Error parsing HTML: ", ex);
+        LOG.log(Level.FINE, "XSL parsing warning: " + ex.getMessage());
     }
-
 }

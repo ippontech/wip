@@ -1,5 +1,8 @@
 package fr.ippon.wip.state;
 
+import fr.ippon.wip.config.WIPConfiguration;
+import fr.ippon.wip.config.WIPConfigurationManager;
+
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletSession;
 import java.util.List;
@@ -96,6 +99,8 @@ public class PortletWindow {
 
             if (state == null) {
                 state = new PortletWindow();
+                WIPConfiguration config = WIPConfigurationManager.getInstance().getConfiguration(request.getWindowID());
+                state.setCurrentURL(config.getInitUrl().toExternalForm());
                 session.setAttribute(PORTLET_SESSION_KEY, state, PortletSession.PORTLET_SCOPE);
             }
         }

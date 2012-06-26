@@ -102,7 +102,10 @@ public class UrlFactory {
     }
 
     private String toAbsolute(String url) {
-        if (url.startsWith("http://") || url.startsWith("https://")) {
+        if (url == null || url.isEmpty()) {
+            return currentUrl;
+        }
+        else if (url.startsWith("http://") || url.startsWith("https://")) {
             return url;
         } else {
             if (url.startsWith("/")) {
