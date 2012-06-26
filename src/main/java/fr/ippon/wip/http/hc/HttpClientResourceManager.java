@@ -97,7 +97,6 @@ public class HttpClientResourceManager {
             // TODO add Ehcache configuration
             //Ehcache ehCache = CacheManager.getInstance().addCacheIfAbsent("wip.shared.cached");
             //EhcacheHttpCacheStorage cacheStorage = new EhcacheHttpCacheStorage (ehCache);
-            //TODO: check why cache usage doesn't reload context
             HttpClient sharedCacheClient = new CachingHttpClient(defaultHttpClient);
             HttpClientDecorator decoratedClient = new HttpClientDecorator(sharedCacheClient);
             decoratedClient.addPreProcessor(new LtpaRequestInterceptor());

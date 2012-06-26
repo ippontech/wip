@@ -24,8 +24,10 @@ import fr.ippon.wip.transformers.*;
 import fr.ippon.wip.util.WIPUtil;
 
 import org.apache.http.*;
+import org.apache.http.client.cache.CacheResponseStatus;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.cache.CachingHttpClient;
 import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
@@ -80,9 +82,15 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
         String mimeType = contentType.getMimeType();
 
         // Check if actual URI must be transformed
-        HttpRequest actualRequest = (HttpRequest) context.getAttribute(ExecutionContext.HTTP_REQUEST);
-        HttpHost actualHost = (HttpHost) context.getAttribute(ExecutionContext.HTTP_TARGET_HOST);
-        String actualURI = actualHost.toURI() + actualRequest.getRequestLine().getUri();
+        String actualURI;
+        if(context.getAttribute(CachingHttpClient.CACHE_RESPONSE_STATUS) == CacheResponseStatus.CACHE_HIT) {
+        	actualURI = request.getRequestedURL();
+        } else {
+	        HttpRequest actualRequest = (HttpRequest) context.getAttribute(ExecutionContext.HTTP_REQUEST);
+	        HttpHost actualHost = (HttpHost) context.getAttribute(ExecutionContext.HTTP_TARGET_HOST);
+	        actualURI = actualHost.toURI() + actualRequest.getRequestLine().getUri();
+        }
+        
         LOG.log(Level.INFO, "Processing of " + actualURI);
         if (!config.isProxyURI(actualURI)) {
             LOG.log(Level.INFO, "Response doesn't need to be transformed.");

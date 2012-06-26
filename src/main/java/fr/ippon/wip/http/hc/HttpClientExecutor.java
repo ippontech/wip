@@ -22,16 +22,19 @@ import fr.ippon.wip.http.HttpExecutor;
 import fr.ippon.wip.http.Request;
 import fr.ippon.wip.http.Response;
 import fr.ippon.wip.state.PortletWindow;
+
 import org.apache.http.*;
 import org.apache.http.auth.*;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.cache.CacheResponseStatus;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.entity.ContentType;
+import org.apache.http.impl.client.cache.CachingHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
@@ -121,13 +124,19 @@ public class HttpClientExecutor implements HttpExecutor {
                 AuthState authState = (AuthState) context.getAttribute(ClientContext.TARGET_AUTH_STATE);
                 portletWindow.setAuthenticated(authState != null && authState.getCredentials() != null);
 
-                // Get final URL (ie. perhaps redirected)
-                HttpUriRequest actualRequest = (HttpUriRequest) context.getAttribute(
-                        ExecutionContext.HTTP_REQUEST);
-                HttpHost actualHost = (HttpHost) context.getAttribute(
-                        ExecutionContext.HTTP_TARGET_HOST);
-                String actualUrl = (actualRequest.getURI().isAbsolute()) ? actualRequest.getURI().toString() : (actualHost.toURI() + actualRequest.getURI());
-
+                String actualUrl;
+                // what if the request was redirected? how to catch the last URL? 
+                if(context.getAttribute(CachingHttpClient.CACHE_RESPONSE_STATUS) == CacheResponseStatus.CACHE_HIT) {
+                	actualUrl = request.getRequestedURL();
+                } else {
+                    // Get final URL (ie. perhaps redirected)
+                    HttpUriRequest actualRequest = (HttpUriRequest) context.getAttribute(
+                            ExecutionContext.HTTP_REQUEST);
+                    HttpHost actualHost = (HttpHost) context.getAttribute(
+                            ExecutionContext.HTTP_TARGET_HOST);
+                    actualUrl = (actualRequest.getURI().isAbsolute()) ? actualRequest.getURI().toString() : (actualHost.toURI() + actualRequest.getURI());
+                }
+                
                 // Create Response object from HttpResponse
                 response = createResponse(httpResponse, actualUrl, portletResponse instanceof MimeResponse);
             } catch (RuntimeException rte) {
@@ -225,7 +234,8 @@ public class HttpClientExecutor implements HttpExecutor {
         // Create Response object from HttpResponse
         ContentType contentType = ContentType.getOrDefault(httpResponse.getEntity());
         Charset charset = contentType.getCharset();
-        String mimeType = contentType.toString();
+//        String mimeType = contentType.toString();
+        String mimeType = httpResponse.getFirstHeader(HttpHeaders.CONTENT_TYPE).getValue();
         if (mimeType.contains(";")) {
             mimeType = mimeType.substring(0, mimeType.indexOf(";"));
         }
