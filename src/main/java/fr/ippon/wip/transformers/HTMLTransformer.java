@@ -91,7 +91,7 @@ public class HTMLTransformer extends AbstractTransformer {
      * @param response The response object used to build PortletURL when needed
      * @throws MalformedURLException
      */
-    public HTMLTransformer(PortletRequest request, PortletResponse response) {
+    public HTMLTransformer(PortletRequest request, PortletResponse response) throws MalformedURLException {
         super(request);
         this.wipConfig = WIPUtil.extractConfiguration(request);
         this.xsltTransform = wipConfig.getXsltTransform();

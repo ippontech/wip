@@ -27,6 +27,7 @@ import org.xml.sax.SAXException;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,7 +66,7 @@ public class JSTransformer extends AbstractTransformer {
      * @param request  the Portlet request
      * @param response the Portlet response used to create ResourceURLs
      */
-    public JSTransformer(PortletRequest request, PortletResponse response) {
+    public JSTransformer(PortletRequest request, PortletResponse response) throws MalformedURLException {
         super(request);
 
         this.response = response;

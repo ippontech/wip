@@ -24,6 +24,7 @@ import org.xml.sax.SAXException;
 import javax.portlet.PortletRequest;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.regex.Matcher;
 
 /**
@@ -34,7 +35,7 @@ import java.util.regex.Matcher;
 public abstract class AbstractTransformer implements WIPTransformer {
     protected final UrlFactory urlFactory;
 
-    public AbstractTransformer(PortletRequest portletRequest) {
+    public AbstractTransformer(PortletRequest portletRequest) throws MalformedURLException {
         urlFactory = new UrlFactory(portletRequest);
     }
 

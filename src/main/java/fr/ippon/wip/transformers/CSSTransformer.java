@@ -26,6 +26,7 @@ import org.xml.sax.SAXException;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -58,8 +59,9 @@ public class CSSTransformer extends AbstractTransformer {
      *
      * @param request  The PortletRequest used to get configuration
      * @param response The PortletResponse used to build ResourceURLs
+     * @throws MalformedURLException 
      */
-    public CSSTransformer(PortletRequest request, PortletResponse response) {
+    public CSSTransformer(PortletRequest request, PortletResponse response) throws MalformedURLException {
         super(request);
         this.response = response;
         wipConfig = WIPUtil.extractConfiguration(request);

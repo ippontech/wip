@@ -1,5 +1,7 @@
 package fr.ippon.wip.http;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -13,6 +15,8 @@ import javax.portlet.BaseURL;
 import javax.portlet.MimeResponse;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
+
+import org.apache.commons.lang.StringUtils;
 
 /**
  * This class creates portal URL for corresponding to URL of the content returned by a remote host.
@@ -30,16 +34,17 @@ public class UrlFactory {
     private static final String[] TOKENS = {"<", "$"};
     private static final Logger LOG = Logger.getLogger(HTMLTransformer.class.getName());
 
-    private final String currentUrl;
+    private final URL currentUrl;
     private final WIPConfiguration configuration;
 
     /**
      * @param portletRequest To get windowID and retrieve appropriate configuration
+     * @throws MalformedURLException 
      */
-    public UrlFactory(PortletRequest portletRequest) {
+    public UrlFactory(PortletRequest portletRequest) throws MalformedURLException  {
         configuration = WIPUtil.extractConfiguration(portletRequest);
         PortletWindow window = PortletWindow.getInstance(portletRequest);
-        currentUrl = window.getCurrentURL();
+		currentUrl = new URL(window.getCurrentURL());
     }
 
     /**
@@ -109,29 +114,38 @@ public class UrlFactory {
     }
 
     private String toAbsolute(String url) {
-        if (url.startsWith("http://") || url.startsWith("https://")) {
+        if (url.startsWith("http://") || url.startsWith("https://"))
             return url;
-        } else {
-        	String newUrl = null;
-            if (url.startsWith("/")) {
-                // Add protocol & host/port
-                int firstSlashIndex = currentUrl.indexOf("/", "https://".length());
-                if (firstSlashIndex < 0) {
-                    firstSlashIndex = currentUrl.length();
-                }
-                newUrl = currentUrl.substring(0, firstSlashIndex) + url;
-            } else {
-                // Add base URL
-                int lastSlashIndex = currentUrl.lastIndexOf("/", "https://".length());
-                if (lastSlashIndex < 0) {
-                    lastSlashIndex = currentUrl.length();
-                }
-                newUrl = currentUrl.substring(0, lastSlashIndex) + "/" + url;
-            }
-            
-            LOG.log(Level.INFO, url + " transformed to " + newUrl + ".");
-            return newUrl;
-        }
+        
+        String protocol = currentUrl.getProtocol();
+        String host = currentUrl.getHost();
+        String path = currentUrl.getPath();
+    	if(path.endsWith("/"))
+			path = path.substring(0, path.length() - 1);
+    	
+        String newUrl = protocol + "://" + computePath(host, path, url);
+       	LOG.log(Level.INFO, url + " transformed to " + newUrl + ".");
+       	return newUrl;
+    }
+    
+    private static String computePath(String host, String path, String resource) {
+    	if(resource.startsWith("/"))
+    		return host + resource;
+
+    	if(resource.startsWith("./"))
+    		return computePath(host, path, resource.substring(2));
+    	
+    	if(path.endsWith("/"))
+			path = path.substring(0, path.length() - 1);
+    		
+    	if(resource.startsWith("../")) {
+    		if(StringUtils.isEmpty(path))
+    			return computePath(host, path, resource.substring(3));
+    		else
+    			return computePath(host, path.substring(0, path.lastIndexOf("/")), resource.substring(3));
+    	}
+    	
+    	return host + path + "/" + resource;
     }
 }
 
