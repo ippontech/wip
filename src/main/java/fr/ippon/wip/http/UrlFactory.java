@@ -113,39 +113,49 @@ public class UrlFactory {
         return proxyUrl;
     }
 
-    private String toAbsolute(String url) {
-        if (url.startsWith("http://") || url.startsWith("https://"))
-            return url;
+    /**
+     * Transform an relative url to an absolute one.
+     * @param relativeUrl the relative url to transform
+     * @return the absolute url
+     */
+    private String toAbsolute(String relativeUrl) {
+        if (relativeUrl.startsWith("http://") || relativeUrl.startsWith("https://"))
+            return relativeUrl;
         
         String protocol = currentUrl.getProtocol();
         String host = currentUrl.getHost();
         String path = currentUrl.getPath();
-    	if(path.endsWith("/"))
-			path = path.substring(0, path.length() - 1);
     	
-        String newUrl = protocol + "://" + computePath(host, path, url);
-       	LOG.log(Level.INFO, url + " transformed to " + newUrl + ".");
-       	return newUrl;
+        String absoluteUrl = computeUrl(protocol, host, path, relativeUrl);
+       	LOG.log(Level.INFO, relativeUrl + " transformed to " + absoluteUrl + ".");
+       	return absoluteUrl;
     }
     
-    private static String computePath(String host, String path, String resource) {
-    	if(resource.startsWith("/"))
-    		return host + resource;
-
-    	if(resource.startsWith("./"))
-    		return computePath(host, path, resource.substring(2));
-    	
-    	if(path.endsWith("/"))
+    /**
+     * Compute an url based on an host, a path and a resource. 
+     * @param host the host name of the website
+     * @param path the path of the resource containing the relativeUrl
+     * @param relativeUrl the url to append
+     * @return the absolute path to the url
+     */
+    private String computeUrl(String protocol, String host, String path, String relativeUrl) {
+		if(path.endsWith("/"))
 			path = path.substring(0, path.length() - 1);
-    		
-    	if(resource.startsWith("../")) {
+
+    	if(relativeUrl.startsWith("/"))
+    		relativeUrl.substring(1);
+
+    	if(relativeUrl.startsWith("./"))
+    		return computeUrl(protocol, host, path, relativeUrl.substring(2));
+    	
+    	if(relativeUrl.startsWith("../")) {
     		if(StringUtils.isEmpty(path))
-    			return computePath(host, path, resource.substring(3));
+    			return computeUrl(protocol, host, path, relativeUrl.substring(3));
     		else
-    			return computePath(host, path.substring(0, path.lastIndexOf("/")), resource.substring(3));
+    			return computeUrl(protocol, host, path.substring(0, path.lastIndexOf("/")), relativeUrl.substring(3));
     	}
     	
-    	return host + path + "/" + resource;
+    	return protocol + "://" + host + path + "/" + relativeUrl;
     }
 }
 
