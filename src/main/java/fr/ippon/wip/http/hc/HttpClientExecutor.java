@@ -251,11 +251,7 @@ public class HttpClientExecutor implements HttpExecutor {
         // Create Response object from HttpResponse
         ContentType contentType = ContentType.getOrDefault(httpResponse.getEntity());
         Charset charset = contentType.getCharset();
-//        String mimeType = contentType.toString();
         String mimeType = httpResponse.getFirstHeader(HttpHeaders.CONTENT_TYPE).getValue();
-        if (mimeType.contains(";")) {
-            mimeType = mimeType.substring(0, mimeType.indexOf(";"));
-        }
         int statusCode = httpResponse.getStatusLine().getStatusCode();
         InputStream content = httpResponse.getEntity().getContent();
 

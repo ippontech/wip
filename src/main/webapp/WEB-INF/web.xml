@@ -26,9 +26,7 @@
         <servlet-name>ResourceHandler</servlet-name>
         <url-pattern>/ResourceHandler/*</url-pattern>
     </servlet-mapping>
-<listener>
-        <listener-class>fr.ippon.tools.ClassLoaderListener</listener-class>
-</listener>
+
     <listener>
         <listener-class>fr.ippon.wip.http.hc.HttpClientSessionListener</listener-class>
         <listener-class>org.apache.commons.fileupload.servlet.FileCleanerCleanup</listener-class>

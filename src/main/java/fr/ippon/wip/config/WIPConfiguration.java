@@ -133,10 +133,6 @@ public class WIPConfiguration implements Cloneable {
 		return clone;
 	}
 	
-    public InputStream getXsltTransformStream () {
-    	return new ByteArrayInputStream(xsltTransform.getBytes());
-    }
-
 	/**
 	 * Get the date rate to determinate the freshness according to creation
 	 * date, current date and last modification date.

@@ -101,7 +101,8 @@ public class HTMLTransformer extends AbstractTransformer {
         transformerFactory.setURIResolver(new ClippingURIResolver(wipConfig));
 
         //TODO: manage a map of javax.xml.transform.Templates (one per config) and create a Transformer instances from it
-        StreamSource rewriteXslt = new StreamSource(wipConfig.getXsltTransformStream());
+        String xsltTransform = wipConfig.getXsltTransform();
+        StreamSource rewriteXslt = new StreamSource(new ByteArrayInputStream(xsltTransform.getBytes()));
         TransformerHandler transformerHandler = transformerFactory.newTransformerHandler(rewriteXslt);
 
         // Set parameters
