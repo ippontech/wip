@@ -16,7 +16,7 @@
  *	along with Web Integration Portlet (WIP).  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.ippon.wip.config;
+package fr.ippon.wip.config.dao;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -32,6 +32,8 @@ import org.apache.commons.io.FilenameUtils;
 
 import com.thoughtworks.xstream.XStream;
 
+import fr.ippon.wip.config.WIPConfiguration;
+
 /**
  * This Data Access Object allow CRUD operation on WIP configurations. A
  * configuration named "conf" is saved in three different file:
@@ -45,9 +47,9 @@ import com.thoughtworks.xstream.XStream;
  * @author Quentin Thierry
  * @author Yohan Legat
  */
-public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
+public class XMLConfigurationDAO extends ConfigurationDAO {
 
-	private static final Logger LOG = Logger.getLogger(XMLWIPConfigurationDAO.class.getName());
+	private static final Logger LOG = Logger.getLogger(XMLConfigurationDAO.class.getName());
 
 	// type of file: general configuration, clipping or transformation
 	public static final int FILE_NAME_CONFIG = 0;
@@ -69,7 +71,7 @@ public class XMLWIPConfigurationDAO extends WIPConfigurationDAO {
 	 * 
 	 * @throws URISyntaxException
 	 */
-	public XMLWIPConfigurationDAO(String pathConfigFiles, boolean withWatcher) {
+	public XMLConfigurationDAO(String pathConfigFiles, boolean withWatcher) {
 		super(withWatcher);
 
 		this.pathConfigFiles = pathConfigFiles;

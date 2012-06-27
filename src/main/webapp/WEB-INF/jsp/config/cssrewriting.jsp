@@ -36,11 +36,11 @@
 <div id="editForm">
     <div id="editHeader">
         <div class="left">
-			<h5>Configuration: <%= wipConf.getName() %></h5>
+			<h5>Configuration: <%=wipConf.getName()%></h5>
 		</div>
         <div class="right">
              <form id="changePage" action="<portlet:actionURL/>" method="POST">
-                <select name="<%= Attributes.PAGE.name() %>" onchange="this.form.submit();return(false);">
+                <select name="<%=Attributes.PAGE.name()%>" onchange="this.form.submit();return(false);">
                     <option value="GENERAL_SETTINGS"><fmt:message key="wip.config.generalsettings"/></option>
                     <option value="CACHING"><fmt:message key="wip.config.caching"/></option>
                     <option value="HTML_REWRITING"><fmt:message
@@ -59,61 +59,63 @@
         <p class="line" id="enablecssretrieving">
             <label for="enableCssRetrieving"><fmt:message key="wip.config.enablecssretrieving"/> :</label>
             <input type="checkbox" name="enableCssRetrieving" id="enableCssRetrieving"
-                   onclick="check();" <% if (wipConf.isEnableCssRetrieving()) out.print("checked"); %> />
-            <%= printHelp("wip.help.enablecssretrieving", locale) %>
+                   onclick="check();" <%if (wipConf.isEnableCssRetrieving()) out.print("checked");%> />
+            <%=printHelp("wip.help.enablecssretrieving", locale)%>
         </p>
 
-        <p class="line" id="enablecssrewriting" <% if (!wipConf.isEnableCssRetrieving())
-            out.print("style=\"display:none;\""); %>>
+        <p class="line" id="enablecssrewriting" <%if (!wipConf.isEnableCssRetrieving())
+            out.print("style=\"display:none;\"");%>>
             <label for="enableCssRewriting"><fmt:message key="wip.config.enablecssrewriting"/> :</label>
             <input type="checkbox" name="enableCssRewriting" id="enableCssRewriting"
-                   onclick="check();" <% if (wipConf.isEnableCssRewriting()) out.print("checked"); %> />
-            <%= printHelp("wip.help.enablecssrewriting", locale) %>
+                   onclick="check();" <%if (wipConf.isEnableCssRewriting()) out.print("checked");%> />
+            <%=printHelp("wip.help.enablecssrewriting", locale)%>
         </p>
 
-        <p class="line" id="cssregex" <% if (!wipConf.isEnableCssRetrieving() || !wipConf.isEnableCssRewriting())
-            out.print("style=\"display:none;\""); %>>
+        <p class="line" id="cssregex" <%if (!wipConf.isEnableCssRetrieving() || !wipConf.isEnableCssRewriting())
+            out.print("style=\"display:none;\"");%>>
             <label for="cssRegex"><fmt:message key="wip.config.cssregex"/> :</label>
             <input type="text" name="cssRegex" id="cssRegex"
-                   value="<%= StringEscapeUtils.escapeHtml(wipConf.getCssRegex()) %>"/>
-            <%= printHelp("wip.help.cssregex", locale) %>
+                   value="<%=StringEscapeUtils.escapeHtml(wipConf.getCssRegex())%>"/>
+            <%=printHelp("wip.help.cssregex", locale)%>
         </p>
 
         <p class="line"
-           id="absolutepositioning" <% if (!wipConf.isEnableCssRetrieving() || !wipConf.isEnableCssRewriting())
-            out.print("style=\"display:none;\""); %>>
+           id="absolutepositioning" <%if (!wipConf.isEnableCssRetrieving() || !wipConf.isEnableCssRewriting())
+            out.print("style=\"display:none;\"");%>>
             <label for="absolutePositioning"><fmt:message key="wip.config.absolutepositioning"/> :</label>
             <input type="checkbox" name="absolutePositioning" id="absolutepositioning"
-                   onclick="check();" <% if (wipConf.isAbsolutePositioning()) out.print("checked"); %> />
-            <%= printHelp("wip.help.absolutepositioning", locale) %>
+                   onclick="check();" <%if (wipConf.isAbsolutePositioning()) out.print("checked");%> />
+            <%=printHelp("wip.help.absolutepositioning", locale)%>
         </p>
 
-        <p class="line" id="addprefix" <% if (!wipConf.isEnableCssRetrieving() || !wipConf.isEnableCssRewriting())
-            out.print("style=\"display:none;\""); %>>
+        <p class="line" id="addprefix" <%if (!wipConf.isEnableCssRetrieving() || !wipConf.isEnableCssRewriting())
+            out.print("style=\"display:none;\"");%>>
             <label for="addPrefix"><fmt:message key="wip.config.addprefix"/> :</label>
-            <input type="checkbox" name="addPrefix" id="addprefix" onclick="check();" <% if (wipConf.isAddPrefix())
-                out.print("checked"); %> />
-            <%= printHelp("wip.help.addprefix", locale) %>
+            <input type="checkbox" name="addPrefix" id="addprefix" onclick="check();" <%if (wipConf.isAddPrefix())
+                out.print("checked");%> />
+            <%=printHelp("wip.help.addprefix", locale)%>
         </p>
 
         <p class="line"
-           id="portletdivid" <% if (!wipConf.isEnableCssRetrieving() || !wipConf.isEnableCssRewriting() || !wipConf.isAddPrefix())
-            out.print("style=\"display:none;\""); %>>
+           id="portletdivid" <%if (!wipConf.isEnableCssRetrieving() || !wipConf.isEnableCssRewriting() || !wipConf.isAddPrefix())
+            out.print("style=\"display:none;\"");%>>
             <label for="portletDivId"><fmt:message key="wip.config.portletdivid"/> :</label>
-            <input type="text" name="portletDivId" id="portletDivId" value="<%= wipConf.getPortletDivId() %>"/>
-            <%= printHelp("wip.help.portletdivid", locale) %>
+            <input type="text" name="portletDivId" id="portletDivId" value="<%=wipConf.getPortletDivId()%>"/>
+            <%=printHelp("wip.help.portletdivid", locale)%>
         </p>
 
         <p class="line">
             <label for="customCss"><fmt:message key="wip.config.customcss"/> :</label>
-            <textarea name="customCss" id="customCss"><%= wipConf.getCustomCss() %>
+            <textarea name="customCss" id="customCss"><%=wipConf.getCustomCss()%>
             </textarea>
-            <%= printHelp("wip.help.customcss", locale) %>
-            <%= printError("customCss", errors) %>
+            <%=printHelp("wip.help.customcss", locale)%>
+            <%=printError("customCss", errors)%>
         </p>
 
         <p class="submit">
-       		<%if(!WIPConfigurationDAO.DEFAULT_CONFIG_NAME.equals(wipConf.getName())) { %>
+       		<%
+       			if(!ConfigurationDAO.DEFAULT_CONFIG_NAME.equals(wipConf.getName())) {
+       		%>
 	            <input type="submit" value="<fmt:message key='wip.config.save' />"/>
     	    <%} %>
         </p>

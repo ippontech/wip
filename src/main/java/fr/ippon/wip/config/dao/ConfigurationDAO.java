@@ -16,10 +16,13 @@
  *	along with Web Integration Portlet (WIP).  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.ippon.wip.config;
+package fr.ippon.wip.config.dao;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import fr.ippon.wip.config.DeployerWatcher;
+import fr.ippon.wip.config.WIPConfiguration;
 
 /**
  * This abstract Data Access Object defines the signatures of the CRUD method
@@ -28,7 +31,7 @@ import java.util.List;
  * @author Yohan Legat
  * 
  */
-public abstract class WIPConfigurationDAO {
+public abstract class ConfigurationDAO {
 
 	/**
 	 * The default configuration name.
@@ -42,11 +45,11 @@ public abstract class WIPConfigurationDAO {
 
 	protected final DeployerWatcher deployerWatcher;
 
-	public WIPConfigurationDAO() {
+	public ConfigurationDAO() {
 		this(true);
 	}
 	
-	public WIPConfigurationDAO(boolean withWatcher) {
+	public ConfigurationDAO(boolean withWatcher) {
 		configurationNames = new ArrayList<String>();
 		deployerWatcher = withWatcher ? new DeployerWatcher() : null;
 	}

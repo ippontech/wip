@@ -10,6 +10,8 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
 
+import fr.ippon.wip.config.dao.XMLConfigurationDAO;
+
 /**
  * Allow zip and unzip operations over configurations.
  * 
@@ -18,10 +20,10 @@ import org.apache.commons.io.FileUtils;
  */
 public class ZipConfiguration {
 
-	private XMLWIPConfigurationDAO xmlDAO;
+	private XMLConfigurationDAO xmlDAO;
 
 	public ZipConfiguration() {
-		xmlDAO = new XMLWIPConfigurationDAO(FileUtils.getTempDirectoryPath(), false);
+		xmlDAO = new XMLConfigurationDAO(FileUtils.getTempDirectoryPath(), false);
 	}
 
 	/**
@@ -49,7 +51,7 @@ public class ZipConfiguration {
 	private boolean extract(ZipFile zipFile, String configurationName) throws IOException {
 		File file;
 		ZipEntry entry;
-		int[] types = new int[] { XMLWIPConfigurationDAO.FILE_NAME_CLIPPING, XMLWIPConfigurationDAO.FILE_NAME_TRANSFORM, XMLWIPConfigurationDAO.FILE_NAME_CONFIG };
+		int[] types = new int[] { XMLConfigurationDAO.FILE_NAME_CLIPPING, XMLConfigurationDAO.FILE_NAME_TRANSFORM, XMLConfigurationDAO.FILE_NAME_CONFIG };
 		for (int type : types) {
 			file = xmlDAO.getConfigurationFile(configurationName, type);
 			entry = zipFile.getEntry(file.getName());
@@ -101,7 +103,7 @@ public class ZipConfiguration {
 		xmlDAO.create(configuration);
 
 		try {
-			int[] types = new int[] { XMLWIPConfigurationDAO.FILE_NAME_CLIPPING, XMLWIPConfigurationDAO.FILE_NAME_TRANSFORM, XMLWIPConfigurationDAO.FILE_NAME_CONFIG };
+			int[] types = new int[] { XMLConfigurationDAO.FILE_NAME_CLIPPING, XMLConfigurationDAO.FILE_NAME_TRANSFORM, XMLConfigurationDAO.FILE_NAME_CONFIG };
 			for (int type : types) {
 				File file = xmlDAO.getConfigurationFile(configName, type);
 				ZipEntry entry = new ZipEntry(file.getName());

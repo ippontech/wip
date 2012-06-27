@@ -1,4 +1,4 @@
-package fr.ippon.wip.config;
+package fr.ippon.wip.config.dao;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -10,24 +10,24 @@ import java.net.URL;
  * @author Yohan Legat
  *
  */
-public class WIPConfigurationDAOFactory {
+public class ConfigurationDAOFactory {
 
-	private WIPConfigurationDAO xmlDAO;
+	private ConfigurationDAO xmlDAO;
 
-	private static WIPConfigurationDAOFactory instance;
+	private static ConfigurationDAOFactory instance;
 
 	/**
 	 * Get the unique instance of this class, creating it if necessary
 	 * @return
 	 */
-	public synchronized static WIPConfigurationDAOFactory getInstance() {
+	public synchronized static ConfigurationDAOFactory getInstance() {
 		if (instance == null)
-			instance = new WIPConfigurationDAOFactory();
+			instance = new ConfigurationDAOFactory();
 
 		return instance;
 	}
 
-	private WIPConfigurationDAOFactory() {
+	private ConfigurationDAOFactory() {
 
 	}
 
@@ -35,13 +35,13 @@ public class WIPConfigurationDAOFactory {
 	 * Get the instance of a configuration DAO; this DAO persists the configurations as xml and xslt files.
 	 * @return the instance of a configuration DAO
 	 */
-	public synchronized WIPConfigurationDAO getXMLInstance() {
+	public synchronized ConfigurationDAO getXMLInstance() {
 		if (xmlDAO == null) {
 			try {
 				// set the configuration files location
 				URL url = getClass().getResource("/configurations");
 				String pathConfigFiles = new File(url.toURI()).toString();
-				xmlDAO = new WIPConfigurationDAOCache(new XMLWIPConfigurationDAO(pathConfigFiles, true));
+				xmlDAO = new ConfigurationCacheDAO(new XMLConfigurationDAO(pathConfigFiles, true));
 
 			} catch (URISyntaxException e) {
 				e.printStackTrace();

@@ -1,23 +1,25 @@
-package fr.ippon.wip.config;
+package fr.ippon.wip.config.dao;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import fr.ippon.wip.config.WIPConfiguration;
 
 /**
  * This class 
  * @author ylegat
  *
  */
-public class WIPConfigurationDAOCache extends WIPConfigurationDAO {
+public class ConfigurationCacheDAO extends ConfigurationDAO {
 	
 	// a map that contains the loaded configurations associated with their names.
 	private final Map<String, WIPConfiguration> cache;
 	
 	// a reference to the used DAO
-	private final WIPConfigurationDAO dao;
+	private final ConfigurationDAO dao;
 	
-	public WIPConfigurationDAOCache(WIPConfigurationDAO dao) {
+	public ConfigurationCacheDAO(ConfigurationDAO dao) {
 		this.dao = dao;
 		cache = new HashMap<String, WIPConfiguration>();
 	}

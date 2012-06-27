@@ -52,16 +52,16 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
 import fr.ippon.wip.config.WIPConfiguration;
-import fr.ippon.wip.config.WIPConfigurationDAO;
-import fr.ippon.wip.config.WIPConfigurationDAOFactory;
 import fr.ippon.wip.config.ZipConfiguration;
+import fr.ippon.wip.config.dao.ConfigurationDAO;
+import fr.ippon.wip.config.dao.ConfigurationDAOFactory;
 import fr.ippon.wip.util.WIPUtil;
 
 public class WIPConfigurationPortlet extends GenericPortlet {
 
 	private static final Logger LOG = Logger.getLogger(WIPConfigurationPortlet.class.getName());
 	
-	private WIPConfigurationDAO wipConfigurationDAO;
+	private ConfigurationDAO wipConfigurationDAO;
 	
 	private PortletFileUpload fileUploadPortlet;
 
@@ -467,7 +467,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	@Override
 	public void init() throws PortletException {
 		super.init();
-		wipConfigurationDAO = WIPConfigurationDAOFactory.getInstance().getXMLInstance();
+		wipConfigurationDAO = ConfigurationDAOFactory.getInstance().getXMLInstance();
 
 		DiskFileItemFactory factory = new DiskFileItemFactory();
 		fileUploadPortlet = new PortletFileUpload(factory);

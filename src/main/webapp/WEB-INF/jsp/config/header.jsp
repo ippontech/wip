@@ -6,8 +6,8 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
 
 <%@ page import="fr.ippon.wip.config.WIPConfiguration" %>
-<%@ page import="fr.ippon.wip.config.WIPConfigurationDAO" %>
-<%@ page import="fr.ippon.wip.config.WIPConfigurationDAOFactory" %>
+<%@ page import="fr.ippon.wip.config.dao.ConfigurationDAO" %>
+<%@ page import="fr.ippon.wip.config.dao.ConfigurationDAOFactory" %>
 <%@ page import="fr.ippon.wip.http.Request" %>
 <%@ page import="fr.ippon.wip.portlet.Pages" %>
 <%@ page import="fr.ippon.wip.portlet.Attributes"%>
@@ -30,7 +30,7 @@
     PortletResponse pRsp = (PortletResponse) request.getAttribute("javax.portlet.response");
 
     Pages selectedPage = (Pages) portletSession.getAttribute(Attributes.PAGE.name());
-    WIPConfigurationDAO wipConfigurationDAO = WIPConfigurationDAOFactory.getInstance().getXMLInstance();
+    ConfigurationDAO wipConfigurationDAO = ConfigurationDAOFactory.getInstance().getXMLInstance();
     WIPConfiguration wipConf = (WIPConfiguration) portletSession.getAttribute(Attributes.CONFIGURATION.name());
     
     Map<String, String> errors = (Map<String, String>) session.getAttribute("errors");

@@ -18,11 +18,11 @@
 <div id="editForm">
     <div id="editHeader">
         <div class="left">
-			<h5>Configuration: <%= wipConf.getName() %></h5>
+			<h5>Configuration: <%=wipConf.getName()%></h5>
 		</div>
         <div class="right">
              <form id="changePage" action="<portlet:actionURL/>" method="POST">
-               	<select name="<%= Attributes.PAGE.name() %>" onchange="this.form.submit();return(false);">
+               	<select name="<%=Attributes.PAGE.name()%>" onchange="this.form.submit();return(false);">
                     <option value="GENERAL_SETTINGS" selected="selected"><fmt:message key="wip.config.generalsettings"/></option>
                     <option value="CACHING"><fmt:message key="wip.config.caching"/></option>
                     <option value="HTML_REWRITING"><fmt:message key="wip.config.htmlrewriting"/></option>
@@ -39,35 +39,37 @@
 
         <p class="line">
             <label for="initUrl"><fmt:message key="wip.config.initurl"/> :</label>
-            <input type="text" name="initUrl" id="initUrl" value="<%= wipConf.getInitUrl() %>"/>
-            <%= printHelp("wip.help.initurl", locale) %>
-            <%= printError("initUrl", errors) %>
+            <input type="text" name="initUrl" id="initUrl" value="<%=wipConf.getInitUrl()%>"/>
+            <%=printHelp("wip.help.initurl", locale)%>
+            <%=printError("initUrl", errors)%>
         </p>
 
-        <p class="line" id="domainstoproxydiv" <% if (!wipConf.isEnableUrlRewriting())
-            out.print("style=\"display:none;\""); %>>
+        <p class="line" id="domainstoproxydiv" <%if (!wipConf.isEnableUrlRewriting())
+            out.print("style=\"display:none;\"");%>>
             <label for="domainsToProxy"><fmt:message key="wip.config.domainstoproxy"/> :</label>
             <input type="text" name="domainsToProxy" id="domainsToProxy"
-                   value="<%= StringUtils.join(wipConf.getDomainsToProxy(), ";") %>"/>
-            <%= printHelp("wip.help.domainstoproxy", locale) %>
-            <%= printError("domainsToProxy", errors) %>
+                   value="<%=StringUtils.join(wipConf.getDomainsToProxy(), ";")%>"/>
+            <%=printHelp("wip.help.domainstoproxy", locale)%>
+            <%=printError("domainsToProxy", errors)%>
         </p>
 
         <p class="line">
             <label for="enableUrlRewriting"><fmt:message key="wip.config.enableurlrewriting"/> :</label>
             <input type="checkbox" name="enableUrlRewriting"
-                   id="enableUrlRewriting" <% if (wipConf.isEnableUrlRewriting()) out.print("checked"); %> />
-            <%= printHelp("wip.help.enableurlrewriting", locale) %>
+                   id="enableUrlRewriting" <%if (wipConf.isEnableUrlRewriting()) out.print("checked");%> />
+            <%=printHelp("wip.help.enableurlrewriting", locale)%>
         </p>
 
         <p class="line">
             <label for="portletTitle"><fmt:message key="wip.config.portlettitle"/> :</label>
-            <input type="text" name="portletTitle" id="portletTitle" value="<%= wipConf.getPortletTitle() %>"/>
-            <%= printHelp("wip.help.portlettitle", locale) %>
+            <input type="text" name="portletTitle" id="portletTitle" value="<%=wipConf.getPortletTitle()%>"/>
+            <%=printHelp("wip.help.portlettitle", locale)%>
         </p>
 
         <p class="submit">
-       		<%if(!WIPConfigurationDAO.DEFAULT_CONFIG_NAME.equals(wipConf.getName())) { %>
+       		<%
+       			if(!ConfigurationDAO.DEFAULT_CONFIG_NAME.equals(wipConf.getName())) {
+       		%>
 	            <input type="submit" value="<fmt:message key='wip.config.save' />"/>
     	    <%} %>
         </p>

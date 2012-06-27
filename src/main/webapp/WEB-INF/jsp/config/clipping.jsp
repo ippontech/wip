@@ -3,11 +3,11 @@
 <div id="editForm">
     <div id="editHeader">
         <div class="left">
-			<h5>Configuration: <%= wipConf.getName() %></h5>
+			<h5>Configuration: <%=wipConf.getName()%></h5>
 		</div>
         <div class="right">
              <form id="changePage" action="<portlet:actionURL/>" method="POST">
-                <select name="<%= Attributes.PAGE.name() %>" onchange="this.form.submit();return(false);">
+                <select name="<%=Attributes.PAGE.name()%>" onchange="this.form.submit();return(false);">
                     <option value="GENERAL_SETTINGS"><fmt:message key="wip.config.generalsettings"/></option>
                     <option value="CACHING"><fmt:message key="wip.config.caching"/></option>
                     <option value="HTML_REWRITING"><fmt:message
@@ -31,50 +31,52 @@
                     &nbsp;</strong></td>
                 <td align="left" width="50%">
                     <input type="radio" name="clippingType" value="none" id="none" onclick="display('none');"
-                            <% if (!errors.containsKey("xPath") && wipConf.getClippingType().equals("none")) { %>
-                           checked <% } %> /><label for="none"> None </label>
+                            <%if (!errors.containsKey("xPath") && wipConf.getClippingType().equals("none")) {%>
+                           checked <%}%> /><label for="none"> None </label>
                 </td>
-                <td><%= printHelp("wip.help.clippingtype", locale) %>
+                <td><%=printHelp("wip.help.clippingtype", locale)%>
                 </td>
             </tr>
             <tr>
                 <td align="left" width="50%">
                     <input type="radio" name="clippingType" value="xpath" id="xpath" onclick="display('xpath');"
-                            <% if (errors.containsKey("xPath") || wipConf.getClippingType().equals("xpath")) { %>
-                           checked <% } %> /><label for="xpath"> XPath </label>
+                            <%if (errors.containsKey("xPath") || wipConf.getClippingType().equals("xpath")) {%>
+                           checked <%}%> /><label for="xpath"> XPath </label>
                 </td>
                 <td></td>
             </tr>
             <tr>
                 <td align="left" width="50%">
                     <input type="radio" name="clippingType" value="xslt" id="xslt" onclick="display('xslt');"
-                            <% if (!errors.containsKey("xPath") && wipConf.getClippingType().equals("xslt")) { %>
-                           checked <% } %> /><label for="xslt"> XSLT </label>
+                            <%if (!errors.containsKey("xPath") && wipConf.getClippingType().equals("xslt")) {%>
+                           checked <%}%> /><label for="xslt"> XSLT </label>
                 </td>
                 <td></td>
             </tr>
         </table>
-        <div id="xpathform" <% if (!(errors.containsKey("xPath") || wipConf.getClippingType().equals("xpath"))) { %>
-             style="display:none;" <% } %>>
+        <div id="xpathform" <%if (!(errors.containsKey("xPath") || wipConf.getClippingType().equals("xpath"))) {%>
+             style="display:none;" <%}%>>
             <p class="line">
                 <label><fmt:message key="wip.config.xpath"/></label>
-                <input type="text" name="xPath" value="<%= wipConf.getXPath() %>"/>
-                <%= printHelp("wip.help.xpath", locale) %>
-                <%= printError("xPath", errors) %>
+                <input type="text" name="xPath" value="<%=wipConf.getXPath()%>"/>
+                <%=printHelp("wip.help.xpath", locale)%>
+                <%=printError("xPath", errors)%>
             </p>
         </div>
-        <div id="xsltform" <% if (!wipConf.getClippingType().equals("xslt") || (errors.containsKey("xPath"))) { %>
-             style="display:none;" <% } %>>
+        <div id="xsltform" <%if (!wipConf.getClippingType().equals("xslt") || (errors.containsKey("xPath"))) {%>
+             style="display:none;" <%}%>>
             <p style="font-weight: bold"><fmt:message key="wip.config.xsltclipping"/> : (<a href="#" onclick="reset();">reset</a>)</p>
             <p class="line">
-                <textarea name="xsltClipping" id="xsltClipping"><%= wipConf.getXsltClipping() %></textarea>
-                <%= printHelp("wip.help.xsltclipping", locale) %>
+                <textarea name="xsltClipping" id="xsltClipping"><%=wipConf.getXsltClipping()%></textarea>
+                <%=printHelp("wip.help.xsltclipping", locale)%>
                 <br/>
             </p>
         </div>
 
         <p class="submit">
-		<%if(!WIPConfigurationDAO.DEFAULT_CONFIG_NAME.equals(wipConf.getName())) { %>
+		<%
+			if(!ConfigurationDAO.DEFAULT_CONFIG_NAME.equals(wipConf.getName())) {
+		%>
 			<input type="submit" value="<fmt:message key='wip.config.save' />"/>
     	<%} %>
         </p>

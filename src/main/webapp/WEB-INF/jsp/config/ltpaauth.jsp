@@ -1,15 +1,17 @@
 <%@include file="/WEB-INF/jsp/config/header.jsp" %>
 
-<% String src = request.getContextPath() + "/img/remove.png"; %>
+<%
+	String src = request.getContextPath() + "/img/remove.png";
+%>
 
 <div id="editForm">
     <div id="editHeader">
         <div class="left">
-			<h5>Configuration: <%= wipConf.getName() %></h5>
+			<h5>Configuration: <%=wipConf.getName()%></h5>
 		</div>
         <div class="right">
              <form id="changePage" action="<portlet:actionURL/>" method="POST">
-                <select name="<%= Attributes.PAGE.name() %>" onchange="this.form.submit();return(false);">
+                <select name="<%=Attributes.PAGE.name()%>" onchange="this.form.submit();return(false);">
                     <option value="GENERAL_SETTINGS"><fmt:message key="wip.config.generalsettings"/></option>
                     <option value="CACHING"><fmt:message key="wip.config.caching"/></option>
                     <option value="HTML_REWRITING"><fmt:message
@@ -28,29 +30,31 @@
         <p class="line">
             <label for="ltpaSsoAuthentication"><fmt:message key="wip.config.ltpassoauthentication"/> :</label>
             <input type="checkbox" name="ltpaSsoAuthentication"
-                   id="ltpaSsoAuthentication" <% if (wipConf.isLtpaSsoAuthentication()) out.print("checked"); %> />
-            <%= printHelp("wip.help.ltpassoauthentication", locale) %>
+                   id="ltpaSsoAuthentication" <%if (wipConf.isLtpaSsoAuthentication()) out.print("checked");%> />
+            <%=printHelp("wip.help.ltpassoauthentication", locale)%>
         </p>
 
         <p class="line">
             <label for="credentialProviderClassName"><fmt:message key="wip.config.credentialproviderclassname"/>
                 :</label>
             <input type="text" name="credentialProviderClassName" id="credentialProviderClassName"
-                   value="<%= wipConf.getCredentialProviderClassName() %>"/>
-            <%= printHelp("wip.help.credentialproviderclassname", locale) %>
-            <%= printError("credentialProviderClassName", errors) %>
+                   value="<%=wipConf.getCredentialProviderClassName()%>"/>
+            <%=printHelp("wip.help.credentialproviderclassname", locale)%>
+            <%=printError("credentialProviderClassName", errors)%>
         </p>
 
         <p class="line">
             <label for="ltpaSecretProviderClassName"><fmt:message key="wip.config.ltpasecretproviderclassname"/>
                 :</label>
             <input type="text" name="ltpaSecretProviderClassName" id="ltpaSecretProviderClassName"
-                   value="<%= wipConf.getLtpaSecretProviderClassName() %>"/>
-            <%= printHelp("wip.help.ltpasecretproviderclassname", locale) %>
-            <%= printError("ltpaSecretProviderClassName", errors) %>
+                   value="<%=wipConf.getLtpaSecretProviderClassName()%>"/>
+            <%=printHelp("wip.help.ltpasecretproviderclassname", locale)%>
+            <%=printError("ltpaSecretProviderClassName", errors)%>
         </p>
 
-		<%if(!WIPConfigurationDAO.DEFAULT_CONFIG_NAME.equals(wipConf.getName())) { %>
+		<%
+			if(!ConfigurationDAO.DEFAULT_CONFIG_NAME.equals(wipConf.getName())) {
+		%>
         <p class="submit">
             <input type="submit" value="<fmt:message key='wip.config.save' />"/>
         </p>

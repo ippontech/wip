@@ -3,11 +3,11 @@
 <div id="editForm">
     <div id="editHeader">
         <div class="left">
-			<h5>Configuration: <%= wipConf.getName() %></h5>
+			<h5>Configuration: <%=wipConf.getName()%></h5>
 		</div>
         <div class="right">
             <form id="changePage" action="<portlet:actionURL/>" method="POST">
-                <select name="<%= Attributes.PAGE.name() %>" onchange="this.form.submit();return(false);">
+                <select name="<%=Attributes.PAGE.name()%>" onchange="this.form.submit();return(false);">
                     <option value="GENERAL_SETTINGS"><fmt:message key="wip.config.generalsettings"/></option>
                     <option value="CACHING"><fmt:message key="wip.config.caching"/></option>
                     <option value="HTML_REWRITING" selected="selected"><fmt:message
@@ -24,13 +24,15 @@
         <input type="hidden" name="form" value="3"/>
         <p style="font-weight: bold"><fmt:message key="wip.config.xslttransform"/> : (<a href="#" onclick="reset();">reset</a>)</p>
          <p class="line">
-            <textarea name="xsltTransform" id="xsltTransform"><%= wipConf.getXsltTransform() %></textarea>
-             <%= printHelp("wip.help.xslttransform", locale) %>
+            <textarea name="xsltTransform" id="xsltTransform"><%=wipConf.getXsltTransform()%></textarea>
+             <%=printHelp("wip.help.xslttransform", locale)%>
             <br/>
         </p>
 
         <p class="submit">
-       		<%if(!WIPConfigurationDAO.DEFAULT_CONFIG_NAME.equals(wipConf.getName())) { %>
+       		<%
+       			if(!ConfigurationDAO.DEFAULT_CONFIG_NAME.equals(wipConf.getName())) {
+       		%>
 	            <input type="submit" value="<fmt:message key='wip.config.save' />"/>
     	    <%} %>
         </p>
