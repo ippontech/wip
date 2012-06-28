@@ -80,6 +80,7 @@ public class UrlFactory {
         Request.ResourceType resourceType = Request.ResourceType.valueOf(type);
         // Convert to absolute URL
         String absoluteUrl = toAbsolute(url);
+
         // Check if url match domains to proxy
         if (!configuration.isProxyURI(absoluteUrl)) {
             return absoluteUrl;
@@ -109,7 +110,6 @@ public class UrlFactory {
             proxyUrl = TEMP_URL_SEPARATOR + absoluteUrl + TOKENS[0] + httpMethod.name() + TOKENS[0] + resourceType.name() + TEMP_URL_SEPARATOR;
         }
         
-        LOG.log(Level.INFO, url + " proxied as " + proxyUrl);
         return proxyUrl;
     }
 
@@ -127,7 +127,6 @@ public class UrlFactory {
         String path = currentUrl.getPath();
     	
         String absoluteUrl = computeUrl(protocol, host, path, relativeUrl);
-       	LOG.log(Level.INFO, relativeUrl + " transformed to " + absoluteUrl + ".");
        	return absoluteUrl;
     }
     

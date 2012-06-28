@@ -36,11 +36,11 @@ import java.text.MessageFormat;
 public class Response {
     private InputStream stream;
     private Charset charset;
-    private String mimeType;
+
+	private String mimeType;
     private String url;
     private int responseCode;
     private boolean portalURLComputed;
-
     public Response (InputStream content, Charset charset, String mimeType, String url, int responseCode, boolean portalURLComputed) {
         this.stream = content;
         if (charset != null) {
@@ -54,12 +54,33 @@ public class Response {
         this.portalURLComputed = portalURLComputed;
     }
 
-    public boolean isHtml () {
-        return mimeType.equals("text/html") || mimeType.equals("application/xhtml+xml");
+    /**
+     * This method is an ugly but necessary hack in order to permit content transformation
+     * in the ACTION phase when it is not possible to create PortletURL.
+     *
+     * This method parse the response content to find all links to rewrite into PortletURL
+     *
+     * @param portletRequest
+     * @param mimeResponse
+     */
+    private void computePortalURL(PortletRequest portletRequest, MimeResponse mimeResponse) {
+        try {
+            String originalContent = IOUtils.toString(stream, charset);
+            ActionToRenderTransformer transformer = new ActionToRenderTransformer(portletRequest, mimeResponse);
+            String transformedContent = transformer.transform(originalContent);
+            stream = new ByteArrayInputStream(transformedContent.getBytes(charset));
+        } catch (IOException ioe) {
+            throw new RuntimeException("Error computing portal URLs", ioe);
+        }
+        portalURLComputed = true;
     }
 
-    public boolean isBinary() {
-        return !(mimeType.startsWith("text") || mimeType.startsWith("application/xhtml+xml") || mimeType.startsWith("application/json") || mimeType.startsWith("application/xml") || mimeType.startsWith("application/javascript"));
+    public void dispose() {
+        try {
+            stream.close();
+        } catch (IOException e) {
+            // TODO: add log ?
+        }
     }
 
     /**
@@ -80,16 +101,27 @@ public class Response {
         return fileName;
     }
 
+    private String getLogoutButton(RenderResponse response) {
+        PortletURL logout = response.createActionURL();
+        logout.setParameter("auth", "logout");
+        String message = WIPUtil.getMessage("wip.auth.logout", response.getLocale());
+        return MessageFormat.format(message, logout.toString());
+    }
+
+    public InputStream getStream() {
+		return stream;
+	}
+
     public String getUrl() {
         return url;
     }
 
-    public void dispose() {
-        try {
-            stream.close();
-        } catch (IOException e) {
-            // TODO: add log ?
-        }
+    public boolean isBinary() {
+        return !(mimeType.startsWith("text") || mimeType.startsWith("application/xhtml+xml") || mimeType.startsWith("application/json") || mimeType.startsWith("application/xml") || mimeType.startsWith("application/javascript"));
+    }
+
+    public boolean isHtml () {
+        return mimeType.equals("text/html") || mimeType.equals("application/xhtml+xml");
     }
 
     /**
@@ -158,33 +190,5 @@ public class Response {
             writer.print(content);
         }
         dispose();
-    }
-
-    /**
-     * This method is an ugly but necessary hack in order to permit content transformation
-     * in the ACTION phase when it is not possible to create PortletURL.
-     *
-     * This method parse the response content to find all links to rewrite into PortletURL
-     *
-     * @param portletRequest
-     * @param mimeResponse
-     */
-    private void computePortalURL(PortletRequest portletRequest, MimeResponse mimeResponse) {
-        try {
-            String originalContent = IOUtils.toString(stream, charset);
-            ActionToRenderTransformer transformer = new ActionToRenderTransformer(portletRequest, mimeResponse);
-            String transformedContent = transformer.transform(originalContent);
-            stream = new ByteArrayInputStream(transformedContent.getBytes(charset));
-        } catch (IOException ioe) {
-            throw new RuntimeException("Error computing portal URLs", ioe);
-        }
-        portalURLComputed = true;
-    }
-
-    private String getLogoutButton(RenderResponse response) {
-        PortletURL logout = response.createActionURL();
-        logout.setParameter("auth", "logout");
-        String message = WIPUtil.getMessage("wip.auth.logout", response.getLocale());
-        return MessageFormat.format(message, logout.toString());
     }
 }

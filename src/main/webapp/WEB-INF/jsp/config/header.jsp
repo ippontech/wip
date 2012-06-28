@@ -33,7 +33,7 @@
     ConfigurationDAO wipConfigurationDAO = ConfigurationDAOFactory.getInstance().getXMLInstance();
     WIPConfiguration wipConf = (WIPConfiguration) portletSession.getAttribute(Attributes.CONFIGURATION.name());
     
-    Map<String, String> errors = (Map<String, String>) session.getAttribute("errors");
+    Map<String, String> errors = (Map<String, String>) portletSession.getAttribute("errors");
     if (errors == null)
     	errors = new HashMap<String, String>();
 %>

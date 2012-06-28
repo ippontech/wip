@@ -27,6 +27,7 @@ import fr.ippon.wip.http.Response;
 import fr.ippon.wip.http.hc.HttpClientExecutor;
 import fr.ippon.wip.state.PortletWindow;
 import fr.ippon.wip.state.ResponseStore;
+import fr.ippon.wip.util.WIPLogging;
 import fr.ippon.wip.util.WIPUtil;
 
 import javax.portlet.*;
@@ -35,10 +36,7 @@ import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
 import java.util.UUID;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 /**
  * WIPortlet enables web application integration within a portlet. It override
@@ -65,9 +63,6 @@ public class WIPortlet extends GenericPortlet {
 	private ConfigurationDAO wipConfigurationDAO;
 	private HttpExecutor executor;
 
-	// file handler for logging
-	private Handler fileHandler;
-	
 	/**
 	 * Initialize configuration and create an instance of HttpExecutor
 	 * 
@@ -78,20 +73,10 @@ public class WIPortlet extends GenericPortlet {
 	@Override
 	public void init(PortletConfig config) throws PortletException {
 		super.init(config);
-		
-		try {
-			fileHandler = new FileHandler("%h/transformers.log", true);
-			fileHandler.setFormatter(new SimpleFormatter());
-			Logger.getLogger("fr.ippon.wip.transformers").addHandler(fileHandler);
-			Logger.getLogger("fr.ippon.wip.http.hc").addHandler(fileHandler);
-			Logger.getLogger("org.apache.http.impl.client.cache").addHandler(fileHandler);
-			
-		} catch (SecurityException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 
+		// initialization of logging singleton
+		WIPLogging logging = WIPLogging.INSTANCE;
+		
 		int responseStoreMaxEntries = Integer.parseInt(config.getInitParameter("RESPONSE_STORE_MAX_ENTRIES"));
 		ResponseStore.getInstance().setMaxEntries(responseStoreMaxEntries);
 		
@@ -123,6 +108,7 @@ public class WIPortlet extends GenericPortlet {
 		// update the session with the configuration
 		PortletSession session = request.getPortletSession();
 		session.setAttribute(Attributes.CONFIGURATION.name(), configuration);
+		
 		return configuration;
 	}
 
@@ -190,6 +176,12 @@ public class WIPortlet extends GenericPortlet {
 		if (request.getPortletMode().equals(PortletMode.EDIT)) {
 			PortletSession session = request.getPortletSession();
 
+			String debugMode = request.getParameter(Attributes.DEBUG_MODE.name());
+			if(debugMode != null) {
+				session.setAttribute(Attributes.DEBUG_MODE.name(), Boolean.parseBoolean(debugMode));
+				return;
+			}
+			
 			String configurationName = request.getParameter(Attributes.ACTION_SELECT.name());
 			if (StringUtils.isEmpty(configurationName))
 				return;
@@ -291,7 +283,7 @@ public class WIPortlet extends GenericPortlet {
 	public void destroy() {
 		super.destroy();
 		executor.destroy();
-		fileHandler.close();
+		WIPLogging.INSTANCE.close();
 	}
 
 	private void manageAuthentication(ActionRequest actionRequest, ActionResponse actionResponse) {

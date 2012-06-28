@@ -25,6 +25,8 @@ import org.xml.sax.SAXException;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
+import javax.xml.transform.TransformerException;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
@@ -42,7 +44,7 @@ import java.util.regex.Pattern;
 public class CSSTransformer extends AbstractTransformer {
 
     private static final Logger LOG = Logger.getLogger(CSSTransformer.class.getName());
-
+    
     /**
      * The WIPConfiguration instance
      */
@@ -74,9 +76,11 @@ public class CSSTransformer extends AbstractTransformer {
      *
      * @param input the string corresponding to the CSS code
      * @return a string corresponding to the transformed CSS code
+     * @throws TransformerException 
      */
-    public String transform(String input) throws SAXException, IOException {
-    	LOG.log(Level.INFO, "Processing CSS for transformation.");
+    public String transform(String input) throws SAXException, IOException, TransformerException {
+    	super.transform(input);
+    	
         if (wipConfig.isEnableCssRewriting()) {
             // Getting prefix
             String wip = "\n." + wipConfig.getPortletDivId() + " ";
@@ -148,6 +152,7 @@ public class CSSTransformer extends AbstractTransformer {
             // Removing position: absolute;
             if (!wipConfig.isAbsolutePositioning())
                 input = input.replaceAll("absolute", "relative");
+            
         }
         return input;
     }
@@ -195,6 +200,4 @@ public class CSSTransformer extends AbstractTransformer {
         matcher.appendTail(sb);
         return sb.toString();
     }
-
-
 }

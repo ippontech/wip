@@ -19,12 +19,17 @@
 package fr.ippon.wip.transformers;
 
 import fr.ippon.wip.http.UrlFactory;
+import fr.ippon.wip.http.hc.HttpClientExecutor;
+import fr.ippon.wip.util.WIPUtil;
+
 import org.xml.sax.SAXException;
 
 import javax.portlet.PortletRequest;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 
 /**
@@ -33,13 +38,24 @@ import java.util.regex.Matcher;
  * Creates a local instance of UrlFactory
  */
 public abstract class AbstractTransformer implements WIPTransformer {
+	
     protected final UrlFactory urlFactory;
-
+    
+    protected final PortletRequest portletRequest;
+    
+    private static final Logger LOG = Logger.getLogger(HttpClientExecutor.class.getName());
+    
     public AbstractTransformer(PortletRequest portletRequest) throws MalformedURLException {
+    	this.portletRequest = portletRequest;
         urlFactory = new UrlFactory(portletRequest);
     }
 
-    abstract public String transform(String input) throws SAXException, IOException, TransformerException;
+    public String transform(String input) throws SAXException, IOException, TransformerException {
+    	if(WIPUtil.isDebugMode(portletRequest))
+        	LOG.log(Level.FINEST, input + "\n");
+    	
+    	return input;
+    }
 
     protected int extractGroup(Matcher matcher) {
         int matchingGroup = -1;

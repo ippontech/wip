@@ -59,4 +59,15 @@ public class WIPUtil {
     	PortletSession session = request.getPortletSession();
     	return (WIPConfiguration) session.getAttribute(Attributes.CONFIGURATION.name());
     }
+    
+    public static boolean isDebugMode(PortletRequest request) {
+		PortletSession session = request.getPortletSession();
+		Object debugMode = session.getAttribute(Attributes.DEBUG_MODE.name());
+		if(debugMode == null) {
+			session.setAttribute(Attributes.DEBUG_MODE.name(), false);
+			return false;
+		}
+		
+		return (Boolean) debugMode;
+    }
 }

@@ -22,7 +22,10 @@ import fr.ippon.wip.http.HttpExecutor;
 import fr.ippon.wip.http.Request;
 import fr.ippon.wip.http.Response;
 import fr.ippon.wip.state.PortletWindow;
+import fr.ippon.wip.util.WIPLogging;
+import fr.ippon.wip.util.WIPUtil;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.*;
 import org.apache.http.auth.*;
 import org.apache.http.client.CredentialsProvider;
@@ -43,8 +46,10 @@ import org.apache.http.util.EntityUtils;
 import javax.portlet.MimeResponse;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -82,7 +87,6 @@ public class HttpClientExecutor implements HttpExecutor {
      * @throws IOException
      */
     public Response execute(Request request, PortletRequest portletRequest, PortletResponse portletResponse) throws IOException {
-    	LOG.log(Level.INFO, "Requesting on " + request.getRequestedURL() + ".");
         Response response = null;
         HttpClientResourceManager resourceManager = HttpClientResourceManager.getInstance();
         try {
@@ -90,20 +94,18 @@ public class HttpClientExecutor implements HttpExecutor {
             HttpClient client = resourceManager.getHttpClient(portletRequest);
             HttpContext context = resourceManager.initExecutionContext(portletRequest, portletResponse, request);
             HttpUriRequest httpRequest;
+
             // Create HttpRequest object
-            if (request.getHttpMethod() == Request.HttpMethod.POST) {
-            	LOG.log(Level.INFO, "Method request is POST");
+            if (request.getHttpMethod() == Request.HttpMethod.POST)
                 httpRequest = createPostRequest(request);
-            } else {
-            	LOG.log(Level.INFO, "Method request is GET");
+            else
                 httpRequest = createGetRequest(request);
-            }
 
             // Execute the request
             HttpResponse httpResponse = null;
             try {
                 httpResponse = client.execute(httpRequest, context);
-
+                
                 // Check if authentication is requested by remote host
                 PortletWindow portletWindow = PortletWindow.getInstance(portletRequest);
                 int statusCode = httpResponse.getStatusLine().getStatusCode();
@@ -128,7 +130,8 @@ public class HttpClientExecutor implements HttpExecutor {
 
                 String actualUrl;
                 // what if the request was redirected? how to catch the last URL? 
-                if(context.getAttribute(CachingHttpClient.CACHE_RESPONSE_STATUS) == CacheResponseStatus.CACHE_HIT) {
+                boolean cacheUsed = (context.getAttribute(CachingHttpClient.CACHE_RESPONSE_STATUS) == CacheResponseStatus.CACHE_HIT);
+                if(cacheUsed) {
                 	actualUrl = request.getRequestedURL();
                 } else {
                     // Get final URL (ie. perhaps redirected)
@@ -141,7 +144,27 @@ public class HttpClientExecutor implements HttpExecutor {
                 
                 // Create Response object from HttpResponse
                 response = createResponse(httpResponse, actualUrl, portletResponse instanceof MimeResponse);
+                if(WIPUtil.isDebugMode(portletRequest) && !response.isBinary()) {
+                    StringWriter writer = new StringWriter();
+                    InputStream stream = response.getStream();
+                    IOUtils.copy(stream, writer);
+                    String originalContent = writer.toString();
+                    stream.reset();
+                    LOG.fine(originalContent + "\n");
+                	WIPLogging.INSTANCE.rotateTransformHandler();
+                }
+
+                String cache = cacheUsed ? "[ WITH CACHE ]" : "";
+                StringBuffer buffer = new StringBuffer();
+                buffer.append(cache + "\"" + httpRequest.getMethod() + " " + request.getRequestedURL() + " " + httpRequest.getProtocolVersion() + "\" " + httpResponse.getStatusLine().getStatusCode());
+                buffer.append("\n");
+                for(Header header : httpResponse.getAllHeaders())
+                	buffer.append(header.getName() + " : " + header.getValue() + "\n");
+
+                LOG.log(Level.INFO, buffer.toString());
+                
             } catch (RuntimeException rte) {
+               	LOG.log(Level.WARNING, "[ ERROR ] \"" + httpRequest.getMethod() + " " + request.getRequestedURL() + " " + httpRequest.getProtocolVersion() + "\" " + httpResponse.getStatusLine().getStatusCode());
                 if (httpResponse != null && httpResponse.getEntity() != null) {
                     EntityUtils.consume(httpResponse.getEntity());
                 }
@@ -150,6 +173,7 @@ public class HttpClientExecutor implements HttpExecutor {
         } finally {
             resourceManager.releaseThreadResources();
         }
+        
         return response;
     }
 

@@ -82,6 +82,8 @@ public class HTMLTransformer extends AbstractTransformer {
 
     @Override
     public String transform(String input) throws SAXException, IOException, TransformerException {
+    	super.transform(input);
+    	
         //TODO: manage a pool of XMLReader objects
         // Create HTML-capable CyberNeko SAX parser
         XMLReader parser = XMLReaderFactory.createXMLReader(parserClassName);

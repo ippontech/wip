@@ -21,8 +21,11 @@ package fr.ippon.wip.transformers;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.util.logging.Level;
+import java.net.MalformedURLException;
 import java.util.logging.Logger;
+
+import javax.portlet.PortletRequest;
+import javax.xml.transform.TransformerException;
 
 /**
  * JSONTransformer implements the WIPTransformer interface that defines the
@@ -31,17 +34,17 @@ import java.util.logging.Logger;
  * @author Anthony Luce
  * @author Quentin Thierry
  */
-public class JSONTransformer implements WIPTransformer {
+public class JSONTransformer extends AbstractTransformer {
+
+	public JSONTransformer(PortletRequest portletRequest) throws MalformedURLException {
+		super(portletRequest);
+	}
 
 	private static final Logger LOG = Logger.getLogger(JSONTransformer.class.getName());
 	
-    public JSONTransformer() {
-    }
+    public String transform(String input) throws SAXException, IOException, TransformerException {
+    	super.transform(input);
 
-    public String transform(String input) throws SAXException, IOException {
-
-    	LOG.log(Level.INFO, "Processing JSON for transformation.");
-    	
         // CUSTOM -----------------------------------------------
         int i = input.indexOf("api/node");
         if (i > -1)
@@ -50,5 +53,4 @@ public class JSONTransformer implements WIPTransformer {
 
         return input;
     }
-
 }

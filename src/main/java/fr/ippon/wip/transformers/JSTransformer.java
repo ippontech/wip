@@ -26,6 +26,8 @@ import org.xml.sax.SAXException;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
+import javax.xml.transform.TransformerException;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Map;
@@ -79,9 +81,10 @@ public class JSTransformer extends AbstractTransformer {
      *
      * @param input the string corresponding to the original JavaScript code
      * @return a string corresponding to the transformed JavaScript code
+     * @throws TransformerException 
      */
-    public String transform(String input) throws SAXException, IOException {
-    	LOG.log(Level.INFO, "Processing Javascript for transformation.");
+    public String transform(String input) throws SAXException, IOException, TransformerException {
+    	super.transform(input);
         String url;
 
         // CUSTOM ------------------------------------------------------------------
