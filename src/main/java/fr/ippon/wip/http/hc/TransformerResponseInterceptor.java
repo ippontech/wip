@@ -63,7 +63,7 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
     public void process(HttpResponse httpResponse, HttpContext context) throws HttpException, IOException {
         PortletRequest portletRequest = HttpClientResourceManager.getInstance().getCurrentPortletRequest();
         PortletResponse portletResponse = HttpClientResourceManager.getInstance().getCurrentPortletResponse();
-        WIPConfiguration config = WIPUtil.extractConfiguration(portletRequest);
+        WIPConfiguration config = WIPUtil.getConfiguration(portletRequest);
         Request request = HttpClientResourceManager.getInstance().getCurrentRequest();
 
         if (httpResponse == null) {

@@ -23,7 +23,9 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,6 +60,19 @@ public class XMLConfigurationDAO extends ConfigurationDAO {
 
 	public static final int FILE_NAME_TRANSFORM = 2;
 
+	public static String getConfigurationName(String name, int fileType) {
+		switch (fileType) {
+		case FILE_NAME_CONFIG:
+			return name + ".xml";
+		case FILE_NAME_CLIPPING:
+			return name + "_clipping.xslt";
+		case FILE_NAME_TRANSFORM:
+			return name + "_transform.xslt";
+		}
+
+		return null;
+	}
+
 	// the resource used to marshall and unmarshal configuration as xml
 	private XStream xstream;
 
@@ -71,9 +86,7 @@ public class XMLConfigurationDAO extends ConfigurationDAO {
 	 * 
 	 * @throws URISyntaxException
 	 */
-	public XMLConfigurationDAO(String pathConfigFiles, boolean withWatcher) {
-		super(withWatcher);
-
+	public XMLConfigurationDAO(String pathConfigFiles) {
 		this.pathConfigFiles = pathConfigFiles;
 
 		// initialization and configuration of xstream
@@ -83,8 +96,6 @@ public class XMLConfigurationDAO extends ConfigurationDAO {
 		xstream.omitField(WIPConfiguration.class, "xsltClipping");
 		xstream.omitField(WIPConfiguration.class, "xsltTransform");
 		xstream.omitField(WIPConfiguration.class, "javascriptResourcesMap");
-
-		resetConfigurationsNames();
 	}
 
 	/**
@@ -94,15 +105,13 @@ public class XMLConfigurationDAO extends ConfigurationDAO {
 	public synchronized WIPConfiguration create(WIPConfiguration configuration) {
 		// correct the configuration name if it is already used
 		String name = configuration.getName();
-		if (configurationNames.contains(name)) {
+		if (exists(name)) {
 			name = correctConfigurationName(name, 2);
 			configuration.setName(name);
 		}
 
-		configurationNames.add(name);
-		Collections.sort(configurationNames);
-
-		return update(configuration);
+		write(configuration);
+		return configuration;
 	}
 
 	/**
@@ -115,7 +124,7 @@ public class XMLConfigurationDAO extends ConfigurationDAO {
 			return false;
 
 		// can't remove a non-existing configuration
-		if (!configurationNames.remove(name))
+		if (!exists(name))
 			return false;
 
 		getConfigurationFile(name, FILE_NAME_CONFIG).delete();
@@ -123,7 +132,7 @@ public class XMLConfigurationDAO extends ConfigurationDAO {
 		getConfigurationFile(name, FILE_NAME_TRANSFORM).delete();
 		return true;
 	}
-	
+
 	/**
 	 * Return the file associated to the given configuration name.
 	 * 
@@ -136,18 +145,16 @@ public class XMLConfigurationDAO extends ConfigurationDAO {
 	public File getConfigurationFile(String name, int fileType) {
 		return new File(pathConfigFiles + "/" + getConfigurationName(name, fileType));
 	}
-	
-	public static String getConfigurationName(String name, int fileType) {
-		switch (fileType) {
-		case FILE_NAME_CONFIG:
-			return name + ".xml";
-		case FILE_NAME_CLIPPING:
-			return name + "_clipping.xslt";
-		case FILE_NAME_TRANSFORM:
-			return name + "_transform.xslt";
-		}
-		
-		return null;
+
+	@Override
+	public List<String> getConfigurationsNames() {
+		List<String> configurationNames = new ArrayList<String>();
+		for (String filename : new File(pathConfigFiles).list())
+			if (filename.endsWith(".xml"))
+				configurationNames.add(FilenameUtils.getBaseName(filename));
+
+		Collections.sort(configurationNames);
+		return configurationNames;
 	}
 
 	public String getPathConfigFiles() {
@@ -165,7 +172,7 @@ public class XMLConfigurationDAO extends ConfigurationDAO {
 	 */
 	@Override
 	public synchronized WIPConfiguration read(String name) {
-		if (!configurationNames.contains(name))
+		if (!exists(name))
 			return null;
 
 		File configurationFile = getConfigurationFile(name, FILE_NAME_CONFIG);
@@ -192,16 +199,28 @@ public class XMLConfigurationDAO extends ConfigurationDAO {
 	 */
 	@Override
 	public synchronized WIPConfiguration update(WIPConfiguration configuration) {
+		super.update(configuration);
+
 		String name = configuration.getName();
 		// the default configuration can't be changed
 		if (DEFAULT_CONFIG_NAME.equals(name))
 			return configuration;
 
-		// the configuration must have been created first before it can be
-		// updated
-		if (!configurationNames.contains(name))
+		if (!exists(name))
 			return null;
 
+		write(configuration);
+		return configuration;
+	}
+
+	/**
+	 * Write the configuration in files.
+	 * 
+	 * @param configuration
+	 *            the configuration to save
+	 */
+	private void write(WIPConfiguration configuration) {
+		String name = configuration.getName();
 		File configurationFile = getConfigurationFile(name, FILE_NAME_CONFIG);
 		File clippingFile = getConfigurationFile(name, FILE_NAME_CLIPPING);
 		File transformFile = getConfigurationFile(name, FILE_NAME_TRANSFORM);
@@ -211,27 +230,8 @@ public class XMLConfigurationDAO extends ConfigurationDAO {
 			FileUtils.writeStringToFile(clippingFile, configuration.getXsltClipping());
 			FileUtils.writeStringToFile(transformFile, configuration.getXsltTransform());
 
-			return configuration;
-
 		} catch (IOException e) {
-			LOG.log(Level.WARNING, "An error occured during the saving of the configuration named " + name, e);
+			LOG.log(Level.WARNING, "An error occured during the writing of the configuration named " + name, e);
 		}
-
-		return null;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public synchronized void resetConfigurationsNames() {
-		configurationNames.clear();
-
-		// retrieve the names of all the configurations
-		for (String filename : new File(pathConfigFiles).list())
-			if (filename.endsWith(".xml"))
-				configurationNames.add(FilenameUtils.getBaseName(filename));
-
-		Collections.sort(configurationNames);
 	}
 }

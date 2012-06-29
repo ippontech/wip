@@ -28,7 +28,7 @@
     RenderRequest pReq = (RenderRequest) request.getAttribute("javax.portlet.request");
     PortletResponse pRsp = (PortletResponse) request.getAttribute("javax.portlet.response");
     ConfigurationDAO wipConfigurationDAO = ConfigurationDAOFactory.getInstance().getXMLInstance();
-    WIPConfiguration wipConf = (WIPConfiguration) portletSession.getAttribute(Attributes.CONFIGURATION.name());
+    WIPConfiguration wipConf = WIPUtil.getConfiguration(pReq);
     Map<String, String> errors = (Map<String, String>) portletSession.getAttribute("errors");
     if (errors == null) errors = new HashMap<String, String>();
 %>

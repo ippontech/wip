@@ -28,7 +28,6 @@ import java.util.Map;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
-
 /**
  * The configuration parameters of a wip portlet.
  * 
@@ -108,7 +107,11 @@ public class WIPConfiguration implements Cloneable {
 
 	private Map<String, Request.ResourceType> javascriptResourcesMap;
 
+	// versioning
+	private long timestamp;
+
 	public WIPConfiguration() {
+		timestamp = 0;
 		javascriptUrls = new ArrayList<String>();
 		scriptsToDelete = new ArrayList<String>();
 		scriptsToIgnore = new ArrayList<String>();
@@ -130,7 +133,7 @@ public class WIPConfiguration implements Cloneable {
 
 		return clone;
 	}
-	
+
 	/**
 	 * Get the date rate to determinate the freshness according to creation
 	 * date, current date and last modification date.
@@ -316,6 +319,10 @@ public class WIPConfiguration implements Cloneable {
 	 */
 	public List<String> getScriptsToIgnore() {
 		return scriptsToIgnore;
+	}
+
+	public long getTimestamp() {
+		return timestamp;
 	}
 
 	/**
@@ -537,8 +544,10 @@ public class WIPConfiguration implements Cloneable {
 	 */
 	public void setDomainsToProxy(List<String> domainsToProxy) {
 		/*
-		 * If the parameter has been built with Arrays.asList, it is not of the type of ArrayList but Arrays.ArrayList.
-		 * This can lead to problems, in particular with XStream library. So we make a defensive copy in ArrayList.
+		 * If the parameter has been built with Arrays.asList, it is not of the
+		 * type of ArrayList but Arrays.ArrayList. This can lead to problems, in
+		 * particular with XStream library. So we make a defensive copy in
+		 * ArrayList.
 		 */
 		this.domainsToProxy = new ArrayList<String>(domainsToProxy);
 	}
@@ -625,8 +634,10 @@ public class WIPConfiguration implements Cloneable {
 	 */
 	public void setJavascriptUrls(List<String> javascriptUrls) {
 		/*
-		 * If the parameter has been built with Arrays.asList, it is not of the type of ArrayList but Arrays.ArrayList.
-		 * This can lead to problems, in particular with XStream library. So we make a defensive copy in ArrayList.
+		 * If the parameter has been built with Arrays.asList, it is not of the
+		 * type of ArrayList but Arrays.ArrayList. This can lead to problems, in
+		 * particular with XStream library. So we make a defensive copy in
+		 * ArrayList.
 		 */
 		this.javascriptUrls = new ArrayList<String>(javascriptUrls);
 	}
@@ -741,8 +752,10 @@ public class WIPConfiguration implements Cloneable {
 	 */
 	public void setScriptsToDelete(List<String> scriptsToDelete) {
 		/*
-		 * If the parameter has been built with Arrays.asList, it is not of the type of ArrayList but Arrays.ArrayList.
-		 * This can lead to problems, in particular with XStream library. So we make a defensive copy in ArrayList.
+		 * If the parameter has been built with Arrays.asList, it is not of the
+		 * type of ArrayList but Arrays.ArrayList. This can lead to problems, in
+		 * particular with XStream library. So we make a defensive copy in
+		 * ArrayList.
 		 */
 		this.scriptsToDelete = new ArrayList<String>(scriptsToDelete);
 
@@ -756,10 +769,16 @@ public class WIPConfiguration implements Cloneable {
 	 */
 	public void setScriptsToIgnore(List<String> scriptsToIgnore) {
 		/*
-		 * If the parameter has been built with Arrays.asList, it is not of the type of ArrayList but Arrays.ArrayList.
-		 * This can lead to problems, in particular with XStream library. So we make a defensive copy in ArrayList.
+		 * If the parameter has been built with Arrays.asList, it is not of the
+		 * type of ArrayList but Arrays.ArrayList. This can lead to problems, in
+		 * particular with XStream library. So we make a defensive copy in
+		 * ArrayList.
 		 */
 		this.scriptsToIgnore = new ArrayList<String>(scriptsToIgnore);
+	}
+
+	public void setTimestamp(long timestamp) {
+		this.timestamp = timestamp;
 	}
 
 	/**

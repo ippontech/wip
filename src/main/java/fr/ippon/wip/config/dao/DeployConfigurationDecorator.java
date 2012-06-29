@@ -1,4 +1,4 @@
-package fr.ippon.wip.config;
+package fr.ippon.wip.config.dao;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -17,14 +17,16 @@ import org.apache.commons.io.FilenameUtils;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
 
+import fr.ippon.wip.config.WIPConfiguration;
+import fr.ippon.wip.config.ZipConfiguration;
+
 /**
- * The purpose of this class is to extract configurations put in the deploy
- * directory.
+ * A decorator checking if some configuration have been dropped into the deploy directory
  * 
  * @author Yohan Legat
- * 
+ *
  */
-public class DeployerWatcher {
+public class DeployConfigurationDecorator extends ConfigurationDAODecorator {
 
 	// accept all files except the README one.
 	private FileFilter fileFilterForDeletation = new FileFilter() {
@@ -48,17 +50,18 @@ public class DeployerWatcher {
 
 	private ZipConfiguration zip;
 
-	public DeployerWatcher() {
+	public DeployConfigurationDecorator(ConfigurationDAO dao) {
+		super(dao);
+
 		try {
 			URL url = getClass().getResource("/deploy");
 			deployPath = new File(url.toURI());
-			
+
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
-		
+
 		zip = new ZipConfiguration();
-		
 	}
 
 	/**
@@ -66,7 +69,7 @@ public class DeployerWatcher {
 	 * 
 	 * @return the configuration to deploy
 	 */
-	public List<WIPConfiguration> checkDeploy() {
+	private void checkDeploy() {
 		List<WIPConfiguration> deployedConfigurations = new ArrayList<WIPConfiguration>();
 
 		for (File file : deployPath.listFiles()) {
@@ -83,7 +86,8 @@ public class DeployerWatcher {
 		}
 
 		cleanDeployRepertory();
-		return deployedConfigurations;
+		for (WIPConfiguration newConfiguration : deployedConfigurations)
+			super.create(newConfiguration);
 	}
 
 	/**
@@ -92,6 +96,24 @@ public class DeployerWatcher {
 	private void cleanDeployRepertory() {
 		for (File file : deployPath.listFiles(fileFilterForDeletation))
 			file.delete();
+	}
+
+	@Override
+	public WIPConfiguration create(WIPConfiguration configuration) {
+		checkDeploy();
+		return super.create(configuration);
+	}
+
+	@Override
+	public List<String> getConfigurationsNames() {
+		checkDeploy();
+		return super.getConfigurationsNames();
+	}
+
+	@Override
+	public WIPConfiguration read(String name) {
+		checkDeploy();
+		return super.read(name);
 	}
 
 	/**

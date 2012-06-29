@@ -18,10 +18,8 @@
 
 package fr.ippon.wip.config.dao;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import fr.ippon.wip.config.DeployerWatcher;
 import fr.ippon.wip.config.WIPConfiguration;
 
 /**
@@ -39,33 +37,6 @@ public abstract class ConfigurationDAO {
 	public static final String DEFAULT_CONFIG_NAME = "default-config";
 
 	/**
-	 * A list that contains the name of the configurations.
-	 */
-	protected final List<String> configurationNames;
-
-	protected final DeployerWatcher deployerWatcher;
-
-	public ConfigurationDAO() {
-		this(true);
-	}
-	
-	public ConfigurationDAO(boolean withWatcher) {
-		configurationNames = new ArrayList<String>();
-		deployerWatcher = withWatcher ? new DeployerWatcher() : null;
-	}
-
-	/**
-	 * Check the deploy directory for seeking new configurations
-	 */
-	public synchronized void deploy() {
-		List<WIPConfiguration> newConfigurations = deployerWatcher.checkDeploy();
-		for (WIPConfiguration configuration : newConfigurations)
-			create(configuration);
-		
-		resetConfigurationsNames();
-	}
-
-	/**
 	 * Return "name(x+1)" while "name(x)" already exists as a configuration
 	 * name.
 	 * 
@@ -78,7 +49,7 @@ public abstract class ConfigurationDAO {
 	protected String correctConfigurationName(String name, int increment) {
 		String incrementName = name + "(" + increment + ")";
 
-		boolean alreadyExists = getConfigurationsNames().contains(incrementName);
+		boolean alreadyExists = exists(incrementName);
 		return alreadyExists ? correctConfigurationName(name, increment + 1) : incrementName;
 	}
 
@@ -92,6 +63,14 @@ public abstract class ConfigurationDAO {
 	public abstract WIPConfiguration create(WIPConfiguration configuration);
 
 	/**
+	 * Delete the configuration related to the given name.
+	 * 
+	 * @param name
+	 *            the name of the configuration to delete
+	 */
+	public abstract boolean delete(String name);
+
+	/**
 	 * Delete the given configuration.
 	 * 
 	 * @param configuration
@@ -101,22 +80,16 @@ public abstract class ConfigurationDAO {
 		return delete(configuration.getName());
 	}
 
-	/**
-	 * Delete the configuration related to the given name.
-	 * 
-	 * @param name
-	 *            the name of the configuration to delete
-	 */
-	public abstract boolean delete(String name);
-	
+	public boolean exists(String name) {
+		return getConfigurationsNames().contains(name);
+	}
+
 	/**
 	 * Get the list of names of the saved configurations.
 	 * 
 	 * @return the list of names
 	 */
-	public List<String> getConfigurationsNames() {
-		return configurationNames;
-	}
+	public abstract List<String> getConfigurationsNames();
 
 	/**
 	 * Retrieve the default configuration
@@ -143,10 +116,8 @@ public abstract class ConfigurationDAO {
 	 *            the configuration to save
 	 * @return the saved configuration
 	 */
-	public abstract WIPConfiguration update(WIPConfiguration configuration);
-	
-	/**
-	 * Update the names of the configurations currently available.
-	 */
-	public abstract void resetConfigurationsNames();
+	public WIPConfiguration update(WIPConfiguration configuration) {
+		configuration.setTimestamp(System.currentTimeMillis());
+		return configuration;
+	}
 }

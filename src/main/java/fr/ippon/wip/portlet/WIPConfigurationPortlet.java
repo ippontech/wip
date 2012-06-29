@@ -35,6 +35,7 @@ import java.util.zip.ZipOutputStream;
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.GenericPortlet;
+import javax.portlet.PortletConfig;
 import javax.portlet.PortletException;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletRequestDispatcher;
@@ -61,10 +62,30 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 
 	private static final Logger LOG = Logger.getLogger(WIPConfigurationPortlet.class.getName());
 	
-	private ConfigurationDAO wipConfigurationDAO;
+	private ConfigurationDAO configurationDAO;
 	
 	private PortletFileUpload fileUploadPortlet;
 
+	/**
+	 * Set if necessary the default configuration and page display in the
+	 * session.
+	 * 
+	 * @param request
+	 */
+	private void checkOrSetSession(PortletRequest request) {
+		PortletSession session = request.getPortletSession();
+
+		// check and set if necessary the selected configuration in session
+		String configName = (String) session.getAttribute(Attributes.CONFIGURATION_NAME.name());
+		if (StringUtils.isEmpty(configName))
+			session.setAttribute(Attributes.CONFIGURATION_NAME.name(), ConfigurationDAO.DEFAULT_CONFIG_NAME);
+
+		// check and set if necessary the configuration page in session
+		Pages page = (Pages) session.getAttribute(Attributes.PAGE.name());
+		if (page == null)
+			session.setAttribute(Attributes.PAGE.name(), Pages.GENERAL_SETTINGS);
+	}
+	
 	/**
 	 * This class will try to build an URL from a string and store an error if
 	 * the URL is malformed or empty
@@ -112,26 +133,6 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	}
 
 	/**
-	 * Set if necessary the default configuration and page display in the
-	 * session.
-	 * 
-	 * @param request
-	 */
-	private void checkOrSetSession(PortletRequest request) {
-		PortletSession session = request.getPortletSession();
-
-		// check and set if necessary the selected configuration in session
-		WIPConfiguration configuration = (WIPConfiguration) session.getAttribute(Attributes.CONFIGURATION.name());
-		if (configuration == null)
-			session.setAttribute(Attributes.CONFIGURATION.name(), wipConfigurationDAO.getDefaultConfiguration());
-
-		// check and set if necessary the configuration page in session
-		Pages page = (Pages) session.getAttribute(Attributes.PAGE.name());
-		if (page == null)
-			session.setAttribute(Attributes.PAGE.name(), Pages.GENERAL_SETTINGS);
-	}
-
-	/**
 	 * Display the configuration portlet.
 	 */
 	@Override
@@ -145,7 +146,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 
 	private void handleCaching(ActionRequest request, ActionResponse response) {
 		// Getting WIPConfig, resource bundle and a map to store errors
-		WIPConfiguration wipConfig = WIPUtil.extractConfiguration(request);
+		WIPConfiguration wipConfig = WIPUtil.getConfiguration(request);
 		Map<String, String> errors = new HashMap<String, String>();
 
 		// Getting the parameters from the request
@@ -214,7 +215,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	 */
 	private void handleClipping(ActionRequest request, ActionResponse response) {
 		// Getting WIPConfig, resource bundle and a map to store errors
-		WIPConfiguration wipConfig = WIPUtil.extractConfiguration(request);
+		WIPConfiguration wipConfig = WIPUtil.getConfiguration(request);
 		ResourceBundle rb = ResourceBundle.getBundle("content.Language", request.getLocale());
 		Map<String, String> errors = new HashMap<String, String>();
 
@@ -228,17 +229,17 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 			} else {
 				wipConfig.setXPath(xPath);
 				wipConfig.setClippingType(clippingType);
-				wipConfigurationDAO.update(wipConfig);
+				configurationDAO.update(wipConfig);
 			}
 		} else if (clippingType.equals("xslt")) {
 			String xsltClipping = request.getParameter("xsltClipping");
 			wipConfig.setXsltClipping(xsltClipping);
 			wipConfig.setClippingType(clippingType);
-			wipConfigurationDAO.update(wipConfig);
+			configurationDAO.update(wipConfig);
 
 		} else {
 			wipConfig.setClippingType(clippingType);
-			wipConfigurationDAO.update(wipConfig);
+			configurationDAO.update(wipConfig);
 		}
 
 		// Sending errors to the portlet session
@@ -259,7 +260,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	 */
 	private void handleCSSRewriting(ActionRequest request, ActionResponse response) {
 		// Getting WIPConfig, resource bundle and a map to store errors
-		WIPConfiguration wipConfig = WIPUtil.extractConfiguration(request);
+		WIPConfiguration wipConfig = WIPUtil.getConfiguration(request);
 		Map<String, String> errors = new HashMap<String, String>();
 
 		// Getting the parameters from the request
@@ -295,7 +296,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 		wipConfig.setEnableCssRetrieving(enableCssRetrieving);
 		wipConfig.setEnableCssRewriting(enableCssRewriting);
 		wipConfig.setCustomCss(customCss);
-		wipConfigurationDAO.update(wipConfig);
+		configurationDAO.update(wipConfig);
 
 		// Sending errors to the portlet session
 		request.getPortletSession().setAttribute("errors", errors, PortletSession.APPLICATION_SCOPE);
@@ -315,7 +316,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	 */
 	private void handleGeneralSettings(ActionRequest request, ActionResponse response) {
 		// Getting WIPConfig, resource bundle and a map to store errors
-		WIPConfiguration wipConfig = WIPUtil.extractConfiguration(request);
+		WIPConfiguration wipConfig = WIPUtil.getConfiguration(request);
 		ResourceBundle rb = ResourceBundle.getBundle("content.Language", request.getLocale());
 		Map<String, String> errors = new HashMap<String, String>();
 
@@ -344,7 +345,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 			wipConfig.setPortletTitle(portletTitle);
 
 		wipConfig.setEnableUrlRewriting(enableUrlRewriting);
-		wipConfigurationDAO.update(wipConfig);
+		configurationDAO.update(wipConfig);
 
 		// Sending errors to the portlet session
 		request.getPortletSession().setAttribute("errors", errors, PortletSession.APPLICATION_SCOPE);
@@ -364,14 +365,14 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	 */
 	private void handleHtmlRewriting(ActionRequest request, ActionResponse response) {
 		// Getting WIPConfig, resource bundle and a map to store errors
-		WIPConfiguration wipConfig = WIPUtil.extractConfiguration(request);
+		WIPConfiguration wipConfig = WIPUtil.getConfiguration(request);
 
 		// Getting the parameters from the request
 		String xsltTransform = request.getParameter("xsltTransform");
 
 		// Saving the new configuration
 		wipConfig.setXsltTransform(xsltTransform);
-		wipConfigurationDAO.update(wipConfig);
+		configurationDAO.update(wipConfig);
 
 		// Sending the page to display to the portlet session
 		request.getPortletSession().setAttribute("editPage", "htmlrewriting");
@@ -389,7 +390,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	 */
 	private void handleJSRewriting(ActionRequest request, ActionResponse response) {
 		// Getting WIPConfig, resource bundle and a map to store errors
-		WIPConfiguration wipConfig = WIPUtil.extractConfiguration(request);
+		WIPConfiguration wipConfig = WIPUtil.getConfiguration(request);
 		Map<String, String> errors = new HashMap<String, String>();
 
 		// Getting the parameters from the request
@@ -412,7 +413,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 		wipConfig.setJavascriptUrls(javascriptUrls);
 		wipConfig.setScriptsToIgnore(scriptsToIgnore);
 		wipConfig.setScriptsToDelete(scriptsToDelete);
-		wipConfigurationDAO.update(wipConfig);
+		configurationDAO.update(wipConfig);
 
 		// Sending errors to the portlet session
 		request.getPortletSession().setAttribute("errors", errors, PortletSession.APPLICATION_SCOPE);
@@ -423,7 +424,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 
 	private void handleLTPAAuthentication(ActionRequest request, ActionResponse response) {
 		// Getting WIPConfig, resource bundle and a map to store errors
-		WIPConfiguration wipConfig = WIPUtil.extractConfiguration(request);
+		WIPConfiguration wipConfig = WIPUtil.getConfiguration(request);
 		Map<String, String> errors = new HashMap<String, String>();
 
 		// Getting the parameters from the request
@@ -438,7 +439,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 		wipConfig.setLtpaSsoAuthentication(ltpaSsoAuthentication);
 		wipConfig.setLtpaSecretProviderClassName(ltpaSecretProviderClassName);
 		wipConfig.setCredentialProviderClassName(credentialProviderClassName);
-		wipConfigurationDAO.update(wipConfig);
+		configurationDAO.update(wipConfig);
 
 		// Sending errors to the portlet session
 		request.getPortletSession().setAttribute("errors", errors, PortletSession.APPLICATION_SCOPE);
@@ -448,29 +449,18 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	}
 
 	@Override
-	public void serveResource(ResourceRequest request, ResourceResponse response) throws PortletException, IOException {
-		String configName = request.getParameter(Attributes.ACTION_EXPORT.name());
-		if (StringUtils.isEmpty(configName))
-			return;
-		
-		response.setContentType("multipart/x-zip");
-		response.setProperty("Content-Disposition", "attachment; filename=" + configName + ".zip");
-		
-		WIPConfiguration configuration = wipConfigurationDAO.read(configName);
-		ZipConfiguration zip = new ZipConfiguration();
-		ZipOutputStream out = new ZipOutputStream(response.getPortletOutputStream());
-		zip.zip(configuration, out);
-		out.flush();
-		out.close();
-	}
-
-	@Override
 	public void init() throws PortletException {
 		super.init();
-		wipConfigurationDAO = ConfigurationDAOFactory.getInstance().getXMLInstance();
+		configurationDAO = ConfigurationDAOFactory.getInstance().getXMLInstance();
 
 		DiskFileItemFactory factory = new DiskFileItemFactory();
 		fileUploadPortlet = new PortletFileUpload(factory);
+	}
+
+	@Override
+	public void init(PortletConfig config) throws PortletException {
+		super.init(config);
+		configurationDAO = ConfigurationDAOFactory.getInstance().getXMLInstance();
 	}
 
 	/**
@@ -503,15 +493,6 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 			}
 		}
 		
-		String action = request.getParameter(Attributes.ACTION_DEPLOY.name());
-		if(StringUtils.isEmpty(action))
-			action = (String) request.getAttribute(Attributes.ACTION_DEPLOY.name());
-		if (!StringUtils.isEmpty(action)) {
-			wipConfigurationDAO.deploy();
-			session.setAttribute(Attributes.PAGE.name(), Pages.EXISTING_CONFIG);
-			return;
-		}
-		
 		String configName = request.getParameter(Attributes.PAGE.name());
 		if (!StringUtils.isEmpty(configName)) {
 			session.setAttribute(Attributes.PAGE.name(), Pages.valueOf(configName));
@@ -519,25 +500,28 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 		}
 
 		configName = request.getParameter(Attributes.ACTION_SELECT.name());
-		if (!StringUtils.isEmpty(configName)) {
-			session.setAttribute(Attributes.CONFIGURATION.name(), wipConfigurationDAO.read(configName));
+		if (!StringUtils.isEmpty(configName) && configurationDAO.exists(configName)) {
+			session.setAttribute(Attributes.CONFIGURATION_NAME.name(), configName);
 			session.setAttribute(Attributes.PAGE.name(), Pages.GENERAL_SETTINGS);
 			return;
 		}
 
 		configName = request.getParameter(Attributes.ACTION_DELETE.name());
 		if (!StringUtils.isEmpty(configName)) {
-			wipConfigurationDAO.delete(wipConfigurationDAO.read(configName));
+			if(WIPUtil.getConfiguration(request).getName().equals(configName))
+				session.setAttribute(Attributes.CONFIGURATION_NAME.name(), ConfigurationDAO.DEFAULT_CONFIG_NAME);
+			
+			configurationDAO.delete(configurationDAO.read(configName));
 			return;
 		}
 
-		configName = request.getParameter(Attributes.ACTION_SAVE.name());
+		configName = request.getParameter(Attributes.ACTION_SAVE_AS.name());
 		if (!StringUtils.isEmpty(configName)) {
-			WIPConfiguration actualConfiguration = (WIPConfiguration) session.getAttribute(Attributes.CONFIGURATION.name());
-			WIPConfiguration newConfiguration = (WIPConfiguration) actualConfiguration.clone();
+			WIPConfiguration configuration = WIPUtil.getConfiguration(request);
+			WIPConfiguration newConfiguration = (WIPConfiguration) configuration.clone();
 			newConfiguration.setName(configName);
-			newConfiguration = wipConfigurationDAO.create(newConfiguration);
-			session.setAttribute(Attributes.CONFIGURATION.name(), newConfiguration);
+			newConfiguration = configurationDAO.create(newConfiguration);
+			session.setAttribute(Attributes.CONFIGURATION_NAME.name(), newConfiguration.getName());
 			session.setAttribute(Attributes.PAGE.name(), Pages.GENERAL_SETTINGS);
 			return;
 		}
@@ -567,5 +551,22 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 				break;
 			}
 		}
+	}
+
+	@Override
+	public void serveResource(ResourceRequest request, ResourceResponse response) throws PortletException, IOException {
+		String configName = request.getParameter(Attributes.ACTION_EXPORT.name());
+		if (StringUtils.isEmpty(configName))
+			return;
+		
+		response.setContentType("multipart/x-zip");
+		response.setProperty("Content-Disposition", "attachment; filename=" + configName + ".zip");
+		
+		WIPConfiguration configuration = configurationDAO.read(configName);
+		ZipConfiguration zip = new ZipConfiguration();
+		ZipOutputStream out = new ZipOutputStream(response.getPortletOutputStream());
+		zip.zip(configuration, out);
+		out.flush();
+		out.close();
 	}
 }

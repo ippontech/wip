@@ -42,9 +42,9 @@ public class UrlFactory {
      * @throws MalformedURLException 
      */
     public UrlFactory(PortletRequest portletRequest) throws MalformedURLException  {
-        configuration = WIPUtil.extractConfiguration(portletRequest);
+        configuration = WIPUtil.getConfiguration(portletRequest);
         PortletWindow window = PortletWindow.getInstance(portletRequest);
-		currentUrl = new URL(window.getCurrentURL());
+		currentUrl = new URL(window.getActualURL());
     }
 
     /**

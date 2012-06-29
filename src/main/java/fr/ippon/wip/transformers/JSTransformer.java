@@ -72,7 +72,7 @@ public class JSTransformer extends AbstractTransformer {
         super(request);
 
         this.response = response;
-        this.wipConfig = WIPUtil.extractConfiguration(request);
+        this.wipConfig = WIPUtil.getConfiguration(request);
     }
 
     /**

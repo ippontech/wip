@@ -75,7 +75,7 @@ public class HTMLTransformer extends AbstractTransformer {
      */
     public HTMLTransformer(PortletRequest request, PortletResponse response) throws MalformedURLException {
         super(request);
-        this.wipConfig = WIPUtil.extractConfiguration(request);
+        this.wipConfig = WIPUtil.getConfiguration(request);
         this.request = request;
         this.response = response;
     }

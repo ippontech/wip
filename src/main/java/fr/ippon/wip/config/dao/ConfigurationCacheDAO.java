@@ -1,5 +1,6 @@
 package fr.ippon.wip.config.dao;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -7,91 +8,78 @@ import java.util.Map;
 import fr.ippon.wip.config.WIPConfiguration;
 
 /**
- * This class 
- * @author ylegat
- *
+ * A decorator used as cache for configurations.
+ * 
+ * @author Yohan Legat
+ * 
  */
-public class ConfigurationCacheDAO extends ConfigurationDAO {
-	
-	// a map that contains the loaded configurations associated with their names.
+public class ConfigurationCacheDAO extends ConfigurationDAODecorator {
+
+	// a map that contains the loaded configurations associated with their
+	// names.
 	private final Map<String, WIPConfiguration> cache;
-	
-	// a reference to the used DAO
-	private final ConfigurationDAO dao;
-	
-	public ConfigurationCacheDAO(ConfigurationDAO dao) {
-		this.dao = dao;
+
+	// a list that contains the name of the configurations.
+	private final List<String> configurationNames;
+
+	public ConfigurationCacheDAO(ConfigurationDAO decoratedDAO) {
+		super(decoratedDAO);
+		configurationNames = super.getConfigurationsNames();
 		cache = new HashMap<String, WIPConfiguration>();
 	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
+
 	@Override
 	public WIPConfiguration create(WIPConfiguration configuration) {
-		configuration = dao.create(configuration);
-		if(configuration != null)
-			cache.put(configuration.getName(), (WIPConfiguration) configuration.clone());
-		
-		return configuration;
-	}
+		configuration = super.create(configuration);
+		if (configuration == null)
+			return null;
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public WIPConfiguration read(String name) {
-		WIPConfiguration configuration = cache.get(name);
-		if (configuration != null) 
-			return (WIPConfiguration) configuration.clone();
-		
-		configuration = dao.read(name);
+		String name = configuration.getName();
+		configurationNames.add(name);
 		cache.put(name, (WIPConfiguration) configuration.clone());
+
 		return configuration;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public WIPConfiguration update(WIPConfiguration configuration) {
-		configuration = dao.update(configuration);
-		if(configuration != null)
-			cache.put(configuration.getName(), (WIPConfiguration) configuration.clone());
-		
-		return configuration;
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public synchronized List<String> getConfigurationsNames() {
-		return dao.getConfigurationsNames();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void deploy() {
-		dao.deploy();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	 @Override
-	public void resetConfigurationsNames() {
-		dao.resetConfigurationsNames();
 	}
 
 	@Override
 	public boolean delete(String name) {
-		if(!dao.delete(name))
+		if (!super.delete(name))
 			return false;
-		
+
 		cache.put(name, null);
+		configurationNames.remove(name);
 		return true;
+	}
+
+	@Override
+	public boolean exists(String name) {
+		return configurationNames.contains(name);
+	}
+
+	@Override
+	public List<String> getConfigurationsNames() {
+		return new ArrayList<String>(configurationNames);
+	}
+
+	@Override
+	public WIPConfiguration read(String name) {
+		WIPConfiguration configuration = cache.get(name);
+		if (configuration != null)
+			return (WIPConfiguration) configuration.clone();
+
+		configuration = super.read(name);
+		if (configuration != null)
+			cache.put(name, (WIPConfiguration) configuration.clone());
+
+		return configuration;
+	}
+
+	@Override
+	public WIPConfiguration update(WIPConfiguration configuration) {
+		configuration = super.update(configuration);
+		if (configuration != null)
+			cache.put(configuration.getName(), (WIPConfiguration) configuration.clone());
+
+		return configuration;
 	}
 }

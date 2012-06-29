@@ -5,10 +5,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
- * A singleton factory for creating instances of WIP configuration data access object.
+ * A singleton factory for creating instances of WIP configuration data access
+ * object.
  * 
  * @author Yohan Legat
- *
+ * 
  */
 public class ConfigurationDAOFactory {
 
@@ -18,6 +19,7 @@ public class ConfigurationDAOFactory {
 
 	/**
 	 * Get the unique instance of this class, creating it if necessary
+	 * 
 	 * @return
 	 */
 	public synchronized static ConfigurationDAOFactory getInstance() {
@@ -32,7 +34,9 @@ public class ConfigurationDAOFactory {
 	}
 
 	/**
-	 * Get the instance of a configuration DAO; this DAO persists the configurations as xml and xslt files.
+	 * Get the instance of a configuration DAO; this DAO persists the
+	 * configurations as xml and xslt files.
+	 * 
 	 * @return the instance of a configuration DAO
 	 */
 	public synchronized ConfigurationDAO getXMLInstance() {
@@ -41,7 +45,7 @@ public class ConfigurationDAOFactory {
 				// set the configuration files location
 				URL url = getClass().getResource("/configurations");
 				String pathConfigFiles = new File(url.toURI()).toString();
-				xmlDAO = new ConfigurationCacheDAO(new XMLConfigurationDAO(pathConfigFiles, true));
+				xmlDAO = new DeployConfigurationDecorator(new ConfigurationCacheDAO(new XMLConfigurationDAO(pathConfigFiles)));
 
 			} catch (URISyntaxException e) {
 				e.printStackTrace();

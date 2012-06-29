@@ -1,5 +1,3 @@
-<%@page import="org.apache.commons.lang.StringUtils"%>
-<%@page import="org.apache.commons.collections.CollectionUtils"%>
 <%@include file="/WEB-INF/jsp/config/header.jsp" %>
 
 <script type="text/javascript">

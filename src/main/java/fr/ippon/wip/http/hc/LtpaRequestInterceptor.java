@@ -41,10 +41,10 @@ class LtpaRequestInterceptor implements HttpRequestInterceptor {
     public void process(HttpRequest request, HttpContext context) throws HttpException, IOException {
         PortletRequest portletRequest = HttpClientResourceManager.getInstance().getCurrentPortletRequest();
         PortletWindow windowState = PortletWindow.getInstance(portletRequest);
-        WIPConfiguration wipConfig = WIPUtil.extractConfiguration(portletRequest);
+        WIPConfiguration wipConfig = WIPUtil.getConfiguration(portletRequest);
 
         // If it is the first request
-        if (windowState.getCurrentURL() == null) {
+        if (windowState.getActualURL() == null) {
             // If LTPA SSO enabled for this portlet
             if (wipConfig.isLtpaSsoAuthentication()) {
                 // Create LTPA cookie & add it ot store

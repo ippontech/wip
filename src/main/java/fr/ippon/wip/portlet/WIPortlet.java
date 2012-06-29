@@ -20,7 +20,6 @@ package fr.ippon.wip.portlet;
 
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.dao.ConfigurationDAO;
-import fr.ippon.wip.config.dao.ConfigurationDAOFactory;
 import fr.ippon.wip.http.HttpExecutor;
 import fr.ippon.wip.http.Request;
 import fr.ippon.wip.http.Response;
@@ -47,6 +46,7 @@ import java.util.logging.Logger;
  * @author Anthony Luce
  * @author Quentin Thierry
  * @author François Prot
+ * @author Yohan Legat
  */
 public class WIPortlet extends GenericPortlet {
 
@@ -60,7 +60,6 @@ public class WIPortlet extends GenericPortlet {
 	public static final String URL_CONCATENATION_KEY = "WIP_URL_CONCATENATION";
 
 	// Class attributes
-	private ConfigurationDAO wipConfigurationDAO;
 	private HttpExecutor executor;
 
 	/**
@@ -79,37 +78,21 @@ public class WIPortlet extends GenericPortlet {
 		
 		int responseStoreMaxEntries = Integer.parseInt(config.getInitParameter("RESPONSE_STORE_MAX_ENTRIES"));
 		ResponseStore.getInstance().setMaxEntries(responseStoreMaxEntries);
-		
-		wipConfigurationDAO = ConfigurationDAOFactory.getInstance().getXMLInstance();
 		executor = new HttpClientExecutor();
 	}
 
 	/**
-	 * Retrieve the portlet configuration, creating it if necessary.
-	 * 
-	 * @Todo: their must be a clever way to initiate the configurations
-	 *        preferences, but it doesn't seem possible to access portlet
-	 *        preferences in the process of an HttpSessionListener.
-	 *
+	 * Check if a configuration has been selected. If not then select one.
 	 * @param request
-	 * @return the portlet configuration
 	 */
-	private WIPConfiguration getOrCreateConfiguration(PortletRequest request) {
-		// check if the configuration is already saved in the session
-		WIPConfiguration configuration = WIPUtil.extractConfiguration(request);
-		if (configuration != null)
-			return configuration;
-
-		// retrieve the configuration name associated to the portlet preferences
-		PortletPreferences preferences = request.getPreferences();
-		String configurationName = preferences.getValue(Attributes.CONFIGURATION_NAME.name(), ConfigurationDAO.DEFAULT_CONFIG_NAME);
-		configuration = wipConfigurationDAO.read(configurationName);
-
-		// update the session with the configuration
-		PortletSession session = request.getPortletSession();
-		session.setAttribute(Attributes.CONFIGURATION.name(), configuration);
+	private void checkIsConfigurationSet(PortletRequest request) {
+		String configurationName = (String) request.getPortletSession().getAttribute(Attributes.CONFIGURATION_NAME.name());
+		if(!StringUtils.isEmpty(configurationName))
+			return;
 		
-		return configuration;
+		PortletPreferences preferences = request.getPreferences();
+		configurationName = preferences.getValue(Attributes.CONFIGURATION_NAME.name(), ConfigurationDAO.DEFAULT_CONFIG_NAME);
+		request.getPortletSession().setAttribute(Attributes.CONFIGURATION_NAME.name(), configurationName);
 	}
 
 	/**
@@ -122,10 +105,17 @@ public class WIPortlet extends GenericPortlet {
 	 */
 	@Override
 	protected void doView(RenderRequest request, RenderResponse response) throws PortletException, IOException {
-		request.getPreferences();
-		WIPConfiguration wipConfig = getOrCreateConfiguration(request);
-
+		checkIsConfigurationSet(request);
+		WIPConfiguration configuration = WIPUtil.getConfiguration(request);
+		
 		PortletWindow windowState = PortletWindow.getInstance(request);
+		
+		// reset if the used configuration have been deleted or its url changed
+		if(windowState.getConfiguration().getTimestamp() != configuration.getTimestamp()) {
+			PortletWindow.clearInstance(request);
+			windowState = PortletWindow.getInstance(request);
+		}
+		
 		Response wipResponse = null;
 		UUID uuid = windowState.getResponseID();
 		// A request has just been processed in the ACTION phase
@@ -137,7 +127,7 @@ public class WIPortlet extends GenericPortlet {
 
 		// If no pending response, create a new request
 		if (wipResponse == null) {
-			String requestUrl = windowState.getCurrentURL();
+			String requestUrl = windowState.getActualURL();
 			Request wipRequest = new Request(requestUrl, Request.HttpMethod.GET, Request.ResourceType.HTML, null);
 
 			// TODO: copy global parameters from PortletRequest ?
@@ -146,7 +136,7 @@ public class WIPortlet extends GenericPortlet {
 			wipResponse = executor.execute(wipRequest, request, response);
 		}
 		// Set Portlet title
-		response.setTitle(wipConfig.getPortletTitle());
+		response.setTitle(WIPUtil.getConfiguration(request).getPortletTitle());
 
 		// Check if authentication is requested by remote host
 		if (windowState.getRequestedAuthSchemes() != null) {
@@ -170,7 +160,8 @@ public class WIPortlet extends GenericPortlet {
 	 */
 	@Override
 	public void processAction(ActionRequest request, ActionResponse response) throws PortletException, IOException {
-		WIPConfiguration wipConfig = WIPUtil.extractConfiguration(request);
+		checkIsConfigurationSet(request);
+		WIPConfiguration wipConfig = WIPUtil.getConfiguration(request);
 
 		// If in edit mode, delegates processing to WIPEdit
 		if (request.getPortletMode().equals(PortletMode.EDIT)) {
@@ -186,10 +177,8 @@ public class WIPortlet extends GenericPortlet {
 			if (StringUtils.isEmpty(configurationName))
 				return;
 
-			WIPConfiguration configuration = wipConfigurationDAO.read(configurationName);
-			session.setAttribute(Attributes.CONFIGURATION.name(), configuration);
-
 			try {
+				session.setAttribute(Attributes.CONFIGURATION_NAME.name(), configurationName);
 				request.getPreferences().setValue(Attributes.CONFIGURATION_NAME.name(), configurationName);
 				request.getPreferences().store();
 
@@ -232,7 +221,7 @@ public class WIPortlet extends GenericPortlet {
 				// Update state & let the portlet render
 				PortletWindow windowState = PortletWindow.getInstance(request);
 				windowState.setResponseID(uuid);
-				windowState.setCurrentURL(wipResponse.getUrl());
+				windowState.setActualURL(wipResponse.getUrl());
 			} else {
 				// Redirect to ResourceServlet
 				response.sendRedirect(request.getContextPath() + "/ResourceHandler?&uuid=" + uuid.toString());
@@ -250,6 +239,8 @@ public class WIPortlet extends GenericPortlet {
 	 */
 	@Override
 	public void serveResource(ResourceRequest request, ResourceResponse response) throws PortletException, IOException {
+		checkIsConfigurationSet(request);
+		
 		// Create request
 		Request wipRequest = new Request(request);
 
@@ -272,6 +263,7 @@ public class WIPortlet extends GenericPortlet {
 	 */
 	@Override
 	protected void doEdit(RenderRequest request, RenderResponse response) throws PortletException, IOException {
+		checkIsConfigurationSet(request);
 		PortletRequestDispatcher portletRequestDispatcher = getPortletContext().getRequestDispatcher(Pages.SELECT_CONFIG.getPath());
 		portletRequestDispatcher.include(request, response);
 	}

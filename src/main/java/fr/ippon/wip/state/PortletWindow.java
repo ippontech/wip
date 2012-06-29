@@ -35,74 +35,16 @@ import java.util.UUID;
  * @author François Prot
  */
 public class PortletWindow {
-    private UUID responseID;
-    private String currentURL;
-    private List<String> requestedAuthSchemes;
-    private boolean authenticated = false;
-
-    private static final String PORTLET_SESSION_KEY = "wip.window.state";
-
-    private PortletWindow() {
-    }
-
     /**
-     * UUID of a Response obtained in the ACTION phase that has not already been sent to client.
+     * This method must be called when the state of a particular session/window must be cleared
+     * (on remote logout for example)
      *
-     * Used to get a Response instance from ResponseStore.
-     *
-     * @return
+     * @param request
      */
-    public UUID getResponseID() {
-        return responseID;
+    public static void clearInstance(PortletRequest request) {
+        PortletSession session = request.getPortletSession();
+        session.removeAttribute(PORTLET_SESSION_KEY, PortletSession.PORTLET_SCOPE);
     }
-
-    public void setResponseID(UUID responseID) {
-        this.responseID = responseID;
-    }
-
-    /**
-     * The remote URL for this sessionID/windowID.
-     *
-     * If the remote host send "Redirect" response, the URL is the final target location
-     *
-     * @return
-     */
-    public String getCurrentURL() {
-        return currentURL;
-    }
-
-    public void setCurrentURL(String currentURL) {
-        this.currentURL = currentURL;
-    }
-
-    /**
-     * Authentication schemes accepted by remote host.
-     *
-     * Is null is no authentication is requested.
-     *
-     * @return
-     */
-    public List<String> getRequestedAuthSchemes() {
-        return requestedAuthSchemes;
-    }
-
-    public void setRequestedAuthSchemes(List<String> requestedAuthSchemes) {
-        this.requestedAuthSchemes = requestedAuthSchemes;
-    }
-
-    /**
-     * Is the user authenticated on the remote host
-     *
-     * @return
-     */
-    public boolean isAuthenticated() {
-        return authenticated;
-    }
-
-    public void setAuthenticated(boolean authenticated) {
-        this.authenticated = authenticated;
-    }
-
     /**
      * Get the instance associated with this PortletSession (in the PORTLET_SCOPE) if exists.
      * Else create a new one and update session.
@@ -118,22 +60,91 @@ public class PortletWindow {
 
             if (state == null) {
                 state = new PortletWindow();
-                WIPConfiguration config = WIPUtil.extractConfiguration(request);
-                state.setCurrentURL(config.getInitUrl());
+                WIPConfiguration config = WIPUtil.getConfiguration(request);
+                state.setConfiguration(config);
+                state.setActualURL(config.getInitUrl());
                 session.setAttribute(PORTLET_SESSION_KEY, state, PortletSession.PORTLET_SCOPE);
             }
         }
         return state;
     }
+    
+    private UUID responseID;
+    private String actualURL;
+    private List<String> requestedAuthSchemes;
+
+    private boolean authenticated = false;
+
+	private WIPConfiguration configuration;
+
+	private static final String PORTLET_SESSION_KEY = "wip.window.state";
+
+    private PortletWindow() {
+    }
+
+    public WIPConfiguration getConfiguration() {
+		return configuration;
+	}
 
     /**
-     * This method must be called when the state of a particular session/window must be cleared
-     * (on remote logout for example)
+     * The remote URL for this sessionID/windowID.
      *
-     * @param request
+     * If the remote host send "Redirect" response, the URL is the final target location
+     *
+     * @return
      */
-    public static void clearInstance(PortletRequest request) {
-        PortletSession session = request.getPortletSession();
-        session.removeAttribute(PORTLET_SESSION_KEY, PortletSession.PORTLET_SCOPE);
+    public String getActualURL() {
+        return actualURL;
+    }
+
+    /**
+     * Authentication schemes accepted by remote host.
+     *
+     * Is null is no authentication is requested.
+     *
+     * @return
+     */
+    public List<String> getRequestedAuthSchemes() {
+        return requestedAuthSchemes;
+    }
+
+    /**
+     * UUID of a Response obtained in the ACTION phase that has not already been sent to client.
+     *
+     * Used to get a Response instance from ResponseStore.
+     *
+     * @return
+     */
+    public UUID getResponseID() {
+        return responseID;
+    }
+
+    /**
+     * Is the user authenticated on the remote host
+     *
+     * @return
+     */
+    public boolean isAuthenticated() {
+        return authenticated;
+    }
+
+    public void setAuthenticated(boolean authenticated) {
+        this.authenticated = authenticated;
+    }
+
+    public void setConfiguration(WIPConfiguration configuration) {
+		this.configuration = configuration;
+	}
+
+    public void setActualURL(String actualURL) {
+        this.actualURL = actualURL;
+    }
+
+    public void setRequestedAuthSchemes(List<String> requestedAuthSchemes) {
+        this.requestedAuthSchemes = requestedAuthSchemes;
+    }
+
+    public void setResponseID(UUID responseID) {
+        this.responseID = responseID;
     }
 }

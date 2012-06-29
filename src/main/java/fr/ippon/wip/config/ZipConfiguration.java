@@ -20,12 +20,6 @@ import fr.ippon.wip.config.dao.XMLConfigurationDAO;
  */
 public class ZipConfiguration {
 
-	private XMLConfigurationDAO xmlDAO;
-
-	public ZipConfiguration() {
-		xmlDAO = new XMLConfigurationDAO(FileUtils.getTempDirectoryPath(), false);
-	}
-
 	/**
 	 * Copy the data from an InputStream toward an OutputStream
 	 * 
@@ -49,11 +43,12 @@ public class ZipConfiguration {
 	 * @throws IOException
 	 */
 	private boolean extract(ZipFile zipFile, String configurationName) throws IOException {
+		XMLConfigurationDAO xmlConfigurationDAO = new XMLConfigurationDAO(FileUtils.getTempDirectoryPath());
 		File file;
 		ZipEntry entry;
 		int[] types = new int[] { XMLConfigurationDAO.FILE_NAME_CLIPPING, XMLConfigurationDAO.FILE_NAME_TRANSFORM, XMLConfigurationDAO.FILE_NAME_CONFIG };
 		for (int type : types) {
-			file = xmlDAO.getConfigurationFile(configurationName, type);
+			file = xmlConfigurationDAO.getConfigurationFile(configurationName, type);
 			entry = zipFile.getEntry(file.getName());
 			if (entry == null)
 				return false;
@@ -75,16 +70,15 @@ public class ZipConfiguration {
 	 * @throws IOException
 	 */
 	public WIPConfiguration unzip(ZipFile zipFile, String configurationName) throws IOException {
-		xmlDAO.resetConfigurationsNames();
-		WIPConfiguration configuration = xmlDAO.read(configurationName);
+		XMLConfigurationDAO xmlConfigurationDAO = new XMLConfigurationDAO(FileUtils.getTempDirectoryPath());
+		WIPConfiguration configuration = xmlConfigurationDAO.read(configurationName);
 		if (configuration != null)
-			xmlDAO.delete(configuration);
+			xmlConfigurationDAO.delete(configuration);
 
 		if (!extract(zipFile, configurationName))
 			return null;
 
-		xmlDAO.resetConfigurationsNames();
-		configuration = xmlDAO.read(configurationName);
+		configuration = xmlConfigurationDAO.read(configurationName);
 
 		return configuration;
 	}
@@ -98,14 +92,22 @@ public class ZipConfiguration {
 	 *            the stream to be used
 	 */
 	public void zip(WIPConfiguration configuration, ZipOutputStream out) {
+		XMLConfigurationDAO xmlConfigurationDAO = new XMLConfigurationDAO(FileUtils.getTempDirectoryPath());
+
+		/*
+		 * a configuration with the same name may already have been unzipped in
+		 * the temp directory, so we try to delete it for avoiding name
+		 * modification (see ConfigurationDAO.correctConfigurationName).
+		 */
+		xmlConfigurationDAO.delete(configuration);
+		xmlConfigurationDAO.create(configuration);
+
 		String configName = configuration.getName();
-		xmlDAO.delete(configuration);
-		xmlDAO.create(configuration);
 
 		try {
 			int[] types = new int[] { XMLConfigurationDAO.FILE_NAME_CLIPPING, XMLConfigurationDAO.FILE_NAME_TRANSFORM, XMLConfigurationDAO.FILE_NAME_CONFIG };
 			for (int type : types) {
-				File file = xmlDAO.getConfigurationFile(configName, type);
+				File file = xmlConfigurationDAO.getConfigurationFile(configName, type);
 				ZipEntry entry = new ZipEntry(file.getName());
 				out.putNextEntry(entry);
 				copy(FileUtils.openInputStream(file), out);

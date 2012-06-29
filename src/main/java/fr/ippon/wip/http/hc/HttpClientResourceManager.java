@@ -191,7 +191,7 @@ public class HttpClientResourceManager {
         synchronized (perUserClientMap) {
             client = perUserClientMap.get(userSessionId);
             if (client == null) {
-                WIPConfiguration config = WIPUtil.extractConfiguration(request);
+                WIPConfiguration config = WIPUtil.getConfiguration(request);
                 if (!config.isPageCachePrivate()) {
                     client = rootClient;
                 } else {

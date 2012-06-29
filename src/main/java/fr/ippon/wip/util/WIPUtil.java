@@ -27,6 +27,8 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletSession;
 
 import fr.ippon.wip.config.WIPConfiguration;
+import fr.ippon.wip.config.dao.ConfigurationDAO;
+import fr.ippon.wip.config.dao.ConfigurationDAOFactory;
 import fr.ippon.wip.portlet.Attributes;
 
 /**
@@ -41,6 +43,8 @@ public class WIPUtil {
 
     private static final Map<Locale, ResourceBundle> bundles = new HashMap<Locale, ResourceBundle>();
 
+    private static ConfigurationDAO configurationDAO = ConfigurationDAOFactory.getInstance().getXMLInstance();
+    
     public static String getMessage(String key, Locale locale) {
         ResourceBundle bundle = bundles.get(locale);
         if (bundle == null) {
@@ -51,13 +55,25 @@ public class WIPUtil {
     }
     
     /**
-     * Extract the selected configuration associated to a session
+     * Retrieve the selected configuration associated to a session
      * @param request the session container
      * @return the selected configuration
      */
-    public static WIPConfiguration extractConfiguration(PortletRequest request) {
+    public static WIPConfiguration getConfiguration(PortletRequest request) {
     	PortletSession session = request.getPortletSession();
-    	return (WIPConfiguration) session.getAttribute(Attributes.CONFIGURATION.name());
+    	String configName = (String) session.getAttribute(Attributes.CONFIGURATION_NAME.name());
+    	WIPConfiguration configuration = (WIPConfiguration) request.getAttribute(Attributes.CONFIGURATION.name());
+    	if(configuration != null && configuration.getName().equals(configName))
+    		return configuration;
+    	
+    	configuration = configurationDAO.read(configName);
+    	if(configuration == null) {
+    		configuration = configurationDAO.getDefaultConfiguration();
+    		session.setAttribute(Attributes.CONFIGURATION_NAME.name(), configuration.getName());
+    	}
+    	
+    	request.setAttribute(Attributes.CONFIGURATION.name(), configuration);
+    	return configuration;
     }
     
     public static boolean isDebugMode(PortletRequest request) {

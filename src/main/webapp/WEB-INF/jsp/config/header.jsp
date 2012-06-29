@@ -21,6 +21,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Locale" %>
 <%@ page import="java.util.Map" %>
+<%@page import="org.apache.commons.lang.StringUtils"%>
 
 <portlet:defineObjects/>
 <%
@@ -31,7 +32,7 @@
 
     Pages selectedPage = (Pages) portletSession.getAttribute(Attributes.PAGE.name());
     ConfigurationDAO wipConfigurationDAO = ConfigurationDAOFactory.getInstance().getXMLInstance();
-    WIPConfiguration wipConf = (WIPConfiguration) portletSession.getAttribute(Attributes.CONFIGURATION.name());
+    WIPConfiguration wipConf = WIPUtil.getConfiguration(pReq);
     
     Map<String, String> errors = (Map<String, String>) portletSession.getAttribute("errors");
     if (errors == null)
