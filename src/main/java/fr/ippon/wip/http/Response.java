@@ -121,7 +121,7 @@ public class Response {
     }
 
     public boolean isHtml () {
-        return mimeType.equals("text/html") || mimeType.equals("application/xhtml+xml");
+        return mimeType.startsWith("text/html") || mimeType.startsWith("application/xhtml+xml");
     }
 
     /**

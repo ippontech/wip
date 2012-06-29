@@ -451,8 +451,8 @@ public class WIPConfiguration implements Cloneable {
 	public boolean isProxyURI(final String uri) {
 		return Iterables.any(getDomainsToProxy(), new Predicate<String>() {
 
-			public boolean apply(String value) {
-				return uri.startsWith(value);
+			public boolean apply(String domain) {
+				return uri.startsWith(domain);
 			}
 		});
 	}
