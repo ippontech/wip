@@ -1,5 +1,6 @@
 package fr.ippon.wip.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
@@ -18,8 +19,11 @@ public enum WIPLogging {
 
 	private WIPLogging() {
 		try {
-			acc = 0;
-
+			File logDirectory = new File(System.getProperty("user.home") + "/wip");
+			// FileHandler launch an exception if parent path doesn't exist
+			if(!logDirectory.exists() || !logDirectory.isDirectory())
+				logDirectory.mkdirs();
+			
 			accessFileHandler = new FileHandler("%h/wip/access.log", true);
 			accessFileHandler.setLevel(Level.INFO);
 			accessFileHandler.setFormatter(new SimpleFormatter());
