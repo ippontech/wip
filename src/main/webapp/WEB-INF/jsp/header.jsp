@@ -9,7 +9,9 @@
 <%@ page import="fr.ippon.wip.config.dao.ConfigurationDAO" %>
 <%@ page import="fr.ippon.wip.config.dao.ConfigurationDAOFactory" %>
 <%@ page import="fr.ippon.wip.http.Request" %>
+<%@ page import="fr.ippon.wip.portlet.Pages" %>
 <%@ page import="fr.ippon.wip.util.WIPUtil" %>
+<%@ page import="fr.ippon.wip.util.WIPLogging" %>
 <%@ page import="fr.ippon.wip.portlet.Attributes" %>
 <%@ page import="org.apache.commons.lang.StringEscapeUtils" %>
 <%@ page import="javax.portlet.PortletMode" %>
@@ -51,6 +53,15 @@
 
 <fmt:setLocale value="${localeCode}" scope="session"/>
 <fmt:setBundle basename="content.Language"/>
+
+<div class="config_menu">
+    <a href="<portlet:actionURL><portlet:param name="<%= Attributes.PAGE.name() %>" value="<%= Pages.SELECT_CONFIG.name() %>"/></portlet:actionURL>">
+        <fmt:message key="wip.config.existing"/>
+    </a>
+    <a href="<portlet:actionURL><portlet:param name="<%= Attributes.PAGE.name() %>" value="<%= Pages.LOG.name() %>"/></portlet:actionURL>">
+        <fmt:message key="wip.config.log"/>
+    </a>
+</div>
 
 <style>
     #wipconfig_error {

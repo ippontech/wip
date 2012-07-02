@@ -31,9 +31,14 @@ import fr.ippon.wip.util.WIPUtil;
 
 import javax.portlet.*;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -161,19 +166,29 @@ public class WIPortlet extends GenericPortlet {
 	@Override
 	public void processAction(ActionRequest request, ActionResponse response) throws PortletException, IOException {
 		checkIsConfigurationSet(request);
+		PortletSession session = request.getPortletSession();
 		WIPConfiguration wipConfig = WIPUtil.getConfiguration(request);
 
-		// If in edit mode, delegates processing to WIPEdit
 		if (request.getPortletMode().equals(PortletMode.EDIT)) {
-			PortletSession session = request.getPortletSession();
-
+			String page = request.getParameter(Attributes.PAGE.name());
+			if(!StringUtils.isEmpty(page)) {
+				session.setAttribute(Attributes.PAGE.name(), Pages.valueOf(page));
+				return;
+			}
+			
 			String debugMode = request.getParameter(Attributes.DEBUG_MODE.name());
-			if(debugMode != null) {
+			if(!StringUtils.isEmpty(debugMode)) {
 				session.setAttribute(Attributes.DEBUG_MODE.name(), Boolean.parseBoolean(debugMode));
 				return;
 			}
 			
-			String configurationName = request.getParameter(Attributes.ACTION_SELECT.name());
+			String exportLog = (String) request.getAttribute(Attributes.ACTION_EXPORT_LOG.name());
+			if(!StringUtils.isEmpty(exportLog)) {
+				// export du fichier de log au client
+				return;
+			}
+			
+			String configurationName = request.getParameter(Attributes.ACTION_SELECT_CONFIGURATION.name());
 			if (StringUtils.isEmpty(configurationName))
 				return;
 
@@ -241,6 +256,19 @@ public class WIPortlet extends GenericPortlet {
 	public void serveResource(ResourceRequest request, ResourceResponse response) throws PortletException, IOException {
 		checkIsConfigurationSet(request);
 		
+		if(request.getPortletMode().equals(PortletMode.EDIT)) {
+			String logName = request.getParameter(Attributes.ACTION_EXPORT_LOG.name());
+			
+			response.setContentType("text/plain");
+			response.setProperty("Content-Disposition", "attachment; filename=" + logName + ".log");
+			File logFile = WIPLogging.INSTANCE.getLogFileByUrl(logName);
+			OutputStream out = response.getPortletOutputStream();
+			InputStream in = FileUtils.openInputStream(logFile);
+			IOUtils.copy(in, out);
+			out.close();
+			return;
+		}
+		
 		// Create request
 		Request wipRequest = new Request(request);
 
@@ -264,7 +292,12 @@ public class WIPortlet extends GenericPortlet {
 	@Override
 	protected void doEdit(RenderRequest request, RenderResponse response) throws PortletException, IOException {
 		checkIsConfigurationSet(request);
-		PortletRequestDispatcher portletRequestDispatcher = getPortletContext().getRequestDispatcher(Pages.SELECT_CONFIG.getPath());
+		
+		Pages requestedPage = (Pages) request.getPortletSession().getAttribute(Attributes.PAGE.name());
+		if(requestedPage == null)
+			requestedPage = Pages.SELECT_CONFIG;
+		
+		PortletRequestDispatcher portletRequestDispatcher = getPortletContext().getRequestDispatcher(requestedPage.getPath());
 		portletRequestDispatcher.include(request, response);
 	}
 

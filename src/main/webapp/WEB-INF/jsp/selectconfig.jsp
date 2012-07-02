@@ -1,15 +1,12 @@
 <%@include file="/WEB-INF/jsp/header.jsp" %>
 
 <table class="wip_table">
-    <%
-        List<String> confs = wipConfigurationDAO.getConfigurationsNames();
-	%>
 		<tr>
 			<th><fmt:message key="wip.config.configName"/></th>
 			<th><fmt:message key="wip.config.actions"/></th>
 		</tr>
 	<%
-		
+	List<String> confs = wipConfigurationDAO.getConfigurationsNames();
         for (String conf : confs) {
 	  %>
 			<tr>
@@ -22,26 +19,13 @@
 					%>
 				</td>
 				<td>
-					<a href="<portlet:actionURL><portlet:param name="<%=Attributes.ACTION_SELECT.name() %>" value="<%=conf%>" /></portlet:actionURL>"><fmt:message key="wip.config.action.select"/></a>
+					<a href="<portlet:actionURL><portlet:param name="<%=Attributes.ACTION_SELECT_CONFIGURATION.name()%>" value="<%=conf%>" /></portlet:actionURL>"><fmt:message key="wip.config.action.select"/></a>
 				</td>
 			</tr>
   	  <%
 		}
     %>
 </table>
-
-<% boolean debugMode = WIPUtil.isDebugMode(pReq);%>
-<a href="<portlet:actionURL>
-	<portlet:param	name="<%=Attributes.DEBUG_MODE.name() %>"
-					value="<%=Boolean.toString(!debugMode)%>" />
-	</portlet:actionURL>">
-	
-	<%if(debugMode) { %>
-		<fmt:message key="wip.config.debug.desactivate" />
-	<%} else { %>
-		<fmt:message key="wip.config.debug.activate" />
-	<%}%>
-</a>
 
 <style>
 

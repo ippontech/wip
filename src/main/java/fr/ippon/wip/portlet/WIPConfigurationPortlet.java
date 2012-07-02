@@ -481,7 +481,6 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 					FileUtils.copyInputStreamToFile(file.getInputStream(), deployFile);
 				}
 				
-				request.setAttribute(Attributes.ACTION_DEPLOY.name(), "true");
 				LOG.log(Level.FINE, "Configurations have been uploaded.");
 				
 			} catch (FileUploadException e) {
@@ -493,20 +492,20 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 			}
 		}
 		
-		String configName = request.getParameter(Attributes.PAGE.name());
-		if (!StringUtils.isEmpty(configName)) {
-			session.setAttribute(Attributes.PAGE.name(), Pages.valueOf(configName));
+		String page = request.getParameter(Attributes.PAGE.name());
+		if (!StringUtils.isEmpty(page)) {
+			session.setAttribute(Attributes.PAGE.name(), Pages.valueOf(page));
 			return;
 		}
 
-		configName = request.getParameter(Attributes.ACTION_SELECT.name());
+		String configName = request.getParameter(Attributes.ACTION_SELECT_CONFIGURATION.name());
 		if (!StringUtils.isEmpty(configName) && configurationDAO.exists(configName)) {
 			session.setAttribute(Attributes.CONFIGURATION_NAME.name(), configName);
 			session.setAttribute(Attributes.PAGE.name(), Pages.GENERAL_SETTINGS);
 			return;
 		}
 
-		configName = request.getParameter(Attributes.ACTION_DELETE.name());
+		configName = request.getParameter(Attributes.ACTION_DELETE_CONFIGURATION.name());
 		if (!StringUtils.isEmpty(configName)) {
 			if(WIPUtil.getConfiguration(request).getName().equals(configName))
 				session.setAttribute(Attributes.CONFIGURATION_NAME.name(), ConfigurationDAO.DEFAULT_CONFIG_NAME);
@@ -515,7 +514,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 			return;
 		}
 
-		configName = request.getParameter(Attributes.ACTION_SAVE_AS.name());
+		configName = request.getParameter(Attributes.ACTION_SAVE_CONFIGURATION_AS.name());
 		if (!StringUtils.isEmpty(configName)) {
 			WIPConfiguration configuration = WIPUtil.getConfiguration(request);
 			WIPConfiguration newConfiguration = (WIPConfiguration) configuration.clone();
@@ -555,7 +554,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 
 	@Override
 	public void serveResource(ResourceRequest request, ResourceResponse response) throws PortletException, IOException {
-		String configName = request.getParameter(Attributes.ACTION_EXPORT.name());
+		String configName = request.getParameter(Attributes.ACTION_EXPORT_CONFIGURATION.name());
 		if (StringUtils.isEmpty(configName))
 			return;
 		

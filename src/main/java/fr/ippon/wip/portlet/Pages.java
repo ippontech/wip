@@ -20,13 +20,13 @@ package fr.ippon.wip.portlet;
 
 public enum Pages {
 
-	HEADER_CONFIG("header"),
+	SELECT_CONFIG("selectconfig", "/WEB-INF/jsp/"),
+	AUTH("auth", "/WEB-INF/jsp/"),
+	LOG("logs", "/WEB-INF/jsp/"),
+
 	EXISTING_CONFIG("existingconfig"),
 	SAVE_CONFIG("saveconfig"),
-	SELECT_CONFIG("selectconfig", "/WEB-INF/jsp/"),
-	
 	GENERAL_SETTINGS("generalsettings"),
-	AUTH("auth", "/WEB-INF/jsp/"),
 	CACHING("caching"),
 	CLIPPING("clipping"),
 	CSS_REWRITING("cssrewriting"),

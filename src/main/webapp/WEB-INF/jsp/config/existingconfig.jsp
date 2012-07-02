@@ -27,11 +27,11 @@
 					%>
 				</td>
 				<td>
-					<a href="<portlet:actionURL><portlet:param name="<%=Attributes.ACTION_SELECT.name() %>" value="<%=conf%>" /></portlet:actionURL>"><fmt:message key="wip.config.action.select"/></a>
+					<a href="<portlet:actionURL><portlet:param name="<%=Attributes.ACTION_SELECT_CONFIGURATION.name()%>" value="<%=conf%>" /></portlet:actionURL>"><fmt:message key="wip.config.action.select"/></a>
 					<c:out value=" | "></c:out>
-					<a href="<portlet:actionURL><portlet:param name="<%=Attributes.ACTION_DELETE.name() %>" value="<%=conf%>" /></portlet:actionURL>"><fmt:message key="wip.config.action.delete"/></a>
+					<a href="<portlet:actionURL><portlet:param name="<%=Attributes.ACTION_DELETE_CONFIGURATION.name()%>" value="<%=conf%>" /></portlet:actionURL>"><fmt:message key="wip.config.action.delete"/></a>
 					<c:out value=" | "></c:out>
-					<a href="<portlet:resourceURL><portlet:param name="<%=Attributes.ACTION_EXPORT.name() %>" value="<%=conf %>"/></portlet:resourceURL>">
+					<a href="<portlet:resourceURL><portlet:param name="<%=Attributes.ACTION_EXPORT_CONFIGURATION.name()%>" value="<%=conf %>"/></portlet:resourceURL>">
 						<fmt:message key="wip.config.action.export"/>
 					</a>
 				</td>
