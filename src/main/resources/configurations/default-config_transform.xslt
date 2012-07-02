@@ -18,10 +18,11 @@
     <xsl:param name="rewriteUrl"/>
     <xsl:param name="type"/>
     <xsl:param name="xpath"/>
+    <xsl:param name="actualUrl"/>
 
-    <xsl:variable name="urlfact" select="urlfactory:new( $request )"/>
-    <xsl:variable name="jstrans" select="jstransformer:new( $request, $response )"/>
-    <xsl:variable name="csstrans" select="csstransformer:new( $request, $response )"/>
+    <xsl:variable name="urlfact" select="urlfactory:new( $request, $actualUrl )"/>
+    <xsl:variable name="jstrans" select="jstransformer:new( $request, $response, $actualUrl )"/>
+    <xsl:variable name="csstrans" select="csstransformer:new( $request, $response, $actualUrl )"/>
 
     <xsl:include href="clipping"/>
 

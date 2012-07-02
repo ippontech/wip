@@ -37,6 +37,7 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -105,12 +106,12 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
                     return;
                 } else {
                     // HTML transformation
-                    transformer = new HTMLTransformer(portletRequest, portletResponse);
+                    transformer = new HTMLTransformer(portletRequest, portletResponse, new URL(request.getRequestedURL()));
                 }
                 break;
             case JS:
                 // JavaScript transformation
-                transformer = new JSTransformer(portletRequest, portletResponse);
+                transformer = new JSTransformer(portletRequest, portletResponse, new URL(request.getRequestedURL()));
                 // Empty content
                 if (((JSTransformer) transformer).isDeletedScript(actualURI)) {
                     // Send à 404 empty response
@@ -122,20 +123,20 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
                 break;
             case CSS:
                 // CSS transformation
-                transformer = new CSSTransformer(portletRequest, portletResponse);
+                transformer = new CSSTransformer(portletRequest, portletResponse, new URL(request.getRequestedURL()));
                 break;
             case AJAX:
                 if (mimeType == null) {
                     return;
                 } else if (mimeType.equals("text/html") || mimeType.equals("application/xhtml+xml")) {
                     // HTML transformation
-                    transformer = new HTMLTransformer(portletRequest, portletResponse);
+                    transformer = new HTMLTransformer(portletRequest, portletResponse, new URL(request.getRequestedURL()));
                 } else if (mimeType.equals("text/javascript") || mimeType.equals("application/javascript")) {
                     // JavaScript transformation
-                    transformer = new JSTransformer(portletRequest, portletResponse);
+                    transformer = new JSTransformer(portletRequest, portletResponse, new URL(request.getRequestedURL()));
                 } else if (mimeType.equals("application/json")) {
                     // JSON transformation
-                    transformer = new JSONTransformer(portletRequest);
+                    transformer = new JSONTransformer(portletRequest, new URL(request.getRequestedURL()));
                 } else {
                     // No transformation
                     return;

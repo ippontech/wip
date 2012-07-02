@@ -1,13 +1,12 @@
 package fr.ippon.wip.http;
 
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.portlet.WIPortlet;
-import fr.ippon.wip.state.PortletWindow;
 import fr.ippon.wip.transformers.HTMLTransformer;
 import fr.ippon.wip.util.WIPUtil;
 
@@ -33,18 +32,16 @@ public class UrlFactory {
     public static final String TEMP_URL_ENCODED_SEPARATOR = "&amp;#128;";
     private static final String[] TOKENS = {"<", "$"};
     private static final Logger LOG = Logger.getLogger(HTMLTransformer.class.getName());
-
-    private final URL currentUrl;
     private final WIPConfiguration configuration;
+    private URL actualUrl;
 
     /**
      * @param portletRequest To get windowID and retrieve appropriate configuration
      * @throws MalformedURLException 
      */
-    public UrlFactory(PortletRequest portletRequest) throws MalformedURLException  {
+    public UrlFactory(PortletRequest portletRequest, URL actualUrl) throws MalformedURLException  {
+    	this.actualUrl = actualUrl;
         configuration = WIPUtil.getConfiguration(portletRequest);
-        PortletWindow window = PortletWindow.getInstance(portletRequest);
-		currentUrl = new URL(window.getActualURL());
     }
 
     /**
@@ -53,8 +50,9 @@ public class UrlFactory {
      * @param tempUrl
      * @param mimeResponse To create portal URLs
      * @return
+     * @throws MalformedURLException 
      */
-    public String convertTempToPortalUrl(String tempUrl, MimeResponse mimeResponse) {
+    public String convertTempToPortalUrl(String tempUrl, MimeResponse mimeResponse) throws MalformedURLException {
         String[] tokens = tempUrl.split(TOKENS[0]);
         if (tokens.length >= 3) {
             return createProxyUrl(tokens[0], tokens[1], tokens[2], mimeResponse);
@@ -68,18 +66,19 @@ public class UrlFactory {
      * If portletResponse is an instance of MimeResponse, creates portal URL,
      * else creates temporary URL.
      *
-     * @param url URL of the remote resource
+     * @param relativeUrl URL of the remote resource
      * @param method HTTP method for this request
      * @param type Type of resource
      * @param portletResponse To create portal URL if instance of MimeResponse
      * @return
+     * @throws MalformedURLException 
      */
-    public String createProxyUrl(String url, String method, String type, PortletResponse portletResponse) {
+    public String createProxyUrl(String relativeUrl, String method, String type, PortletResponse portletResponse) {
         String proxyUrl;
         Request.HttpMethod httpMethod = Request.HttpMethod.valueOf(method);
         Request.ResourceType resourceType = Request.ResourceType.valueOf(type);
         // Convert to absolute URL
-        String absoluteUrl = toAbsolute(url);
+        String absoluteUrl = toAbsolute(relativeUrl);
 
         // Check if url match domains to proxy
         if (!configuration.isProxyURI(absoluteUrl)) {
@@ -121,40 +120,15 @@ public class UrlFactory {
     private String toAbsolute(String relativeUrl) {
         if (StringUtils.isEmpty(relativeUrl) || relativeUrl.startsWith("http://") || relativeUrl.startsWith("https://"))
             return relativeUrl;
-        
-        String protocol = currentUrl.getProtocol();
-        String host = currentUrl.getHost();
-        String path = currentUrl.getPath();
-    	
-        String absoluteUrl = computeUrl(protocol, host, path, relativeUrl);
-       	return absoluteUrl;
-    }
-    
-    /**
-     * Compute an url based on an host, a path and a resource. 
-     * @param host the host name of the website
-     * @param path the path of the resource containing the relativeUrl
-     * @param relativeUrl the url to append
-     * @return the absolute path to the url
-     */
-    private String computeUrl(String protocol, String host, String path, String relativeUrl) {
-		if(path.endsWith("/"))
-			path = path.substring(0, path.length() - 1);
 
-    	if(relativeUrl.startsWith("/"))
-    		relativeUrl.substring(1);
-
-    	if(relativeUrl.startsWith("./"))
-    		return computeUrl(protocol, host, path, relativeUrl.substring(2));
-    	
-    	if(relativeUrl.startsWith("../")) {
-    		if(StringUtils.isEmpty(path))
-    			return computeUrl(protocol, host, path, relativeUrl.substring(3));
-    		else
-    			return computeUrl(protocol, host, path.substring(0, path.lastIndexOf("/")), relativeUrl.substring(3));
-    	}
-    	
-    	return protocol + "://" + host + path + "/" + relativeUrl;
+        try {
+			return actualUrl.toURI().resolve(relativeUrl).toString();
+			
+		} catch (URISyntaxException e) {
+			// should not happened
+			e.printStackTrace();
+			return null;
+		}
     }
 }
 

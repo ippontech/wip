@@ -28,6 +28,7 @@ import javax.portlet.PortletRequest;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -39,15 +40,18 @@ import java.util.regex.Matcher;
  */
 public abstract class AbstractTransformer implements WIPTransformer {
 	
+	protected final URL actualUrl;
+	
     protected final UrlFactory urlFactory;
     
     protected final PortletRequest portletRequest;
     
     private static final Logger LOG = Logger.getLogger(HttpClientExecutor.class.getName());
     
-    public AbstractTransformer(PortletRequest portletRequest) throws MalformedURLException {
+    public AbstractTransformer(PortletRequest portletRequest, URL actualUrl) throws MalformedURLException {
     	this.portletRequest = portletRequest;
-        urlFactory = new UrlFactory(portletRequest);
+    	this.actualUrl = actualUrl;
+        urlFactory = new UrlFactory(portletRequest, actualUrl);
     }
 
     public String transform(String input) throws SAXException, IOException, TransformerException {

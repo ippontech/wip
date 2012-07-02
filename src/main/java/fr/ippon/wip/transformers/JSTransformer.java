@@ -30,6 +30,7 @@ import javax.xml.transform.TransformerException;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,8 +69,8 @@ public class JSTransformer extends AbstractTransformer {
      * @param request  the Portlet request
      * @param response the Portlet response used to create ResourceURLs
      */
-    public JSTransformer(PortletRequest request, PortletResponse response) throws MalformedURLException {
-        super(request);
+    public JSTransformer(PortletRequest request, PortletResponse response, URL actualUrl) throws MalformedURLException {
+        super(request, actualUrl);
 
         this.response = response;
         this.wipConfig = WIPUtil.getConfiguration(request);
@@ -158,7 +159,7 @@ public class JSTransformer extends AbstractTransformer {
                 String before = input.substring(matcher.start(), matcher.start(group));
                 String url = matcher.group(group);
                 String after = input.substring(matcher.end(group), matcher.end());
-                matcher.appendReplacement(sb, before + urlFactory.createProxyUrl(url, "GET", "AJAX", response) + after);
+               	matcher.appendReplacement(sb, before + urlFactory.createProxyUrl(url, "GET", "AJAX", response) + after);
             }
         }
         matcher.appendTail(sb);

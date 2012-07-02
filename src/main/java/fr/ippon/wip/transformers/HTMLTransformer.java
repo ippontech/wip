@@ -37,6 +37,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * A transformer to process the rewriting of HTML content. This transformer uses
@@ -73,8 +74,8 @@ public class HTMLTransformer extends AbstractTransformer {
      * @param response The response object used to build PortletURL when needed
      * @throws MalformedURLException
      */
-    public HTMLTransformer(PortletRequest request, PortletResponse response) throws MalformedURLException {
-        super(request);
+    public HTMLTransformer(PortletRequest request, PortletResponse response, URL actualURL) throws MalformedURLException {
+        super(request, actualURL);
         this.wipConfig = WIPUtil.getConfiguration(request);
         this.request = request;
         this.response = response;
@@ -111,6 +112,7 @@ public class HTMLTransformer extends AbstractTransformer {
         transformerHandler.getTransformer().setParameter("type", wipConfig.getClippingType());
         transformerHandler.getTransformer().setParameter("request", request);
         transformerHandler.getTransformer().setParameter("response", response);
+        transformerHandler.getTransformer().setParameter("actualUrl", actualUrl);
         transformerHandler.getTransformer().setParameter("wip_divClassName", wipConfig.getPortletDivId());
         transformerHandler.getTransformer().setParameter("retrieveCss", wipConfig.isEnableCssRetrieving());
         transformerHandler.getTransformer().setParameter("rewriteUrl", wipConfig.isEnableUrlRewriting());

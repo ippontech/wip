@@ -22,7 +22,7 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.logging.Logger;
+import java.net.URL;
 
 import javax.portlet.PortletRequest;
 import javax.xml.transform.TransformerException;
@@ -36,12 +36,10 @@ import javax.xml.transform.TransformerException;
  */
 public class JSONTransformer extends AbstractTransformer {
 
-	public JSONTransformer(PortletRequest portletRequest) throws MalformedURLException {
-		super(portletRequest);
+	public JSONTransformer(PortletRequest portletRequest, URL actualUrl) throws MalformedURLException {
+		super(portletRequest, actualUrl);
 	}
 
-	private static final Logger LOG = Logger.getLogger(JSONTransformer.class.getName());
-	
     public String transform(String input) throws SAXException, IOException, TransformerException {
     	super.transform(input);
 

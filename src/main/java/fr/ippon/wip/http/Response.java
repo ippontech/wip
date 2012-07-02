@@ -18,6 +18,7 @@
 
 package fr.ippon.wip.http;
 
+import fr.ippon.wip.state.PortletWindow;
 import fr.ippon.wip.transformers.ActionToRenderTransformer;
 import fr.ippon.wip.util.WIPUtil;
 import org.apache.commons.io.IOUtils;
@@ -25,6 +26,7 @@ import org.apache.commons.io.IOUtils;
 import javax.portlet.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 
@@ -66,7 +68,8 @@ public class Response {
     private void computePortalURL(PortletRequest portletRequest, MimeResponse mimeResponse) {
         try {
             String originalContent = IOUtils.toString(stream, charset);
-            ActionToRenderTransformer transformer = new ActionToRenderTransformer(portletRequest, mimeResponse);
+            PortletWindow windowState = PortletWindow.getInstance(portletRequest);
+            ActionToRenderTransformer transformer = new ActionToRenderTransformer(portletRequest, mimeResponse, new URL(windowState.getActualURL()));
             String transformedContent = transformer.transform(originalContent);
             stream = new ByteArrayInputStream(transformedContent.getBytes(charset));
         } catch (IOException ioe) {

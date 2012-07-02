@@ -22,8 +22,10 @@ import fr.ippon.wip.http.UrlFactory;
 
 import javax.portlet.MimeResponse;
 import javax.portlet.PortletRequest;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * This transformer class must not be used when processing HTTP request/response. It transforms
@@ -33,8 +35,8 @@ import java.net.MalformedURLException;
 public class ActionToRenderTransformer extends AbstractTransformer {
     private final MimeResponse mimeResponse;
 
-    public ActionToRenderTransformer(PortletRequest portletRequest, MimeResponse mimeResponse) throws MalformedURLException {
-        super(portletRequest);
+    public ActionToRenderTransformer(PortletRequest portletRequest, MimeResponse mimeResponse, URL actualUrl) throws MalformedURLException {
+        super(portletRequest, actualUrl);
         this.mimeResponse = mimeResponse;
     }
 

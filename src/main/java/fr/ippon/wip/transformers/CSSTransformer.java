@@ -29,7 +29,7 @@ import javax.xml.transform.TransformerException;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.logging.Level;
+import java.net.URL;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -63,8 +63,8 @@ public class CSSTransformer extends AbstractTransformer {
      * @param response The PortletResponse used to build ResourceURLs
      * @throws MalformedURLException 
      */
-    public CSSTransformer(PortletRequest request, PortletResponse response) throws MalformedURLException {
-        super(request);
+    public CSSTransformer(PortletRequest request, PortletResponse response, URL actualUrl) throws MalformedURLException {
+        super(request, actualUrl);
         this.response = response;
         wipConfig = WIPUtil.getConfiguration(request);
     }
@@ -194,7 +194,7 @@ public class CSSTransformer extends AbstractTransformer {
                     }
                 }
             } catch (IllegalArgumentException e) {
-                LOG.log(Level.INFO, "Error parsing URL in CSS: " + e.getMessage());
+                LOG.warning("Error parsing URL in CSS: " + e.getMessage());
             }
         }
         matcher.appendTail(sb);
