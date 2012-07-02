@@ -1,6 +1,8 @@
 package fr.ippon.wip.config.dao;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +15,7 @@ import fr.ippon.wip.config.WIPConfiguration;
  * @author Yohan Legat
  * 
  */
-public class ConfigurationCacheDAO extends ConfigurationDAODecorator {
+public class ConfigurationCacheDecorator extends ConfigurationDAODecorator {
 
 	// a map that contains the loaded configurations associated with their
 	// names.
@@ -21,15 +23,21 @@ public class ConfigurationCacheDAO extends ConfigurationDAODecorator {
 
 	// a list that contains the name of the configurations.
 	private final List<String> configurationNames;
+	
+	private static final Comparator<String> lowerCaseComparator = new Comparator<String>() {
+		public int compare(String s1, String s2) {
+			return s1.toLowerCase().compareTo(s2.toLowerCase());
+		}
+	};
 
-	public ConfigurationCacheDAO(ConfigurationDAO decoratedDAO) {
+	public ConfigurationCacheDecorator(ConfigurationDAO decoratedDAO) {
 		super(decoratedDAO);
 		configurationNames = super.getConfigurationsNames();
 		cache = new HashMap<String, WIPConfiguration>();
 	}
 
 	@Override
-	public WIPConfiguration create(WIPConfiguration configuration) {
+	public synchronized WIPConfiguration create(WIPConfiguration configuration) {
 		configuration = super.create(configuration);
 		if (configuration == null)
 			return null;
@@ -37,12 +45,13 @@ public class ConfigurationCacheDAO extends ConfigurationDAODecorator {
 		String name = configuration.getName();
 		configurationNames.add(name);
 		cache.put(name, (WIPConfiguration) configuration.clone());
+		Collections.sort(configurationNames, lowerCaseComparator);
 
 		return configuration;
 	}
 
 	@Override
-	public boolean delete(String name) {
+	public synchronized boolean delete(String name) {
 		if (!super.delete(name))
 			return false;
 
@@ -52,17 +61,17 @@ public class ConfigurationCacheDAO extends ConfigurationDAODecorator {
 	}
 
 	@Override
-	public boolean exists(String name) {
+	public synchronized boolean exists(String name) {
 		return configurationNames.contains(name);
 	}
 
 	@Override
-	public List<String> getConfigurationsNames() {
+	public synchronized List<String> getConfigurationsNames() {
 		return new ArrayList<String>(configurationNames);
 	}
 
 	@Override
-	public WIPConfiguration read(String name) {
+	public synchronized WIPConfiguration read(String name) {
 		WIPConfiguration configuration = cache.get(name);
 		if (configuration != null)
 			return (WIPConfiguration) configuration.clone();
@@ -75,7 +84,7 @@ public class ConfigurationCacheDAO extends ConfigurationDAODecorator {
 	}
 
 	@Override
-	public WIPConfiguration update(WIPConfiguration configuration) {
+	public synchronized WIPConfiguration update(WIPConfiguration configuration) {
 		configuration = super.update(configuration);
 		if (configuration != null)
 			cache.put(configuration.getName(), (WIPConfiguration) configuration.clone());

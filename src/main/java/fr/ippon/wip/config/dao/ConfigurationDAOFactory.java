@@ -45,7 +45,7 @@ public class ConfigurationDAOFactory {
 				// set the configuration files location
 				URL url = getClass().getResource("/configurations");
 				String pathConfigFiles = new File(url.toURI()).toString();
-				xmlDAO = new DeployConfigurationDecorator(new ConfigurationCacheDAO(new XMLConfigurationDAO(pathConfigFiles)));
+				xmlDAO = new DeployConfigurationDecorator(new ConfigurationCacheDecorator(new XMLConfigurationDAO(pathConfigFiles)));
 
 			} catch (URISyntaxException e) {
 				e.printStackTrace();
