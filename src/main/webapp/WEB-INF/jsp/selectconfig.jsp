@@ -27,6 +27,20 @@
     %>
 </table>
 
+<% boolean debugMode = WIPUtil.isDebugMode(pReq);%>
+<a href="<portlet:actionURL>
+	<portlet:param	name="<%=Attributes.DEBUG_MODE.name() %>"
+					value="<%=Boolean.toString(!debugMode)%>" />
+	</portlet:actionURL>">
+	
+	<%if(debugMode) { %>
+		<fmt:message key="wip.config.debug.desactivate" />
+	<%} else { %>
+		<fmt:message key="wip.config.debug.activate" />
+	<%}%>
+</a>
+
+
 <style>
 
 	.wip_table {

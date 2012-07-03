@@ -2,33 +2,33 @@ package fr.ippon.wip.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
+import fr.ippon.wip.http.hc.HttpClientExecutor;
+
 public enum WIPLogging {
 
 	INSTANCE;
 
+	private static final Logger LOG = Logger.getLogger(HttpClientExecutor.class.getName());
+	
 	private FileHandler accessFileHandler;
 
-	private FileHandler transformFileHandler;
+	private String resource;
 
 	private int acc;
-
-	private Map<String, File> logMap;
+	
+	private ThreadLocal<FileHandler> localTransformFileHandler = new ThreadLocal<FileHandler>();
 
 	private WIPLogging() {
 		try {
-			logMap = new HashMap<String, File>();
 			File logDirectory = new File(System.getProperty("user.home") + "/wip");
-			// FileHandler launch an exception if parent path doesn't exist
+			// FileHandler launch an exception if parent path doesn't exist, so we make sure it exists
 			if (!logDirectory.exists() || !logDirectory.isDirectory())
 				logDirectory.mkdirs();
 
@@ -44,41 +44,48 @@ public enum WIPLogging {
 		}
 	}
 
-	public void close() {
+	public void closeAll() {
 		accessFileHandler.close();
-		if (transformFileHandler != null)
+		closeTransformFileHandler();
+	}
+	
+	public void closeTransformFileHandler() {
+		FileHandler transformFileHandler = localTransformFileHandler.get();
+		if(transformFileHandler != null) {
 			transformFileHandler.close();
+			localTransformFileHandler.set(null);
+		}
 	}
-
-	public File getLogFileByUrl(String url) {
-		return logMap.get(url);
-	}
-
-	public List<String> getUrlsLogged() {
-		List<String> urls = new ArrayList<String>(logMap.keySet());
-		Collections.sort(urls);
-
-		return urls;
-	}
-
+	
 	public void newFileHandlerTransformer(String url) {
-		try {
-			if (transformFileHandler != null)
-				transformFileHandler.close();
+		url = (url.endsWith("/")) ? url.substring(0, url.length() - 1) : url;
+		resource = url.substring(url.lastIndexOf("/") + 1);
+		acc = 1;
+	}
+	
+	public void logInTransformFileHandler(Class className, String log) {
+		FileHandler transformFileHandler = localTransformFileHandler.get();
+		if(transformFileHandler == null)
+			nextFileHandlerTransformer();
+		
+		Logger.getLogger(className.getName() + "." + Thread.currentThread().getId()).finest(log);
+	}
 
-			transformFileHandler = new FileHandler("%h/wip/transform_" + acc + ".log", true);
+	private synchronized void nextFileHandlerTransformer() {
+		try {
+			NumberFormat format = new DecimalFormat("000");
+			String number = format.format(acc);
+			FileHandler transformFileHandler = new FileHandler("%h/wip/" + resource + "_" + number + ".log", true);
 			transformFileHandler.setLevel(Level.ALL);
 			transformFileHandler.setFormatter(new SimpleFormatter());
-			Logger.getLogger("fr.ippon.wip.http.hc.HttpClientExecutor").addHandler(transformFileHandler);
-			Logger.getLogger("fr.ippon.wip.http.hc.HttpClientExecutor").setLevel(Level.ALL);
-			Logger.getLogger("fr.ippon.wip.transformers.AbstractTransformer").addHandler(transformFileHandler);
-			Logger.getLogger("fr.ippon.wip.transformers.AbstractTransformer").setLevel(Level.ALL);
+			localTransformFileHandler.set(transformFileHandler);
 
-			logMap.put(url, new File(System.getProperty("user.home") + "/wip/transform_" + acc + ".log"));
+			Logger.getLogger("fr.ippon.wip.http.hc.HttpClientExecutor." + Thread.currentThread().getId()).addHandler(transformFileHandler);
+			Logger.getLogger("fr.ippon.wip.http.hc.HttpClientExecutor." + Thread.currentThread().getId()).setLevel(Level.ALL);
+			Logger.getLogger("fr.ippon.wip.transformers.AbstractTransformer." + Thread.currentThread().getId()).addHandler(transformFileHandler);
+			Logger.getLogger("fr.ippon.wip.transformers.AbstractTransformer." + Thread.currentThread().getId()).setLevel(Level.ALL);
 			acc++;
 
-		} catch (SecurityException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

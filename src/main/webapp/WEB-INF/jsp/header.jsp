@@ -54,15 +54,6 @@
 <fmt:setLocale value="${localeCode}" scope="session"/>
 <fmt:setBundle basename="content.Language"/>
 
-<div class="config_menu">
-    <a href="<portlet:actionURL><portlet:param name="<%= Attributes.PAGE.name() %>" value="<%= Pages.SELECT_CONFIG.name() %>"/></portlet:actionURL>">
-        <fmt:message key="wip.config.existing"/>
-    </a>
-    <a href="<portlet:actionURL><portlet:param name="<%= Attributes.PAGE.name() %>" value="<%= Pages.LOG.name() %>"/></portlet:actionURL>">
-        <fmt:message key="wip.config.log"/>
-    </a>
-</div>
-
 <style>
     #wipconfig_error {
         background: url(<%= request.getContextPath() + "/img/alert.png" %>) no-repeat scroll 6px 50% #FFC;

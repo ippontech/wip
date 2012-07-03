@@ -31,14 +31,9 @@ import fr.ippon.wip.util.WIPUtil;
 
 import javax.portlet.*;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -115,7 +110,7 @@ public class WIPortlet extends GenericPortlet {
 		
 		PortletWindow windowState = PortletWindow.getInstance(request);
 		
-		// reset if the used configuration have been deleted or its url changed
+		// reset if the used configuration has changed
 		if(windowState.getConfiguration().getTimestamp() != configuration.getTimestamp()) {
 			PortletWindow.clearInstance(request);
 			windowState = PortletWindow.getInstance(request);
@@ -137,6 +132,9 @@ public class WIPortlet extends GenericPortlet {
 
 			// TODO: copy global parameters from PortletRequest ?
 			
+            if(WIPUtil.isDebugMode(request))
+            	WIPLogging.INSTANCE.newFileHandlerTransformer(wipRequest.getRequestedURL());
+
 			// Execute request
 			wipResponse = executor.execute(wipRequest, request, response);
 		}
@@ -153,6 +151,8 @@ public class WIPortlet extends GenericPortlet {
 			// Print content
 			wipResponse.printResponseContent(request, response, windowState.isAuthenticated());
 		}
+		
+		WIPLogging.INSTANCE.closeTransformFileHandler();
 	}
 
 	/**
@@ -170,21 +170,9 @@ public class WIPortlet extends GenericPortlet {
 		WIPConfiguration wipConfig = WIPUtil.getConfiguration(request);
 
 		if (request.getPortletMode().equals(PortletMode.EDIT)) {
-			String page = request.getParameter(Attributes.PAGE.name());
-			if(!StringUtils.isEmpty(page)) {
-				session.setAttribute(Attributes.PAGE.name(), Pages.valueOf(page));
-				return;
-			}
-			
 			String debugMode = request.getParameter(Attributes.DEBUG_MODE.name());
 			if(!StringUtils.isEmpty(debugMode)) {
 				session.setAttribute(Attributes.DEBUG_MODE.name(), Boolean.parseBoolean(debugMode));
-				return;
-			}
-			
-			String exportLog = (String) request.getAttribute(Attributes.ACTION_EXPORT_LOG.name());
-			if(!StringUtils.isEmpty(exportLog)) {
-				// export du fichier de log au client
 				return;
 			}
 			
@@ -217,6 +205,10 @@ public class WIPortlet extends GenericPortlet {
 		}
 
 		Request wipRequest = new Request(request);
+		
+        if(WIPUtil.isDebugMode(request))
+        	WIPLogging.INSTANCE.newFileHandlerTransformer(wipRequest.getRequestedURL());
+
 		Response wipResponse = executor.execute(wipRequest, request, response);
 
 		// Check if remote URI must be proxied
@@ -242,6 +234,8 @@ public class WIPortlet extends GenericPortlet {
 				response.sendRedirect(request.getContextPath() + "/ResourceHandler?&uuid=" + uuid.toString());
 			}
 		}
+		
+		WIPLogging.INSTANCE.closeTransformFileHandler();
 	}
 
 	/**
@@ -256,19 +250,6 @@ public class WIPortlet extends GenericPortlet {
 	public void serveResource(ResourceRequest request, ResourceResponse response) throws PortletException, IOException {
 		checkIsConfigurationSet(request);
 		
-		if(request.getPortletMode().equals(PortletMode.EDIT)) {
-			String logName = request.getParameter(Attributes.ACTION_EXPORT_LOG.name());
-			
-			response.setContentType("text/plain");
-			response.setProperty("Content-Disposition", "attachment; filename=" + logName + ".log");
-			File logFile = WIPLogging.INSTANCE.getLogFileByUrl(logName);
-			OutputStream out = response.getPortletOutputStream();
-			InputStream in = FileUtils.openInputStream(logFile);
-			IOUtils.copy(in, out);
-			out.close();
-			return;
-		}
-		
 		// Create request
 		Request wipRequest = new Request(request);
 
@@ -277,6 +258,8 @@ public class WIPortlet extends GenericPortlet {
 
 		// Print content
 		wipResponse.printResponseContent(request, response, false);
+		
+		WIPLogging.INSTANCE.closeTransformFileHandler();
 	}
 
 	/**
@@ -308,7 +291,7 @@ public class WIPortlet extends GenericPortlet {
 	public void destroy() {
 		super.destroy();
 		executor.destroy();
-		WIPLogging.INSTANCE.close();
+		WIPLogging.INSTANCE.closeAll();
 	}
 
 	private void manageAuthentication(ActionRequest actionRequest, ActionResponse actionResponse) {

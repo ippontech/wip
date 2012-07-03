@@ -22,7 +22,6 @@ public enum Pages {
 
 	SELECT_CONFIG("selectconfig", "/WEB-INF/jsp/"),
 	AUTH("auth", "/WEB-INF/jsp/"),
-	LOG("logs", "/WEB-INF/jsp/"),
 
 	EXISTING_CONFIG("existingconfig"),
 	SAVE_CONFIG("saveconfig"),

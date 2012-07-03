@@ -87,6 +87,9 @@ public class HttpClientExecutor implements HttpExecutor {
      * @throws IOException
      */
     public Response execute(Request request, PortletRequest portletRequest, PortletResponse portletResponse) throws IOException {
+        if(WIPUtil.isDebugMode(portletRequest))
+        	WIPLogging.INSTANCE.logInTransformFileHandler(HttpClientExecutor.class, request.getRequestedURL());
+
         Response response = null;
         HttpClientResourceManager resourceManager = HttpClientResourceManager.getInstance();
         try {
@@ -101,9 +104,6 @@ public class HttpClientExecutor implements HttpExecutor {
             else
                 httpRequest = createGetRequest(request);
 
-            if(WIPUtil.isDebugMode(portletRequest))
-            	WIPLogging.INSTANCE.newFileHandlerTransformer(request.getRequestedURL());
-            
             // Execute the request
             HttpResponse httpResponse = null;
             try {
@@ -147,16 +147,6 @@ public class HttpClientExecutor implements HttpExecutor {
                 
                 // Create Response object from HttpResponse
                 response = createResponse(httpResponse, actualUrl, portletResponse instanceof MimeResponse);
-                
-                // logging if enabled
-                if(WIPUtil.isDebugMode(portletRequest) && !response.isBinary()) {
-                    StringWriter writer = new StringWriter();
-                    InputStream stream = response.getStream();
-                    IOUtils.copy(stream, writer);
-                    String finalContent = writer.toString();
-                    stream.reset();
-                    LOG.fine(finalContent + "\n");
-                }
 
                 String cache = cacheUsed ? "[ WITH CACHE ]" : "";
                 StringBuffer buffer = new StringBuffer();
@@ -166,7 +156,17 @@ public class HttpClientExecutor implements HttpExecutor {
                 	buffer.append(header.getName() + " : " + header.getValue() + "\n");
 
                 LOG.log(Level.INFO, buffer.toString());
-                
+
+                // logging if enabled
+                if(WIPUtil.isDebugMode(portletRequest) && !response.isBinary()) {
+                    StringWriter writer = new StringWriter();
+                    InputStream stream = response.getStream();
+                    IOUtils.copy(stream, writer);
+                    String finalContent = writer.toString();
+                    stream.reset();
+                    WIPLogging.INSTANCE.logInTransformFileHandler(HttpClientExecutor.class, finalContent + "\n");
+                }
+
             } catch (RuntimeException rte) {
                	LOG.log(Level.WARNING, "[ ERROR ] \"" + httpRequest.getMethod() + " " + request.getRequestedURL() + " " + httpRequest.getProtocolVersion() + "\" " + httpResponse.getStatusLine().getStatusCode());
                 if (httpResponse != null && httpResponse.getEntity() != null) {

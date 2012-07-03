@@ -1,7 +1,7 @@
 package fr.ippon.wip.http;
 
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
+import java.net.URI;
 import java.net.URL;
 import java.util.logging.Logger;
 
@@ -121,14 +121,7 @@ public class UrlFactory {
         if (StringUtils.isEmpty(relativeUrl) || relativeUrl.startsWith("http://") || relativeUrl.startsWith("https://"))
             return relativeUrl;
 
-        try {
-			return actualUrl.toURI().resolve(relativeUrl).toString();
-			
-		} catch (URISyntaxException e) {
-			// should not happened
-			e.printStackTrace();
-			return null;
-		}
+       	return URI.create(actualUrl.toString()).resolve(relativeUrl).toString();
     }
 }
 
