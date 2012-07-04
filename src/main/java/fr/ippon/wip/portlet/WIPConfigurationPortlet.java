@@ -233,6 +233,9 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 			}
 		} else if (clippingType.equals("xslt")) {
 			String xsltClipping = request.getParameter("xsltClipping");
+			if(StringUtils.isEmpty(xsltClipping))
+				xsltClipping = configurationDAO.getDefaultConfiguration().getXsltClipping();
+			
 			wipConfig.setXsltClipping(xsltClipping);
 			wipConfig.setClippingType(clippingType);
 			configurationDAO.update(wipConfig);

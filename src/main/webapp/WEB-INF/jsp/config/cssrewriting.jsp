@@ -50,7 +50,7 @@
                     <option value="JS_REWRITING"><fmt:message key="wip.config.jsrewriting"/></option>
                     <option value="LTPA_AUTH"><fmt:message key="wip.config.ltpaauth"/></option>
                 </select>
-            </form>>
+            </form>
         </div>
     </div>
     <form method="POST" action="<portlet:actionURL/>" class="wip_form" name="wipform">

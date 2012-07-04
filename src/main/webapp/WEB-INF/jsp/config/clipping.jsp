@@ -123,7 +123,7 @@
     }
 
     function reset() {
-        window.document.getElementById('xsltClipping').value = '';
+    	myCodeMirror.setValue('');
         window.document.wipform.submit();
     }
 
