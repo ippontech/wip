@@ -9,14 +9,22 @@
                 standalone="no" omit-xml-declaration="yes" />
 
     <xsl:template name="body-clipping">
-        <xsl:choose>
-            <xsl:when test="$type = 'xpath'">
-                <xsl:apply-templates select=" dyn:evaluate( $xpath )"/>
-            </xsl:when>
-            <xsl:otherwise>
-            	<!-- insert code here for xslt clipping -->
-            	<xsl:apply-templates/>
-            </xsl:otherwise>
+	<xsl:choose>
+		<xsl:when test="$type = 'none'">
+			<xsl:apply-templates/>
+		</xsl:when>
+		
+		<xsl:otherwise>
+			<xsl:choose>
+            		<xsl:when test="$type = 'xpath'">
+            			<xsl:apply-templates select=" dyn:evaluate( $xpath )"/>
+	            	</xsl:when>
+	            	
+	            	<xsl:otherwise>
+        	    		<!-- insert code here for xslt clipping -->
+        	    	</xsl:otherwise>
+			</xsl:choose>
+		</xsl:otherwise>
         </xsl:choose>
     </xsl:template>
 
