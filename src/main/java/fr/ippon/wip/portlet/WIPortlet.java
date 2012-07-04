@@ -133,7 +133,7 @@ public class WIPortlet extends GenericPortlet {
 			// TODO: copy global parameters from PortletRequest ?
 			
             if(WIPUtil.isDebugMode(request))
-            	WIPLogging.INSTANCE.newFileHandlerTransformer(wipRequest.getRequestedURL());
+            	WIPLogging.INSTANCE.nextResource(wipRequest.getRequestedURL());
 
 			// Execute request
 			wipResponse = executor.execute(wipRequest, request, response);
@@ -207,7 +207,7 @@ public class WIPortlet extends GenericPortlet {
 		Request wipRequest = new Request(request);
 		
         if(WIPUtil.isDebugMode(request))
-        	WIPLogging.INSTANCE.newFileHandlerTransformer(wipRequest.getRequestedURL());
+        	WIPLogging.INSTANCE.nextResource(wipRequest.getRequestedURL());
 
 		Response wipResponse = executor.execute(wipRequest, request, response);
 

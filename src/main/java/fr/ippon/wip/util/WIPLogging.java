@@ -9,26 +9,37 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-import fr.ippon.wip.http.hc.HttpClientExecutor;
-
+/**
+ * Logging managment singleton for access log and transformation logs.
+ * 
+ * @author Yohan Legat
+ * 
+ */
 public enum WIPLogging {
 
+	// the singleton instance
 	INSTANCE;
 
-	private static final Logger LOG = Logger.getLogger(HttpClientExecutor.class.getName());
-	
+	// the access log file handler
 	private FileHandler accessFileHandler;
 
+	// the resource retrieved
 	private String resource;
 
+	// accumulator used for creating unique file handler
 	private int acc;
-	
+
+	/*
+	 * Several threads can be started when serving dependances of a resource, so
+	 * transform log file handlers have to be linked to those threads.
+	 */
 	private ThreadLocal<FileHandler> localTransformFileHandler = new ThreadLocal<FileHandler>();
 
 	private WIPLogging() {
 		try {
 			File logDirectory = new File(System.getProperty("user.home") + "/wip");
-			// FileHandler launch an exception if parent path doesn't exist, so we make sure it exists
+			// FileHandler launch an exception if parent path doesn't exist, so
+			// we make sure it exists
 			if (!logDirectory.exists() || !logDirectory.isDirectory())
 				logDirectory.mkdirs();
 
@@ -44,33 +55,44 @@ public enum WIPLogging {
 		}
 	}
 
+	/**
+	 * Close the log access file handler
+	 */
 	public void closeAll() {
 		accessFileHandler.close();
-		closeTransformFileHandler();
 	}
-	
+
+	/**
+	 * Close the transform file handler, if any, associated to the thread
+	 * calling this method
+	 */
 	public void closeTransformFileHandler() {
 		FileHandler transformFileHandler = localTransformFileHandler.get();
-		if(transformFileHandler != null) {
+		if (transformFileHandler != null) {
 			transformFileHandler.close();
 			localTransformFileHandler.set(null);
 		}
 	}
-	
-	public void newFileHandlerTransformer(String url) {
-		url = (url.endsWith("/")) ? url.substring(0, url.length() - 1) : url;
-		resource = url.substring(url.lastIndexOf("/") + 1);
-		acc = 1;
-	}
-	
+
+	/**
+	 * Log information into the transform log file handler linked to the thread
+	 * calling this method.
+	 * 
+	 * @param className
+	 * @param log
+	 */
 	public void logInTransformFileHandler(Class className, String log) {
 		FileHandler transformFileHandler = localTransformFileHandler.get();
-		if(transformFileHandler == null)
+		if (transformFileHandler == null)
 			nextFileHandlerTransformer();
-		
+
 		Logger.getLogger(className.getName() + "." + Thread.currentThread().getId()).finest(log);
 	}
 
+	/**
+	 * Create a new transform log file handler associated to the resource and to
+	 * the thread calling this method
+	 */
 	private synchronized void nextFileHandlerTransformer() {
 		try {
 			NumberFormat format = new DecimalFormat("000");
@@ -89,5 +111,17 @@ public enum WIPLogging {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * Change the state of this instance so that next transform log file
+	 * handlers created will be named after the name of the resource
+	 * 
+	 * @param url
+	 */
+	public void nextResource(String url) {
+		url = (url.endsWith("/")) ? url.substring(0, url.length() - 1) : url;
+		resource = url.substring(url.lastIndexOf("/") + 1);
+		acc = 1;
 	}
 }
