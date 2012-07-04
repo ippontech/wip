@@ -543,13 +543,9 @@ public class WIPConfiguration implements Cloneable {
 	 *            The list of URL
 	 */
 	public void setDomainsToProxy(List<String> domainsToProxy) {
-		/*
-		 * If the parameter has been built with Arrays.asList, it is not of the
-		 * type of ArrayList but Arrays.ArrayList. This can lead to problems, in
-		 * particular with XStream library. So we make a defensive copy in
-		 * ArrayList.
-		 */
-		this.domainsToProxy = new ArrayList<String>(domainsToProxy);
+		this.domainsToProxy = new ArrayList<String>();
+		for(String domain : domainsToProxy)
+			this.domainsToProxy.add(domain.trim());
 	}
 
 	/**
@@ -633,13 +629,9 @@ public class WIPConfiguration implements Cloneable {
 	 *            the list of URLs to be rewritten
 	 */
 	public void setJavascriptUrls(List<String> javascriptUrls) {
-		/*
-		 * If the parameter has been built with Arrays.asList, it is not of the
-		 * type of ArrayList but Arrays.ArrayList. This can lead to problems, in
-		 * particular with XStream library. So we make a defensive copy in
-		 * ArrayList.
-		 */
-		this.javascriptUrls = new ArrayList<String>(javascriptUrls);
+		this.javascriptUrls = new ArrayList<String>();
+		for(String url : javascriptUrls)
+			this.javascriptUrls.add(url.trim());
 	}
 
 	/**
@@ -751,14 +743,9 @@ public class WIPConfiguration implements Cloneable {
 	 *            the list of URLs
 	 */
 	public void setScriptsToDelete(List<String> scriptsToDelete) {
-		/*
-		 * If the parameter has been built with Arrays.asList, it is not of the
-		 * type of ArrayList but Arrays.ArrayList. This can lead to problems, in
-		 * particular with XStream library. So we make a defensive copy in
-		 * ArrayList.
-		 */
-		this.scriptsToDelete = new ArrayList<String>(scriptsToDelete);
-
+		this.scriptsToDelete = new ArrayList<String>();
+		for(String script : scriptsToDelete)
+			this.scriptsToDelete.add(script.trim());
 	}
 
 	/**
@@ -768,13 +755,9 @@ public class WIPConfiguration implements Cloneable {
 	 *            the list of URLs
 	 */
 	public void setScriptsToIgnore(List<String> scriptsToIgnore) {
-		/*
-		 * If the parameter has been built with Arrays.asList, it is not of the
-		 * type of ArrayList but Arrays.ArrayList. This can lead to problems, in
-		 * particular with XStream library. So we make a defensive copy in
-		 * ArrayList.
-		 */
-		this.scriptsToIgnore = new ArrayList<String>(scriptsToIgnore);
+		this.scriptsToIgnore = new ArrayList<String>();
+		for(String script : scriptsToIgnore)
+			this.scriptsToIgnore.add(script.trim());
 	}
 
 	public void setTimestamp(long timestamp) {

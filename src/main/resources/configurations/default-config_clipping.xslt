@@ -14,7 +14,8 @@
                 <xsl:apply-templates select=" dyn:evaluate( $xpath )"/>
             </xsl:when>
             <xsl:otherwise>
-                <xsl:apply-templates/>
+            	<!-- insert code here for xslt clipping -->
+            	<xsl:apply-templates/>
             </xsl:otherwise>
         </xsl:choose>
     </xsl:template>

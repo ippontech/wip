@@ -55,7 +55,7 @@ public abstract class AbstractTransformer implements WIPTransformer {
 
     public String transform(String input) throws SAXException, IOException, TransformerException {
     	if(WIPUtil.isDebugMode(portletRequest))
-    		WIPLogging.INSTANCE.logInTransformFileHandler(AbstractTransformer.class, input + "\n");
+    		WIPLogging.INSTANCE.logInTransformFileHandler(AbstractTransformer.class, "From " + getClass().getName() + ":\n" + input + "\n");
     	
     	return input;
     }
