@@ -133,7 +133,7 @@ public class WIPortlet extends GenericPortlet {
 			// TODO: copy global parameters from PortletRequest ?
 			
             if(WIPUtil.isDebugMode(request))
-            	WIPLogging.INSTANCE.nextResource(wipRequest.getRequestedURL());
+            	WIPLogging.INSTANCE.resetForResource(wipRequest.getRequestedURL());
 
 			// Execute request
 			wipResponse = executor.execute(wipRequest, request, response);
@@ -152,7 +152,7 @@ public class WIPortlet extends GenericPortlet {
 			wipResponse.printResponseContent(request, response, windowState.isAuthenticated());
 		}
 		
-		WIPLogging.INSTANCE.closeTransformFileHandler();
+		WIPLogging.INSTANCE.closeTransformLogFile();
 	}
 
 	/**
@@ -207,7 +207,7 @@ public class WIPortlet extends GenericPortlet {
 		Request wipRequest = new Request(request);
 		
         if(WIPUtil.isDebugMode(request))
-        	WIPLogging.INSTANCE.nextResource(wipRequest.getRequestedURL());
+        	WIPLogging.INSTANCE.resetForResource(wipRequest.getRequestedURL());
 
 		Response wipResponse = executor.execute(wipRequest, request, response);
 
@@ -235,7 +235,7 @@ public class WIPortlet extends GenericPortlet {
 			}
 		}
 		
-		WIPLogging.INSTANCE.closeTransformFileHandler();
+		WIPLogging.INSTANCE.closeTransformLogFile();
 	}
 
 	/**
@@ -259,7 +259,7 @@ public class WIPortlet extends GenericPortlet {
 		// Print content
 		wipResponse.printResponseContent(request, response, false);
 		
-		WIPLogging.INSTANCE.closeTransformFileHandler();
+		WIPLogging.INSTANCE.closeTransformLogFile();
 	}
 
 	/**
@@ -291,7 +291,7 @@ public class WIPortlet extends GenericPortlet {
 	public void destroy() {
 		super.destroy();
 		executor.destroy();
-		WIPLogging.INSTANCE.closeAll();
+		WIPLogging.INSTANCE.closeAccessLogFile();
 	}
 
 	private void manageAuthentication(ActionRequest actionRequest, ActionResponse actionResponse) {

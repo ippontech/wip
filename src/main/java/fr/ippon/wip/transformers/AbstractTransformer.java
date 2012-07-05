@@ -19,7 +19,6 @@
 package fr.ippon.wip.transformers;
 
 import fr.ippon.wip.http.UrlFactory;
-import fr.ippon.wip.http.hc.HttpClientExecutor;
 import fr.ippon.wip.util.WIPLogging;
 import fr.ippon.wip.util.WIPUtil;
 
@@ -30,8 +29,6 @@ import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 
 /**
@@ -55,7 +52,7 @@ public abstract class AbstractTransformer implements WIPTransformer {
 
     public String transform(String input) throws SAXException, IOException, TransformerException {
     	if(WIPUtil.isDebugMode(portletRequest))
-    		WIPLogging.INSTANCE.logInTransformFileHandler(AbstractTransformer.class, "From " + getClass().getName() + ":\n" + input + "\n");
+    		WIPLogging.INSTANCE.logTransform(input);
     	
     	return input;
     }

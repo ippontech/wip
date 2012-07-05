@@ -88,7 +88,7 @@ public class HttpClientExecutor implements HttpExecutor {
      */
     public Response execute(Request request, PortletRequest portletRequest, PortletResponse portletResponse) throws IOException {
         if(WIPUtil.isDebugMode(portletRequest))
-        	WIPLogging.INSTANCE.logInTransformFileHandler(HttpClientExecutor.class, request.getRequestedURL());
+        	WIPLogging.INSTANCE.logTransform(request.getRequestedURL());
 
         Response response = null;
         HttpClientResourceManager resourceManager = HttpClientResourceManager.getInstance();
@@ -155,7 +155,7 @@ public class HttpClientExecutor implements HttpExecutor {
                 for(Header header : httpResponse.getAllHeaders())
                 	buffer.append(header.getName() + " : " + header.getValue() + "\n");
 
-                LOG.log(Level.FINE, buffer.toString());
+                LOG.log(Level.INFO, buffer.toString());
 
                 // logging if enabled
                 if(WIPUtil.isDebugMode(portletRequest) && !response.isBinary()) {
@@ -164,7 +164,7 @@ public class HttpClientExecutor implements HttpExecutor {
                     IOUtils.copy(stream, writer);
                     String finalContent = writer.toString();
                     stream.reset();
-                    WIPLogging.INSTANCE.logInTransformFileHandler(HttpClientExecutor.class, finalContent + "\n");
+                    WIPLogging.INSTANCE.logTransform(finalContent + "\n");
                 }
 
             } catch (RuntimeException rte) {
