@@ -155,7 +155,7 @@ public class HttpClientExecutor implements HttpExecutor {
                 for(Header header : httpResponse.getAllHeaders())
                 	buffer.append(header.getName() + " : " + header.getValue() + "\n");
 
-                LOG.log(Level.INFO, buffer.toString());
+                LOG.log(Level.FINE, buffer.toString());
 
                 // logging if enabled
                 if(WIPUtil.isDebugMode(portletRequest) && !response.isBinary()) {

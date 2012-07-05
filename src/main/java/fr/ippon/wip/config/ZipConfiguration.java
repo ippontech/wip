@@ -95,7 +95,7 @@ public class ZipConfiguration {
 		XMLConfigurationDAO xmlConfigurationDAO = new XMLConfigurationDAO(FileUtils.getTempDirectoryPath());
 
 		/*
-		 * a configuration with the same name may already have been unzipped in
+		 * a configuration with the same name may already has been unzipped in
 		 * the temp directory, so we try to delete it for avoiding name
 		 * modification (see ConfigurationDAO.correctConfigurationName).
 		 */

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,6 +48,8 @@ public enum WIPLogging {
 			accessFileHandler.setLevel(Level.INFO);
 			accessFileHandler.setFormatter(new SimpleFormatter());
 			Logger.getLogger("fr.ippon.wip.http.hc").addHandler(accessFileHandler);
+			
+			Logger.getLogger("fr.ippon.wip").addHandler(new ConsoleHandler());
 
 		} catch (SecurityException e) {
 			e.printStackTrace();
