@@ -35,6 +35,7 @@ import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.impl.client.cache.CacheConfig;
 import org.apache.http.impl.client.cache.CachingHttpClient;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
@@ -94,6 +95,9 @@ public class HttpClientResourceManager {
             connectionManager.setMaxTotal(100);
             DefaultHttpClient defaultHttpClient = new DefaultHttpClient(connectionManager);
 
+            // automatically redirects all HEAD, GET and POST requests
+            defaultHttpClient.setRedirectStrategy(new LaxRedirectStrategy());
+            
             // TODO add Ehcache configuration
             //Ehcache ehCache = CacheManager.getInstance().addCacheIfAbsent("wip.shared.cached");
             //EhcacheHttpCacheStorage cacheStorage = new EhcacheHttpCacheStorage (ehCache);
