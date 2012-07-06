@@ -25,7 +25,6 @@ import fr.ippon.wip.state.PortletWindow;
 import fr.ippon.wip.util.WIPLogging;
 import fr.ippon.wip.util.WIPUtil;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.http.*;
 import org.apache.http.auth.*;
 import org.apache.http.client.CredentialsProvider;
@@ -36,6 +35,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.cache.CachingHttpClient;
 import org.apache.http.message.BasicNameValuePair;
@@ -50,8 +50,7 @@ import javax.portlet.PortletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringBufferInputStream;
-import java.io.StringWriter;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -169,11 +168,14 @@ public class HttpClientExecutor implements HttpExecutor {
                     WIPLogging.INSTANCE.logTransform(new String(responseBody) + "\n");
 
             } catch (RuntimeException rte) {
-               	LOG.log(Level.WARNING, "[ ERROR ] \"" + httpRequest.getMethod() + " " + request.getRequestedURL() + " " + httpRequest.getProtocolVersion() + "\" " + httpResponse.getStatusLine().getStatusCode());
+               	LOG.log(Level.WARNING, "[ ERROR ] \"" + httpRequest.getMethod() + " " + request.getRequestedURL() + " " + httpRequest.getProtocolVersion() + "\" " + httpResponse.getStatusLine().getStatusCode(), rte);
                 throw rte;
             }
             
-        } finally {
+        } catch (URISyntaxException e) {
+			LOG.log(Level.WARNING, "ERROR while creating URI", e);
+			
+		} finally {
             if (httpResponse != null && responseEntity != null)
                 EntityUtils.consume(responseEntity);
             
@@ -257,24 +259,18 @@ public class HttpClientExecutor implements HttpExecutor {
 
         return postRequest;
     }
+    
+    private HttpUriRequest createGetRequest(Request request) throws URISyntaxException {
+    	URIBuilder uriBuilder = new URIBuilder(request.getRequestedURL());
+    	Map<String, String[]> paramMap = request.getParameterMap();
+    	if(paramMap == null)
+    		return new HttpGet(uriBuilder.build());
 
-    private HttpUriRequest createGetRequest(Request request) {
-        String uri = request.getRequestedURL();
+   		for (Map.Entry<String, String[]> entry : paramMap.entrySet())
+   			for (String value : entry.getValue())
+   				uriBuilder.addParameter(entry.getKey(), value);
 
-        Map<String, String[]> paramMap = request.getParameterMap();
-
-        if (paramMap != null && paramMap.size() > 0) {
-            String prefix = uri.contains("?") ? "&" : "?";
-            List<NameValuePair> httpParams = new LinkedList<NameValuePair>();
-            for (Map.Entry<String, String[]> entry : paramMap.entrySet()) {
-                for (String value : entry.getValue()) {
-                    uri += prefix + entry.getKey() + "=" + value;
-                    prefix = "&";
-                }
-            }
-        }
-
-        return new HttpGet(uri);
+   		return new HttpGet(uriBuilder.build());
     }
 
     private Response createResponse(HttpResponse httpResponse, byte[] responseBody, String url, boolean portalUrlComputed) throws IOException {
