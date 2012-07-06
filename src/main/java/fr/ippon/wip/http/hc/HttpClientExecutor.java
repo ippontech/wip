@@ -47,8 +47,10 @@ import javax.portlet.MimeResponse;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringBufferInputStream;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -91,13 +93,15 @@ public class HttpClientExecutor implements HttpExecutor {
         	WIPLogging.INSTANCE.logTransform(request.getRequestedURL());
 
         Response response = null;
+        HttpResponse httpResponse = null;
+        HttpEntity responseEntity = null;
         HttpClientResourceManager resourceManager = HttpClientResourceManager.getInstance();
         try {
             // Get Apache HttpComponents resources from ResourceManager
             HttpClient client = resourceManager.getHttpClient(portletRequest);
             HttpContext context = resourceManager.initExecutionContext(portletRequest, portletResponse, request);
             HttpUriRequest httpRequest;
-
+            
             // Create HttpRequest object
             if (request.getHttpMethod() == Request.HttpMethod.POST)
                 httpRequest = createPostRequest(request);
@@ -105,16 +109,19 @@ public class HttpClientExecutor implements HttpExecutor {
                 httpRequest = createGetRequest(request);
 
             // Execute the request
-            HttpResponse httpResponse = null;
             try {
                 httpResponse = client.execute(httpRequest, context);
+                responseEntity = httpResponse.getEntity();
+                // the HttpEntity content may be set as non repeatable, meaning it can be read only once
+                byte[] responseBody = (responseEntity == null) ? null : EntityUtils.toByteArray(responseEntity);
                 
                 // Check if authentication is requested by remote host
                 PortletWindow portletWindow = PortletWindow.getInstance(portletRequest);
                 int statusCode = httpResponse.getStatusLine().getStatusCode();
-                List<String> schemes;
+                
                 // TODO: process proxy auth requests HttpStatus.SC_PROXY_AUTHENTICATION_REQUIRED (407) ?
                 // TODO: also needs a custom implementation of RoutePlanner to select proxy per-application ?
+                List<String> schemes = null;
                 if (statusCode == HttpStatus.SC_UNAUTHORIZED) {
                     // Check what authentication scheme are required
                     schemes = new ArrayList<String>();
@@ -122,19 +129,19 @@ public class HttpClientExecutor implements HttpExecutor {
                         String headerValue = authHeader.getValue();
                         schemes.add(headerValue.split(" ")[0]);
                     }
-                    portletWindow.setRequestedAuthSchemes(schemes);
-                } else {
-                    portletWindow.setRequestedAuthSchemes(null);
                 }
+                
+                portletWindow.setRequestedAuthSchemes(schemes);
 
                 // Updates authentication state
                 AuthState authState = (AuthState) context.getAttribute(ClientContext.TARGET_AUTH_STATE);
                 portletWindow.setAuthenticated(authState != null && authState.getCredentials() != null);
 
-                String actualUrl;
                 // what if the request was redirected? how to catch the last URL? 
+                String actualUrl;
                 boolean cacheUsed = (context.getAttribute(CachingHttpClient.CACHE_RESPONSE_STATUS) == CacheResponseStatus.CACHE_HIT);
                 if(cacheUsed) {
+                	// ExecutionContext.HTTP_REQUEST and ExecutionContext.HTTP_TARGET_HOST are not set when the cache is used
                 	actualUrl = request.getRequestedURL();
                 } else {
                     // Get final URL (ie. perhaps redirected)
@@ -146,7 +153,7 @@ public class HttpClientExecutor implements HttpExecutor {
                 }
                 
                 // Create Response object from HttpResponse
-                response = createResponse(httpResponse, actualUrl, portletResponse instanceof MimeResponse);
+                response = createResponse(httpResponse, responseBody, actualUrl, portletResponse instanceof MimeResponse);
 
                 String cache = cacheUsed ? "[ WITH CACHE ]" : "";
                 StringBuffer buffer = new StringBuffer();
@@ -158,23 +165,18 @@ public class HttpClientExecutor implements HttpExecutor {
                 LOG.log(Level.INFO, buffer.toString());
 
                 // logging if enabled
-                if(WIPUtil.isDebugMode(portletRequest) && !response.isBinary()) {
-                    StringWriter writer = new StringWriter();
-                    InputStream stream = response.getStream();
-                    IOUtils.copy(stream, writer);
-                    String finalContent = writer.toString();
-                    stream.reset();
-                    WIPLogging.INSTANCE.logTransform(finalContent + "\n");
-                }
+                if(WIPUtil.isDebugMode(portletRequest) && responseBody != null && !response.isBinary())
+                    WIPLogging.INSTANCE.logTransform(new String(responseBody) + "\n");
 
             } catch (RuntimeException rte) {
                	LOG.log(Level.WARNING, "[ ERROR ] \"" + httpRequest.getMethod() + " " + request.getRequestedURL() + " " + httpRequest.getProtocolVersion() + "\" " + httpResponse.getStatusLine().getStatusCode());
-                if (httpResponse != null && httpResponse.getEntity() != null) {
-                    EntityUtils.consume(httpResponse.getEntity());
-                }
                 throw rte;
             }
+            
         } finally {
+            if (httpResponse != null && responseEntity != null)
+                EntityUtils.consume(responseEntity);
+            
             resourceManager.releaseThreadResources();
         }
         
@@ -275,13 +277,13 @@ public class HttpClientExecutor implements HttpExecutor {
         return new HttpGet(uri);
     }
 
-    private Response createResponse(HttpResponse httpResponse, String url, boolean portalUrlComputed) throws IOException {
+    private Response createResponse(HttpResponse httpResponse, byte[] responseBody, String url, boolean portalUrlComputed) throws IOException {
         // Create Response object from HttpResponse
         ContentType contentType = ContentType.getOrDefault(httpResponse.getEntity());
         Charset charset = contentType.getCharset();
         String mimeType = httpResponse.getFirstHeader(HttpHeaders.CONTENT_TYPE).getValue();
         int statusCode = httpResponse.getStatusLine().getStatusCode();
-        InputStream content = httpResponse.getEntity().getContent();
+        InputStream content = new ByteArrayInputStream(responseBody);
 
         return new Response(content, charset, mimeType, url, statusCode, portalUrlComputed);
     }
