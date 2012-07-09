@@ -78,7 +78,7 @@ public class UrlFactory {
         Request.HttpMethod httpMethod = Request.HttpMethod.valueOf(method);
         Request.ResourceType resourceType = Request.ResourceType.valueOf(type);
         // Convert to absolute URL
-        String absoluteUrl = toAbsolute(relativeUrl);
+        String absoluteUrl = toAbsolute(relativeUrl.trim());
 
         // Check if url match domains to proxy
         if (!configuration.isProxyURI(absoluteUrl)) {
