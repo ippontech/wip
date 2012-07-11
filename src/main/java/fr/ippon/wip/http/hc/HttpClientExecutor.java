@@ -47,9 +47,7 @@ import javax.portlet.MimeResponse;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -279,8 +277,7 @@ public class HttpClientExecutor implements HttpExecutor {
         Charset charset = contentType.getCharset();
         String mimeType = httpResponse.getFirstHeader(HttpHeaders.CONTENT_TYPE).getValue();
         int statusCode = httpResponse.getStatusLine().getStatusCode();
-        InputStream content = new ByteArrayInputStream(responseBody);
-
-        return new Response(content, charset, mimeType, url, statusCode, portalUrlComputed);
+        
+        return new Response(responseBody, charset, mimeType, url, statusCode, portalUrlComputed);
     }
 }

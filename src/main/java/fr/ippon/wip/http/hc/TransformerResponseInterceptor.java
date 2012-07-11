@@ -27,15 +27,19 @@ import org.apache.http.*;
 import org.apache.http.client.cache.CacheResponseStatus;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.RedirectLocations;
 import org.apache.http.impl.client.cache.CachingHttpClient;
 import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.xml.sax.SAXException;
 
+import com.google.common.collect.Iterables;
+
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.xml.transform.TransformerException;
+
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -43,135 +47,145 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Implementation of HttpResponseInterceptor in charge of processing all content transformations (HTML, CSS, JavaScript)
- * and clipping.
+ * Implementation of HttpResponseInterceptor in charge of processing all content
+ * transformations (HTML, CSS, JavaScript) and clipping.
+ * 
  * @author François Prot
  */
 class TransformerResponseInterceptor implements HttpResponseInterceptor {
 
-    private static final Logger LOG = Logger.getLogger(TransformerResponseInterceptor.class.getName());
+	private static final Logger LOG = Logger.getLogger(TransformerResponseInterceptor.class.getName());
 
-    /**
-     * If httpResponse must be transformed, creates an instance of WIPTransformer,
-     *  executes WIPTransformer#transform on the response content and updates the
-     *  response entity accordingly.
-     *
-     * @param httpResponse
-     * @param context
-     * @throws HttpException
-     * @throws IOException
-     */
-    public void process(HttpResponse httpResponse, HttpContext context) throws HttpException, IOException {
-        PortletRequest portletRequest = HttpClientResourceManager.getInstance().getCurrentPortletRequest();
-        PortletResponse portletResponse = HttpClientResourceManager.getInstance().getCurrentPortletResponse();
-        WIPConfiguration config = WIPUtil.getConfiguration(portletRequest);
-        Request request = HttpClientResourceManager.getInstance().getCurrentRequest();
+	private static final String parserClassName = "org.cyberneko.html.parsers.SAXParser";
 
-        if (httpResponse == null) {
-            // No response -> no transformation
-            LOG.warning("No response to transform.");
-            return;
-        }
+	private void emtpyResponse(HttpResponse httpResponse) {
+		EntityUtils.consumeQuietly(httpResponse.getEntity());
+		httpResponse.setEntity(new StringEntity("", Charset.defaultCharset()));
+		httpResponse.setStatusCode(HttpStatus.SC_NOT_FOUND);
+		httpResponse.setReasonPhrase("Deleted by WIP");
+	}
 
-        HttpEntity entity = httpResponse.getEntity();
-        if (entity == null) {
-            // No entity -> no transformation
-            return;
-        }
+	/**
+	 * If httpResponse must be transformed, creates an instance of
+	 * WIPTransformer, executes WIPTransformer#transform on the response content
+	 * and updates the response entity accordingly.
+	 * 
+	 * @param httpResponse
+	 * @param context
+	 * @throws HttpException
+	 * @throws IOException
+	 */
+	public void process(HttpResponse httpResponse, HttpContext context) throws HttpException, IOException {
+		PortletRequest portletRequest = HttpClientResourceManager.getInstance().getCurrentPortletRequest();
+		PortletResponse portletResponse = HttpClientResourceManager.getInstance().getCurrentPortletResponse();
+		WIPConfiguration config = WIPUtil.getConfiguration(portletRequest);
+		Request request = HttpClientResourceManager.getInstance().getCurrentRequest();
 
-        ContentType contentType = ContentType.getOrDefault(entity);
-        String mimeType = contentType.getMimeType();
+		if (httpResponse == null) {
+			// No response -> no transformation
+			LOG.warning("No response to transform.");
+			return;
+		}
 
-        // Check if actual URI must be transformed
-        String actualURI;
-        if(context.getAttribute(CachingHttpClient.CACHE_RESPONSE_STATUS) == CacheResponseStatus.CACHE_HIT) {
-        	actualURI = request.getRequestedURL();
-        } else {
-	        HttpRequest actualRequest = (HttpRequest) context.getAttribute(ExecutionContext.HTTP_REQUEST);
-	        HttpHost actualHost = (HttpHost) context.getAttribute(ExecutionContext.HTTP_TARGET_HOST);
-	        actualURI = actualHost.toURI() + actualRequest.getRequestLine().getUri();
-        }
-        
-        if (!config.isProxyURI(actualURI))
-            return;
-        
-        // Creates an instance of Transformer depending on ResourceType and MimeType
-        // May returns directly if no transformation is need
-        WIPTransformer transformer = null;
-        switch (request.getResourceType()) {
-            // Direct link or form submit
-            case HTML:
-                if (!mimeType.equals("text/html") && !mimeType.equals("application/xhtml+xml")) {
-                    // No transformation
-                    return;
-                } else {
-                    // HTML transformation
-                    transformer = new HTMLTransformer(portletRequest, portletResponse, new URL(request.getRequestedURL()));
-                }
-                break;
-            case JS:
-                // JavaScript transformation
-                transformer = new JSTransformer(portletRequest, portletResponse, new URL(request.getRequestedURL()));
-                // Empty content
-                if (((JSTransformer) transformer).isDeletedScript(actualURI)) {
-                    // Send à 404 empty response
-                    emtpyResponse(httpResponse);
-                    return;
-                } else if (((JSTransformer) transformer).isIgnoredScript(actualURI)) {
-                    return;
-                }
-                break;
-            case CSS:
-                // CSS transformation
-                transformer = new CSSTransformer(portletRequest, portletResponse, new URL(request.getRequestedURL()));
-                break;
-            case AJAX:
-                if (mimeType == null) {
-                    return;
-                } else if (mimeType.equals("text/html") || mimeType.equals("application/xhtml+xml")) {
-                    // HTML transformation
-                    transformer = new HTMLTransformer(portletRequest, portletResponse, new URL(request.getRequestedURL()));
-                } else if (mimeType.equals("text/javascript") || mimeType.equals("application/javascript")) {
-                    // JavaScript transformation
-                    transformer = new JSTransformer(portletRequest, portletResponse, new URL(request.getRequestedURL()));
-                } else if (mimeType.equals("application/json")) {
-                    // JSON transformation
-                    transformer = new JSONTransformer(portletRequest, new URL(request.getRequestedURL()));
-                } else {
-                    // No transformation
-                    return;
-                }
-                break;
-            case RAW:
-                // No transformation
-                return;
-        }
-        
-        // Call WIPTransformer#transform method and update the response Entity object
-        try {
-            String transformedContent = transformer.transform(EntityUtils.toString(entity));
-            StringEntity transformedEntity;
-            if (contentType.getCharset() != null) {
-                transformedEntity = new StringEntity(transformedContent, ContentType.getOrDefault(entity));
-            } else {
-                transformedEntity = new StringEntity(transformedContent);
-            }
-            transformedEntity.setContentType(contentType.toString());
-            httpResponse.setEntity(transformedEntity);
+		HttpEntity entity = httpResponse.getEntity();
+		if (entity == null) {
+			// No entity -> no transformation
+			return;
+		}
 
-        } catch (SAXException e) {
-            LOG.log(Level.SEVERE, "Could not transform HTML", e);
-            throw new IllegalArgumentException(e);
-        } catch (TransformerException e) {
-            LOG.log(Level.SEVERE, "Could not transform HTML", e);
-            throw new IllegalArgumentException(e);
-        }
-    }
+		ContentType contentType = ContentType.getOrDefault(entity);
+		String mimeType = contentType.getMimeType();
 
-    private void emtpyResponse(HttpResponse httpResponse) {
-        EntityUtils.consumeQuietly(httpResponse.getEntity());
-        httpResponse.setEntity(new StringEntity("", Charset.defaultCharset()));
-        httpResponse.setStatusCode(HttpStatus.SC_NOT_FOUND);
-        httpResponse.setReasonPhrase("Deleted by WIP");
-    }
+		String actualURI;
+		RedirectLocations redirectLocations = (RedirectLocations) context.getAttribute("http.protocol.redirect-locations");
+		if(redirectLocations != null)
+			actualURI = Iterables.getLast(redirectLocations.getAll()).toString();
+		else if (context.getAttribute(CachingHttpClient.CACHE_RESPONSE_STATUS) == CacheResponseStatus.CACHE_HIT) {
+			actualURI = request.getRequestedURL();
+		} else {
+			HttpRequest actualRequest = (HttpRequest) context.getAttribute(ExecutionContext.HTTP_REQUEST);
+			HttpHost actualHost = (HttpHost) context.getAttribute(ExecutionContext.HTTP_TARGET_HOST);
+			actualURI = actualHost.toURI() + actualRequest.getRequestLine().getUri();
+		}
+
+		// Check if actual URI must be transformed
+		if (!config.isProxyURI(actualURI))
+			return;
+
+		// Creates an instance of Transformer depending on ResourceType and
+		// MimeType
+		// May returns directly if no transformation is need
+		WIPTransformer transformer = null;
+		switch (request.getResourceType()) {
+		// Direct link or form submit
+		case HTML:
+			if (!mimeType.equals("text/html") && !mimeType.equals("application/xhtml+xml")) {
+				// No transformation
+				return;
+			} else {
+				// HTML transformation
+				transformer = new HTMLTransformer(portletRequest, portletResponse, new URL(actualURI));
+			}
+			break;
+		case JS:
+			// JavaScript transformation
+			transformer = new JSTransformer(portletRequest, portletResponse, new URL(actualURI));
+			// Empty content
+			if (((JSTransformer) transformer).isDeletedScript(actualURI)) {
+				// Send à 404 empty response
+				emtpyResponse(httpResponse);
+				return;
+			} else if (((JSTransformer) transformer).isIgnoredScript(actualURI)) {
+				return;
+			}
+			break;
+		case CSS:
+			// CSS transformation
+			transformer = new CSSTransformer(portletRequest, portletResponse, new URL(actualURI));
+			break;
+		case AJAX:
+			if (mimeType == null) {
+				return;
+			} else if (mimeType.equals("text/html") || mimeType.equals("application/xhtml+xml")) {
+				// HTML transformation
+				transformer = new HTMLTransformer(portletRequest, portletResponse, new URL(actualURI));
+			} else if (mimeType.equals("text/javascript") || mimeType.equals("application/javascript")) {
+				// JavaScript transformation
+				transformer = new JSTransformer(portletRequest, portletResponse, new URL(actualURI));
+			} else if (mimeType.equals("application/json")) {
+				// JSON transformation
+				transformer = new JSONTransformer(portletRequest, new URL(actualURI));
+			} else {
+				// No transformation
+				return;
+			}
+			break;
+		case RAW:
+			// No transformation
+			return;
+		}
+
+		// Call WIPTransformer#transform method and update the response Entity
+		// object
+		try {
+			String content = EntityUtils.toString(entity);
+			String transformedContent = transformer.transform(content);
+
+			StringEntity transformedEntity;
+			if (contentType.getCharset() != null) {
+				transformedEntity = new StringEntity(transformedContent, contentType);
+			} else {
+				transformedEntity = new StringEntity(transformedContent);
+			}
+			transformedEntity.setContentType(contentType.toString());
+			httpResponse.setEntity(transformedEntity);
+
+		} catch (SAXException e) {
+			LOG.log(Level.SEVERE, "Could not transform HTML", e);
+			throw new IllegalArgumentException(e);
+		} catch (TransformerException e) {
+			LOG.log(Level.SEVERE, "Could not transform HTML", e);
+			throw new IllegalArgumentException(e);
+		}
+	}
 }

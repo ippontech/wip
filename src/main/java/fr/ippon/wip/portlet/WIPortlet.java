@@ -138,6 +138,7 @@ public class WIPortlet extends GenericPortlet {
 			// Execute request
 			wipResponse = executor.execute(wipRequest, request, response);
 		}
+		
 		// Set Portlet title
 		response.setTitle(WIPUtil.getConfiguration(request).getPortletTitle());
 
@@ -214,11 +215,7 @@ public class WIPortlet extends GenericPortlet {
 		// Check if remote URI must be proxied
 		if (!wipConfig.isProxyURI(wipResponse.getUrl())) {
 			// Redirect to remote URI without proxying
-			try {
 				response.sendRedirect(wipResponse.getUrl());
-			} finally {
-				wipResponse.dispose();
-			}
 		} else {
 			// Store response for future usage
 			UUID uuid = ResponseStore.getInstance().store(wipResponse);

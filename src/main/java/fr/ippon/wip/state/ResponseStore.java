@@ -58,7 +58,6 @@ public class ResponseStore extends LinkedHashMap<UUID, Response> {
     @Override
     protected boolean removeEldestEntry(Map.Entry<UUID, Response> entry) {
         if (size() > maxEntries) {
-            entry.getValue().dispose();
             LOG.warning("Response evicted from store, URI was: " + entry.getValue().getUrl());
             return true;
         }

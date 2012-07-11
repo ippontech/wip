@@ -78,7 +78,8 @@ public class UrlFactory {
         Request.HttpMethod httpMethod = Request.HttpMethod.valueOf(method);
         Request.ResourceType resourceType = Request.ResourceType.valueOf(type);
         // Convert to absolute URL
-        String absoluteUrl = toAbsolute(relativeUrl.trim());
+        relativeUrl = relativeUrl.trim();
+        String absoluteUrl = toAbsolute(relativeUrl);
 
         // Check if url match domains to proxy
         if (!configuration.isProxyURI(absoluteUrl)) {
@@ -118,10 +119,15 @@ public class UrlFactory {
      * @return the absolute url
      */
     private String toAbsolute(String relativeUrl) {
-        if (StringUtils.isEmpty(relativeUrl) || relativeUrl.startsWith("http://") || relativeUrl.startsWith("https://"))
+    	// wrong comportement of URI.resolve when relativeUrl is empty, so we catch this case scenario
+    	if(relativeUrl.isEmpty())
+    		return actualUrl.toString();
+    	
+    	URI relativeUri = URI.create(relativeUrl);
+        if (relativeUri.isAbsolute())
             return relativeUrl;
 
-       	return URI.create(actualUrl.toString()).resolve(relativeUrl).toString();
+       	return URI.create(actualUrl.toString()).resolve(relativeUri).toString();
     }
 }
 

@@ -33,6 +33,7 @@ public class ConfigurationCacheDecorator extends ConfigurationDAODecorator {
 	public ConfigurationCacheDecorator(ConfigurationDAO decoratedDAO) {
 		super(decoratedDAO);
 		configurationNames = super.getConfigurationsNames();
+		Collections.sort(configurationNames, lowerCaseComparator);
 		cache = new HashMap<String, WIPConfiguration>();
 	}
 

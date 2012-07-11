@@ -449,6 +449,9 @@ public class WIPConfiguration implements Cloneable {
 	 * @return true if the uri has to be proxied
 	 */
 	public boolean isProxyURI(final String uri) {
+		if(uri.endsWith("css"))
+			return true;
+		
 		return Iterables.any(getDomainsToProxy(), new Predicate<String>() {
 
 			public boolean apply(String domain) {
