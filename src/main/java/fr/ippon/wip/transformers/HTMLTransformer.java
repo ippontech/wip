@@ -18,8 +18,11 @@
 package fr.ippon.wip.transformers;
 
 import fr.ippon.wip.config.WIPConfiguration;
+import fr.ippon.wip.http.UrlFactory;
+import fr.ippon.wip.transformers.handler.BaseHandlerDecorator;
 import fr.ippon.wip.util.WIPUtil;
 
+import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -109,6 +112,7 @@ public class HTMLTransformer extends AbstractTransformer {
         TransformerHandler transformerHandler = transformerFactory.newTransformerHandler(rewriteXslt);
 
         // Set parameters
+        UrlFactory urlFactory = new UrlFactory(request, xsltTransform);
         transformerHandler.getTransformer().setParameter("type", wipConfig.getClippingType());
         transformerHandler.getTransformer().setParameter("request", request);
         transformerHandler.getTransformer().setParameter("response", response);
@@ -116,6 +120,7 @@ public class HTMLTransformer extends AbstractTransformer {
         transformerHandler.getTransformer().setParameter("wip_divClassName", wipConfig.getPortletDivId());
         transformerHandler.getTransformer().setParameter("retrieveCss", wipConfig.isEnableCssRetrieving());
         transformerHandler.getTransformer().setParameter("rewriteUrl", wipConfig.isEnableUrlRewriting());
+        transformerHandler.getTransformer().setParameter("urlfact", urlFactory);
 
         // Set XPath expression for clipping
         if (wipConfig.getClippingType().equals("xpath")) {
@@ -132,7 +137,9 @@ public class HTMLTransformer extends AbstractTransformer {
         StringWriter resultWriter = new StringWriter();
         StreamResult streamResult = new StreamResult(resultWriter);
         transformerHandler.setResult(streamResult);
-        parser.setContentHandler(transformerHandler);
+        
+        ContentHandler decoratedHandler = new BaseHandlerDecorator(transformerHandler, urlFactory);
+        parser.setContentHandler(decoratedHandler);
         parser.setProperty("http://xml.org/sax/properties/lexical-handler", transformerHandler);
         parser.parse(inputSource);
 

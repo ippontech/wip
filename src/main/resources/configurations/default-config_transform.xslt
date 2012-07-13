@@ -19,8 +19,8 @@
     <xsl:param name="type"/>
     <xsl:param name="xpath"/>
     <xsl:param name="actualUrl"/>
+    <xsl:param name="urlfact"/>
 
-    <xsl:variable name="urlfact" select="urlfactory:new( $request, $actualUrl )"/>
     <xsl:variable name="jstrans" select="jstransformer:new( $request, $response, $actualUrl )"/>
     <xsl:variable name="csstrans" select="csstransformer:new( $request, $response, $actualUrl )"/>
 
@@ -40,7 +40,7 @@
         <!-- Call included 'head-clipping' template for additional processing -->
         <xsl:call-template name="head-clipping"/>
     </xsl:template>
-
+    
     <xsl:template match="/html:HTML/html:BODY">
         <!-- Create a new SCRIPT node with BODY @onload content -->
         <xsl:apply-templates select="@onload"/>

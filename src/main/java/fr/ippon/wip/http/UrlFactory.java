@@ -18,126 +18,151 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 
 /**
- * This class creates portal URL for corresponding to URL of the content returned by a remote host.
- *
- * The sole constructor takes a PortletRequest as parameter in order to create portal URL
- * If the PortletRequest is not an instance of MimeRequest, it is not possible to create portal URL, so temporary
- * URL will be generated for future parsing (Response#computePortalURL)
- *
+ * This class creates portal URL for corresponding to URL of the content
+ * returned by a remote host.
+ * 
+ * The sole constructor takes a PortletRequest as parameter in order to create
+ * portal URL If the PortletRequest is not an instance of MimeRequest, it is not
+ * possible to create portal URL, so temporary URL will be generated for future
+ * parsing (Response#computePortalURL)
+ * 
  * @author François Prot
+ * @author Yohan Legat
  */
 public class UrlFactory {
 
-    private static final String TEMP_URL_SEPARATOR = "&#128;";
-    public static final String TEMP_URL_ENCODED_SEPARATOR = "&amp;#128;";
-    private static final String[] TOKENS = {"<", "$"};
-    private static final Logger LOG = Logger.getLogger(HTMLTransformer.class.getName());
-    private final WIPConfiguration configuration;
-    private String actualUrl;
+	private static final String TEMP_URL_SEPARATOR = "&#128;";
+	
+	public static final String TEMP_URL_ENCODED_SEPARATOR = "&amp;#128;";
+	
+	private static final String[] TOKENS = { "<", "$" };
+	
+	private static final Logger LOG = Logger.getLogger(HTMLTransformer.class.getName());
+	
+	private final WIPConfiguration configuration;
+	
+	private String actualUrl;
 
-    /**
-     * @param portletRequest To get windowID and retrieve appropriate configuration
-     * @throws MalformedURLException 
-     * @throws UnsupportedEncodingException 
-     */
-    public UrlFactory(PortletRequest portletRequest, String actualUrl) {
-		this.actualUrl = actualUrl.replaceAll(" ", "%20");
-        configuration = WIPUtil.getConfiguration(portletRequest);
-    }
+	/**
+	 * @param portletRequest
+	 *            To get windowID and retrieve appropriate configuration
+	 * @throws MalformedURLException
+	 * @throws UnsupportedEncodingException
+	 */
+	public UrlFactory(PortletRequest portletRequest, String actualUrl) {
+		this.actualUrl = actualUrl;
+		configuration = WIPUtil.getConfiguration(portletRequest);
+	}
 
-    /**
-     * Create a portal URL from a temporary URL (response transformed in the ACTION phase)
-     *
-     * @param tempUrl
-     * @param mimeResponse To create portal URLs
-     * @return
-     * @throws MalformedURLException 
-     */
-    public String convertTempToPortalUrl(String tempUrl, MimeResponse mimeResponse) throws MalformedURLException {
-        String[] tokens = tempUrl.split(TOKENS[0]);
-        if (tokens.length >= 3) {
-            return createProxyUrl(tokens[0], tokens[1], tokens[2], mimeResponse);
-        }
-        throw new IllegalArgumentException("tempUrl is not valid");
-    }
+	/**
+	 * Create a portal URL from a temporary URL (response transformed in the
+	 * ACTION phase)
+	 * 
+	 * @param tempUrl
+	 * @param mimeResponse
+	 *            To create portal URLs
+	 * @return
+	 * @throws MalformedURLException
+	 */
+	public String convertTempToPortalUrl(String tempUrl, MimeResponse mimeResponse) throws MalformedURLException {
+		String[] tokens = tempUrl.split(TOKENS[0]);
+		if (tokens.length >= 3) {
+			return createProxyUrl(tokens[0], tokens[1], tokens[2], mimeResponse);
+		}
+		throw new IllegalArgumentException("tempUrl is not valid");
+	}
 
-    /**
-     * Create a proxy URL.
-     *
-     * If portletResponse is an instance of MimeResponse, creates portal URL,
-     * else creates temporary URL.
-     *
-     * @param relativeUrl URL of the remote resource
-     * @param method HTTP method for this request
-     * @param type Type of resource
-     * @param portletResponse To create portal URL if instance of MimeResponse
-     * @return
-     * @throws MalformedURLException 
-     */
-    public String createProxyUrl(String relativeUrl, String method, String type, PortletResponse portletResponse) {
-        String proxyUrl;
-        Request.HttpMethod httpMethod = Request.HttpMethod.valueOf(method);
-        Request.ResourceType resourceType = Request.ResourceType.valueOf(type);
-        
-        String absoluteUrl;
+	/**
+	 * Create a proxy URL.
+	 * 
+	 * If portletResponse is an instance of MimeResponse, creates portal URL,
+	 * else creates temporary URL.
+	 * 
+	 * @param relativeUrl
+	 *            URL of the remote resource
+	 * @param method
+	 *            HTTP method for this request
+	 * @param type
+	 *            Type of resource
+	 * @param portletResponse
+	 *            To create portal URL if instance of MimeResponse
+	 * @return
+	 * @throws MalformedURLException
+	 */
+	public String createProxyUrl(String relativeUrl, String method, String type, PortletResponse portletResponse) {
+		String proxyUrl;
+		Request.HttpMethod httpMethod = Request.HttpMethod.valueOf(method);
+		Request.ResourceType resourceType = Request.ResourceType.valueOf(type);
+
+		String absoluteUrl;
 		absoluteUrl = toAbsolute(relativeUrl);
-        
-        // Convert to absolute URL
 
-        // Check if url match domains to proxy
-        if (!configuration.isProxyURI(absoluteUrl)) {
-            return absoluteUrl;
-        }
-        if (portletResponse instanceof MimeResponse) {
-            // Create a portal URL
-            BaseURL baseURL;
-            if (resourceType == Request.ResourceType.HTML) {
-                // Create an ActionURL
-                baseURL = ((MimeResponse) portletResponse).createActionURL();
-            } else {
-                // Create a ResourceURL
-                baseURL = ((MimeResponse) portletResponse).createResourceURL();
-            }
-            // Set common parameters
-            baseURL.setParameter(WIPortlet.LINK_URL_KEY, absoluteUrl);
-            baseURL.setParameter(WIPortlet.METHOD_TYPE, method);
-            baseURL.setParameter(WIPortlet.RESOURCE_TYPE_KEY, type);
-            // Get portlet URL as String
-            proxyUrl = baseURL.toString();
-            // Append concatenation key for AJAX URLs (hack !)
-            if (resourceType == Request.ResourceType.AJAX) {
-                proxyUrl += "&" + WIPortlet.URL_CONCATENATION_KEY + "=";
-            }
-        } else {
-            // Create a temp URL
-            proxyUrl = TEMP_URL_SEPARATOR + absoluteUrl + TOKENS[0] + httpMethod.name() + TOKENS[0] + resourceType.name() + TEMP_URL_SEPARATOR;
-        }
-        
-        return proxyUrl;
-    }
+		// Convert to absolute URL
 
-    /**
-     * Transform an relative url to an absolute one.
-     * @param relativeUrl the relative url to transform
-     * @return the absolute url
-     * @throws URISyntaxException 
-     */
-    private String toAbsolute(String relativeUrl) {
-    	try {
-    	// wrong comportement of URI.resolve when relativeUrl is empty, so we catch this case scenario
-    	if(relativeUrl.isEmpty())
-    		return actualUrl;
-    	
-    	URI relativeUri = URI.create(relativeUrl);
-        if (relativeUri.isAbsolute())
-            return relativeUrl;
+		// Check if url match domains to proxy
+		if (!configuration.isProxyURI(absoluteUrl)) {
+			return absoluteUrl;
+		}
+		if (portletResponse instanceof MimeResponse) {
+			// Create a portal URL
+			BaseURL baseURL;
+			if (resourceType == Request.ResourceType.HTML) {
+				// Create an ActionURL
+				baseURL = ((MimeResponse) portletResponse).createActionURL();
+			} else {
+				// Create a ResourceURL
+				baseURL = ((MimeResponse) portletResponse).createResourceURL();
+			}
+			// Set common parameters
+			baseURL.setParameter(WIPortlet.LINK_URL_KEY, absoluteUrl);
+			baseURL.setParameter(WIPortlet.METHOD_TYPE, method);
+			baseURL.setParameter(WIPortlet.RESOURCE_TYPE_KEY, type);
+			// Get portlet URL as String
+			proxyUrl = baseURL.toString();
+			// Append concatenation key for AJAX URLs (hack !)
+			if (resourceType == Request.ResourceType.AJAX) {
+				proxyUrl += "&" + WIPortlet.URL_CONCATENATION_KEY + "=";
+			}
+		} else {
+			// Create a temp URL
+			proxyUrl = TEMP_URL_SEPARATOR + absoluteUrl + TOKENS[0] + httpMethod.name() + TOKENS[0] + resourceType.name() + TEMP_URL_SEPARATOR;
+		}
 
-       	return URI.create(actualUrl).resolve(relativeUri).toString();
-       	
-    	}catch(IllegalArgumentException e) {
-    		LOG.log(Level.WARNING, "URI illegal: " + relativeUrl);
-    		return relativeUrl;
-    	}
-    }
+		return proxyUrl;
+	}
+
+	public String getActualUrl() {
+		return actualUrl;
+	}
+
+	public void setActualUrl(String actualUrl) {
+		this.actualUrl = actualUrl;
+	}
+
+	/**
+	 * Transform an relative url to an absolute one.
+	 * 
+	 * @param relativeUrl
+	 *            the relative url to transform
+	 * @return the absolute url
+	 * @throws URISyntaxException
+	 */
+	private String toAbsolute(String relativeUrl) {
+		try {
+			// wrong comportement of URI.resolve when relativeUrl is empty, so
+			// we catch this case scenario
+			if (relativeUrl.isEmpty())
+				return actualUrl;
+
+			URI relativeUri = URI.create(relativeUrl);
+			if (relativeUri.isAbsolute())
+				return relativeUrl;
+
+			return URI.create(actualUrl).resolve(relativeUri).toString();
+
+		} catch (IllegalArgumentException e) {
+			LOG.log(Level.WARNING, "URI illegal: " + relativeUrl);
+			return relativeUrl;
+		}
+	}
 }
-
