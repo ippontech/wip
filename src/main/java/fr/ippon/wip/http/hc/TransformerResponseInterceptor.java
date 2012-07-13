@@ -41,7 +41,6 @@ import javax.portlet.PortletResponse;
 import javax.xml.transform.TransformerException;
 
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -96,20 +95,20 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
 		ContentType contentType = ContentType.getOrDefault(entity);
 		String mimeType = contentType.getMimeType();
 
-		String actualURI;
+		String actualURL;
 		RedirectLocations redirectLocations = (RedirectLocations) context.getAttribute("http.protocol.redirect-locations");
 		if(redirectLocations != null)
-			actualURI = Iterables.getLast(redirectLocations.getAll()).toString();
+			actualURL = Iterables.getLast(redirectLocations.getAll()).toString();
 		else if (context.getAttribute(CachingHttpClient.CACHE_RESPONSE_STATUS) == CacheResponseStatus.CACHE_HIT) {
-			actualURI = request.getRequestedURL();
+			actualURL = request.getRequestedURL();
 		} else {
 			HttpRequest actualRequest = (HttpRequest) context.getAttribute(ExecutionContext.HTTP_REQUEST);
 			HttpHost actualHost = (HttpHost) context.getAttribute(ExecutionContext.HTTP_TARGET_HOST);
-			actualURI = actualHost.toURI() + actualRequest.getRequestLine().getUri();
+			actualURL = actualHost.toURI() + actualRequest.getRequestLine().getUri();
 		}
 
 		// Check if actual URI must be transformed
-		if (!config.isProxyURI(actualURI))
+		if (!config.isProxyURI(actualURL))
 			return;
 
 		// Creates an instance of Transformer depending on ResourceType and
@@ -124,37 +123,37 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
 				return;
 			} else {
 				// HTML transformation
-				transformer = new HTMLTransformer(portletRequest, portletResponse, new URL(actualURI));
+				transformer = new HTMLTransformer(portletRequest, portletResponse, actualURL);
 			}
 			break;
 		case JS:
 			// JavaScript transformation
-			transformer = new JSTransformer(portletRequest, portletResponse, new URL(actualURI));
+			transformer = new JSTransformer(portletRequest, portletResponse, actualURL);
 			// Empty content
-			if (((JSTransformer) transformer).isDeletedScript(actualURI)) {
+			if (((JSTransformer) transformer).isDeletedScript(actualURL)) {
 				// Send à 404 empty response
 				emtpyResponse(httpResponse);
 				return;
-			} else if (((JSTransformer) transformer).isIgnoredScript(actualURI)) {
+			} else if (((JSTransformer) transformer).isIgnoredScript(actualURL)) {
 				return;
 			}
 			break;
 		case CSS:
 			// CSS transformation
-			transformer = new CSSTransformer(portletRequest, portletResponse, new URL(actualURI));
+			transformer = new CSSTransformer(portletRequest, portletResponse, actualURL);
 			break;
 		case AJAX:
 			if (mimeType == null) {
 				return;
 			} else if (mimeType.equals("text/html") || mimeType.equals("application/xhtml+xml")) {
 				// HTML transformation
-				transformer = new HTMLTransformer(portletRequest, portletResponse, new URL(actualURI));
+				transformer = new HTMLTransformer(portletRequest, portletResponse, actualURL);
 			} else if (mimeType.equals("text/javascript") || mimeType.equals("application/javascript")) {
 				// JavaScript transformation
-				transformer = new JSTransformer(portletRequest, portletResponse, new URL(actualURI));
+				transformer = new JSTransformer(portletRequest, portletResponse, actualURL);
 			} else if (mimeType.equals("application/json")) {
 				// JSON transformation
-				transformer = new JSONTransformer(portletRequest, new URL(actualURI));
+				transformer = new JSONTransformer(portletRequest, actualURL);
 			} else {
 				// No transformation
 				return;

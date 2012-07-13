@@ -1,8 +1,10 @@
 package fr.ippon.wip.http;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import fr.ippon.wip.config.WIPConfiguration;
@@ -14,8 +16,6 @@ import javax.portlet.BaseURL;
 import javax.portlet.MimeResponse;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * This class creates portal URL for corresponding to URL of the content returned by a remote host.
@@ -33,14 +33,15 @@ public class UrlFactory {
     private static final String[] TOKENS = {"<", "$"};
     private static final Logger LOG = Logger.getLogger(HTMLTransformer.class.getName());
     private final WIPConfiguration configuration;
-    private URL actualUrl;
+    private String actualUrl;
 
     /**
      * @param portletRequest To get windowID and retrieve appropriate configuration
      * @throws MalformedURLException 
+     * @throws UnsupportedEncodingException 
      */
-    public UrlFactory(PortletRequest portletRequest, URL actualUrl) throws MalformedURLException  {
-    	this.actualUrl = actualUrl;
+    public UrlFactory(PortletRequest portletRequest, String actualUrl) {
+		this.actualUrl = actualUrl.replaceAll(" ", "%20");
         configuration = WIPUtil.getConfiguration(portletRequest);
     }
 
@@ -77,9 +78,12 @@ public class UrlFactory {
         String proxyUrl;
         Request.HttpMethod httpMethod = Request.HttpMethod.valueOf(method);
         Request.ResourceType resourceType = Request.ResourceType.valueOf(type);
+        
+        String absoluteUrl;
+        relativeUrl = relativeUrl.trim().replaceAll(" ", "%20");
+		absoluteUrl = toAbsolute(relativeUrl);
+        
         // Convert to absolute URL
-        relativeUrl = relativeUrl.trim();
-        String absoluteUrl = toAbsolute(relativeUrl);
 
         // Check if url match domains to proxy
         if (!configuration.isProxyURI(absoluteUrl)) {
@@ -117,17 +121,24 @@ public class UrlFactory {
      * Transform an relative url to an absolute one.
      * @param relativeUrl the relative url to transform
      * @return the absolute url
+     * @throws URISyntaxException 
      */
     private String toAbsolute(String relativeUrl) {
+    	try {
     	// wrong comportement of URI.resolve when relativeUrl is empty, so we catch this case scenario
     	if(relativeUrl.isEmpty())
-    		return actualUrl.toString();
+    		return actualUrl;
     	
     	URI relativeUri = URI.create(relativeUrl);
         if (relativeUri.isAbsolute())
             return relativeUrl;
 
-       	return URI.create(actualUrl.toString()).resolve(relativeUri).toString();
+       	return URI.create(actualUrl).resolve(relativeUri).toString();
+       	
+    	}catch(IllegalArgumentException e) {
+    		LOG.log(Level.WARNING, "URI illegal: " + relativeUrl);
+    		return relativeUrl;
+    	}
     }
 }
 

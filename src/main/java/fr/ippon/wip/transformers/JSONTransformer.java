@@ -21,8 +21,6 @@ package fr.ippon.wip.transformers;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 import javax.portlet.PortletRequest;
 import javax.xml.transform.TransformerException;
@@ -36,7 +34,7 @@ import javax.xml.transform.TransformerException;
  */
 public class JSONTransformer extends AbstractTransformer {
 
-	public JSONTransformer(PortletRequest portletRequest, URL actualUrl) throws MalformedURLException {
+	public JSONTransformer(PortletRequest portletRequest, String actualUrl) {
 		super(portletRequest, actualUrl);
 	}
 

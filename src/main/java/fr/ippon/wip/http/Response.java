@@ -27,7 +27,6 @@ import javax.portlet.*;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.*;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 
@@ -74,7 +73,7 @@ public class Response {
 		try {
 			String originalContent = new String(content, charset);
 			PortletWindow windowState = PortletWindow.getInstance(portletRequest);
-			ActionToRenderTransformer transformer = new ActionToRenderTransformer(portletRequest, mimeResponse, new URL(windowState.getActualURL()));
+			ActionToRenderTransformer transformer = new ActionToRenderTransformer(portletRequest, mimeResponse, windowState.getActualURL());
 			String transformedContent = transformer.transform(originalContent);
 			content = transformedContent.getBytes(charset);
 

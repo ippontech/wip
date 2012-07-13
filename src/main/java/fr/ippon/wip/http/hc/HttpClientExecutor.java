@@ -48,6 +48,7 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -238,10 +239,11 @@ public class HttpClientExecutor implements HttpExecutor {
         HttpClientResourceManager.getInstance().releaseGlobalResources();
     }
 
-    private HttpUriRequest createPostRequest(Request request) {
+    private HttpUriRequest createPostRequest(Request request) throws URISyntaxException {
         // TODO: manage Content-Type:multipart/form-data
         // Create Post request and set parameters if any
-        HttpPost postRequest = new HttpPost(request.getRequestedURL());
+    	URI encodedURI = new URI(request.getRequestedURL());
+        HttpPost postRequest = new HttpPost(encodedURI);
         Map<String, String[]> paramMap = request.getParameterMap();
 
         if (paramMap != null) {
@@ -259,7 +261,8 @@ public class HttpClientExecutor implements HttpExecutor {
     }
     
     private HttpUriRequest createGetRequest(Request request) throws URISyntaxException {
-    	URIBuilder uriBuilder = new URIBuilder(request.getRequestedURL());
+    	URI encodedURI = new URI(request.getRequestedURL());
+    	URIBuilder uriBuilder = new URIBuilder(encodedURI);
     	Map<String, String[]> paramMap = request.getParameterMap();
     	if(paramMap == null)
     		return new HttpGet(uriBuilder.build());
