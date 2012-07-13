@@ -80,7 +80,6 @@ public class UrlFactory {
         Request.ResourceType resourceType = Request.ResourceType.valueOf(type);
         
         String absoluteUrl;
-        relativeUrl = relativeUrl.trim().replaceAll(" ", "%20");
 		absoluteUrl = toAbsolute(relativeUrl);
         
         // Convert to absolute URL

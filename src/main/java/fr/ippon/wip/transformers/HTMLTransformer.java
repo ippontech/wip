@@ -37,7 +37,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
-import java.net.URL;
 
 /**
  * A transformer to process the rewriting of HTML content. This transformer uses
@@ -90,6 +89,7 @@ public class HTMLTransformer extends AbstractTransformer {
         XMLReader parser = XMLReaderFactory.createXMLReader(parserClassName);
         parser.setFeature("http://cyberneko.org/html/features/override-namespaces", true);
         parser.setFeature("http://cyberneko.org/html/features/insert-namespaces", true);
+        parser.setFeature("http://cyberneko.org/html/features/scanner/ignore-specified-charset", true);
         parser.setProperty("http://cyberneko.org/html/properties/default-encoding", "UTF-8");
         parser.setProperty("http://cyberneko.org/html/properties/doctype/pubid", "-//W3C//DTD XHTML 1.0 Transitional//EN");
         parser.setProperty("http://cyberneko.org/html/properties/doctype/sysid", "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd");
