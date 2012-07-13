@@ -20,6 +20,7 @@ package fr.ippon.wip.transformers;
 
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.http.Request;
+import fr.ippon.wip.http.Request.ResourceType;
 import fr.ippon.wip.util.WIPUtil;
 
 import org.xml.sax.SAXException;
@@ -43,6 +44,7 @@ import java.util.regex.PatternSyntaxException;
  *
  * @author Anthony Luce
  * @author Quentin Thierry
+ * @author Yohan Legat
  */
 public class JSTransformer extends AbstractTransformer {
 
@@ -104,7 +106,42 @@ public class JSTransformer extends AbstractTransformer {
         String regex = wipConfig.getJsRegex();
         input = rewrite(regex, input);
 
+        input = transformAjaxJQuery(input);
+        
         return input;
+    }
+    
+    /**
+     * Compute JQuery AJAX call. Only compatible with $.get and $.post for now, and the url must be a litteral.
+     * @param input
+     * @return
+     */
+    private String transformAjaxJQuery(String input) {
+    	for(String method : new String[] { "post", "get" } ) {
+    		Pattern pattern = Pattern.compile("\\$\\." + method + "\\s*\\(\\s*");
+    		Matcher matcher = pattern.matcher(input);
+    		while(matcher.find()) {
+    			int start = matcher.end();
+    			int end;
+    			char quoteType = input.charAt(start);
+    			boolean isQuoted;
+    			String link;
+    			
+    			isQuoted = (quoteType == '\'' || quoteType == '"');
+    			// if not quoted then the url is not a litteral, we don't manage variable yet
+    			if(!isQuoted)
+    				return input;
+    			
+    			start++;
+    			end = input.indexOf(quoteType, start);
+    			
+    			link = input.substring(start, end).trim();
+    			link = urlFactory.createProxyUrl(link, method.toUpperCase(), ResourceType.AJAX.name(), response);
+    			input = input.substring(0, start) + link + input.substring(end);
+    		}
+    	}
+    	
+    	return input;
     }
 
     /**
