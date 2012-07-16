@@ -112,7 +112,7 @@ public class HTMLTransformer extends AbstractTransformer {
         TransformerHandler transformerHandler = transformerFactory.newTransformerHandler(rewriteXslt);
 
         // Set parameters
-        UrlFactory urlFactory = new UrlFactory(request, xsltTransform);
+        UrlFactory urlFactory = new UrlFactory(request, actualUrl);
         transformerHandler.getTransformer().setParameter("type", wipConfig.getClippingType());
         transformerHandler.getTransformer().setParameter("request", request);
         transformerHandler.getTransformer().setParameter("response", response);

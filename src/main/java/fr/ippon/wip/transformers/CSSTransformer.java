@@ -23,20 +23,12 @@ import fr.ippon.wip.util.WIPUtil;
 
 import org.xml.sax.SAXException;
 
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.xml.transform.TransformerException;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -144,7 +136,7 @@ public class CSSTransformer extends AbstractTransformer {
 			final String wip = "\n." + wipConfig.getPortletDivId() + " ";
 
 			// removing comments
-			input = input.replaceAll("\\/\\*[^\\*/]*\\*\\/", "");
+			input = input.replaceAll("\\/\\*.*\\*\\/", "");
 			
 			// Removing all double white spaced characters
 			input = input.replaceAll("\\r|\\n", "");
