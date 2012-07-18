@@ -19,7 +19,7 @@
 package fr.ippon.wip.http.hc;
 
 import fr.ippon.wip.config.WIPConfiguration;
-import fr.ippon.wip.http.Request;
+import fr.ippon.wip.http.request.Request;
 import fr.ippon.wip.transformers.*;
 import fr.ippon.wip.util.WIPUtil;
 
@@ -54,8 +54,6 @@ import java.util.logging.Logger;
 class TransformerResponseInterceptor implements HttpResponseInterceptor {
 
 	private static final Logger LOG = Logger.getLogger(TransformerResponseInterceptor.class.getName());
-
-	private static final String parserClassName = "org.cyberneko.html.parsers.SAXParser";
 
 	private void emtpyResponse(HttpResponse httpResponse) {
 		EntityUtils.consumeQuietly(httpResponse.getEntity());

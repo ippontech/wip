@@ -20,7 +20,8 @@ package fr.ippon.wip.config;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import fr.ippon.wip.http.Request;
+
+import fr.ippon.wip.http.request.PostRequest;
 
 import java.util.List;
 import java.util.Map;
@@ -105,7 +106,7 @@ public class WIPConfiguration implements Cloneable {
 
 	private List<String> javascriptUrls;
 
-	private Map<String, Request.ResourceType> javascriptResourcesMap;
+	private Map<String, PostRequest.ResourceType> javascriptResourcesMap;
 
 	// versioning
 	private long timestamp;
@@ -209,9 +210,9 @@ public class WIPConfiguration implements Cloneable {
 	 * 
 	 * @return the association between AJAX resources and their URLs as a map
 	 */
-	public synchronized Map<String, Request.ResourceType> getJavascriptResourcesMap() {
+	public synchronized Map<String, PostRequest.ResourceType> getJavascriptResourcesMap() {
 		if (javascriptResourcesMap == null) {
-			javascriptResourcesMap = new HashMap<String, Request.ResourceType>();
+			javascriptResourcesMap = new HashMap<String, PostRequest.ResourceType>();
 			List<String> javascriptUrlsClone = new ArrayList<String>(javascriptUrls);
 
 			if (javascriptUrlsClone.size() == 1 && javascriptUrlsClone.get(0).equals(""))
@@ -221,7 +222,7 @@ public class WIPConfiguration implements Cloneable {
 				String tmp[] = input.split("::::");
 				if (tmp.length == 2) {
 					String url = tmp[0];
-					Request.ResourceType type = Request.ResourceType.valueOf(tmp[1]);
+					PostRequest.ResourceType type = PostRequest.ResourceType.valueOf(tmp[1]);
 					javascriptResourcesMap.put(url, type);
 				}
 			}

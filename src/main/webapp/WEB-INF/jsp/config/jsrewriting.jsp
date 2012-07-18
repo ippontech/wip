@@ -41,17 +41,17 @@
                     <ul id="javascriptUrlList">
                         <%
                         	Map<String, Request.ResourceType> l = wipConf.getJavascriptResourcesMap();
-                                                    for (String s : l.keySet()) {
-                                                        String entry = s + "::::" + l.get(s).name();
-                                                        out.println(
-                                                                "<li id=\"javascriptUrl" + entry + "\">"
-                                                                        + "<a href=\"JavaScript:removeUrl('javascriptUrl" + entry + "')\">"
-                                                                        + "<img src=\"" + src + "\" alt=\"remove\" />"
-                                                                        + "</a>"
-                                                                        + "<span style='padding-left:15px'>" + s + " - " + l.get(s).name() + "</span>"
-                                                                        + "</li>"
-                                                        );
-                                                    }
+                                                                            for (String s : l.keySet()) {
+                                                                                String entry = s + "::::" + l.get(s).name();
+                                                                                out.println(
+                                                                                        "<li id=\"javascriptUrl" + entry + "\">"
+                                                                                                + "<a href=\"JavaScript:removeUrl('javascriptUrl" + entry + "')\">"
+                                                                                                + "<img src=\"" + src + "\" alt=\"remove\" />"
+                                                                                                + "</a>"
+                                                                                                + "<span style='padding-left:15px'>" + s + " - " + l.get(s).name() + "</span>"
+                                                                                                + "</li>"
+                                                                                );
+                                                                            }
                         %>
                     </ul>
                     <input type="text" name="javascriptUrlToAdd" id="javascriptUrlToAdd"/>

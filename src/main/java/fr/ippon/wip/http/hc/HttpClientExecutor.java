@@ -19,8 +19,8 @@
 package fr.ippon.wip.http.hc;
 
 import fr.ippon.wip.http.HttpExecutor;
-import fr.ippon.wip.http.Request;
 import fr.ippon.wip.http.Response;
+import fr.ippon.wip.http.request.Request;
 import fr.ippon.wip.state.PortletWindow;
 import fr.ippon.wip.util.WIPLogging;
 import fr.ippon.wip.util.WIPUtil;
@@ -30,15 +30,10 @@ import org.apache.http.auth.*;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.cache.CacheResponseStatus;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.ClientContext;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.cache.CachingHttpClient;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
@@ -48,13 +43,10 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -100,11 +92,7 @@ public class HttpClientExecutor implements HttpExecutor {
             HttpContext context = resourceManager.initExecutionContext(portletRequest, portletResponse, request);
             HttpUriRequest httpRequest;
             
-            // Create HttpRequest object
-            if (request.getHttpMethod() == Request.HttpMethod.POST)
-                httpRequest = createPostRequest(request);
-            else
-                httpRequest = createGetRequest(request);
+            httpRequest = request.buildHttpRequest();
 
             // Execute the request
             try {
@@ -238,42 +226,7 @@ public class HttpClientExecutor implements HttpExecutor {
     public void destroy() {
         HttpClientResourceManager.getInstance().releaseGlobalResources();
     }
-
-    private HttpUriRequest createPostRequest(Request request) throws URISyntaxException {
-        // TODO: manage Content-Type:multipart/form-data
-        // Create Post request and set parameters if any
-    	URI encodedURI = new URI(request.getRequestedURL());
-        HttpPost postRequest = new HttpPost(encodedURI);
-        Map<String, String[]> paramMap = request.getParameterMap();
-
-        if (paramMap != null) {
-            List<NameValuePair> httpParams = new LinkedList<NameValuePair>();
-            for (Map.Entry<String, String[]> entry : paramMap.entrySet()) {
-                for (String value : entry.getValue()) {
-                    httpParams.add(new BasicNameValuePair(entry.getKey(), value));
-                }
-            }
-            HttpEntity formEntity = new UrlEncodedFormEntity(httpParams, ContentType.APPLICATION_FORM_URLENCODED.getCharset());
-            postRequest.setEntity(formEntity);
-        }
-
-        return postRequest;
-    }
     
-    private HttpUriRequest createGetRequest(Request request) throws URISyntaxException {
-    	URI encodedURI = new URI(request.getRequestedURL());
-    	URIBuilder uriBuilder = new URIBuilder(encodedURI);
-    	Map<String, String[]> paramMap = request.getParameterMap();
-    	if(paramMap == null)
-    		return new HttpGet(uriBuilder.build());
-
-   		for (Map.Entry<String, String[]> entry : paramMap.entrySet())
-   			for (String value : entry.getValue())
-   				uriBuilder.addParameter(entry.getKey(), value);
-
-   		return new HttpGet(uriBuilder.build());
-    }
-
     private Response createResponse(HttpResponse httpResponse, byte[] responseBody, String url, boolean portalUrlComputed) throws IOException {
         // Create Response object from HttpResponse
         ContentType contentType = ContentType.getOrDefault(httpResponse.getEntity());

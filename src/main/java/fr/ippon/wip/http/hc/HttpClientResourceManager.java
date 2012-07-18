@@ -19,7 +19,7 @@
 package fr.ippon.wip.http.hc;
 
 import fr.ippon.wip.config.WIPConfiguration;
-import fr.ippon.wip.http.Request;
+import fr.ippon.wip.http.request.Request;
 import fr.ippon.wip.util.WIPUtil;
 
 import org.apache.http.client.CookieStore;

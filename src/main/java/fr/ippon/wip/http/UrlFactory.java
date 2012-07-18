@@ -8,6 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import fr.ippon.wip.config.WIPConfiguration;
+import fr.ippon.wip.http.request.PostRequest;
 import fr.ippon.wip.portlet.WIPortlet;
 import fr.ippon.wip.transformers.HTMLTransformer;
 import fr.ippon.wip.util.WIPUtil;
@@ -91,13 +92,12 @@ public class UrlFactory {
 	 */
 	public String createProxyUrl(String relativeUrl, String method, String type, PortletResponse portletResponse) {
 		String proxyUrl;
-		Request.HttpMethod httpMethod = Request.HttpMethod.valueOf(method);
-		Request.ResourceType resourceType = Request.ResourceType.valueOf(type);
-
-		String absoluteUrl;
-		absoluteUrl = toAbsolute(relativeUrl);
+		PostRequest.HttpMethod httpMethod = PostRequest.HttpMethod.valueOf(method);
+		PostRequest.ResourceType resourceType = PostRequest.ResourceType.valueOf(type);
 
 		// Convert to absolute URL
+		String absoluteUrl;
+		absoluteUrl = toAbsolute(relativeUrl);
 
 		// Check if url match domains to proxy
 		if (!configuration.isProxyURI(absoluteUrl)) {
@@ -106,7 +106,7 @@ public class UrlFactory {
 		if (portletResponse instanceof MimeResponse) {
 			// Create a portal URL
 			BaseURL baseURL;
-			if (resourceType == Request.ResourceType.HTML) {
+			if (resourceType == PostRequest.ResourceType.HTML) {
 				// Create an ActionURL
 				baseURL = ((MimeResponse) portletResponse).createActionURL();
 			} else {
@@ -120,7 +120,7 @@ public class UrlFactory {
 			// Get portlet URL as String
 			proxyUrl = baseURL.toString();
 			// Append concatenation key for AJAX URLs (hack !)
-			if (resourceType == Request.ResourceType.AJAX) {
+			if (resourceType == PostRequest.ResourceType.AJAX) {
 				proxyUrl += "&" + WIPortlet.URL_CONCATENATION_KEY + "=";
 			}
 		} else {
@@ -161,7 +161,7 @@ public class UrlFactory {
 			return URI.create(actualUrl).resolve(relativeUri).toString();
 
 		} catch (IllegalArgumentException e) {
-			LOG.log(Level.WARNING, "URI illegal: " + relativeUrl);
+			LOG.log(Level.WARNING, "Illegal URI: " + relativeUrl);
 			return relativeUrl;
 		}
 	}

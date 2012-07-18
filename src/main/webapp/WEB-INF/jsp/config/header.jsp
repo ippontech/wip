@@ -8,7 +8,7 @@
 <%@ page import="fr.ippon.wip.config.WIPConfiguration" %>
 <%@ page import="fr.ippon.wip.config.dao.ConfigurationDAO" %>
 <%@ page import="fr.ippon.wip.config.dao.ConfigurationDAOFactory" %>
-<%@ page import="fr.ippon.wip.http.Request" %>
+<%@ page import="fr.ippon.wip.http.request.Request" %>
 <%@ page import="fr.ippon.wip.portlet.Pages" %>
 <%@ page import="fr.ippon.wip.portlet.Attributes"%>
 <%@ page import="fr.ippon.wip.util.WIPUtil" %>
