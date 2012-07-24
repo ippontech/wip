@@ -1,5 +1,6 @@
 package fr.ippon.wip.http.request;
 
+import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Predicate;
@@ -21,9 +22,16 @@ public abstract class AbstractRequest implements Request {
 
 	protected ResourceType resourceType;
 
-	protected Map<String, String[]> parameterMap;
+	protected Map<String, List<String>> parameterMap;
+	
+	private static final Predicate<String> filterMapPredicate = new Predicate<String>() {
+		
+		public boolean apply(String key) {
+			return !key.startsWith(WIPortlet.WIP_REQUEST_PARAMS_PREFIX_KEY);
+		}
+	};
 
-	protected AbstractRequest(String url, HttpMethod httpMethod, ResourceType resourceType, Map<String, String[]> parameterMap) {
+	protected AbstractRequest(String url, HttpMethod httpMethod, ResourceType resourceType, Map<String, List<String>> parameterMap) {
 		this.requestedURL = url;
 		this.httpMethod = httpMethod;
 		this.resourceType = resourceType;
@@ -36,15 +44,11 @@ public abstract class AbstractRequest implements Request {
 	 * 
 	 * @param parameterMap
 	 */
-	private void copyParameters(Map<String, String[]> parameterMap) {
+	private void copyParameters(Map<String, List<String>> parameterMap) {
 		if (parameterMap == null || parameterMap.size() == 0)
 			return;
 
-		this.parameterMap = Maps.filterKeys(parameterMap, new Predicate<String>() {
-			public boolean apply(String key) {
-				return !key.startsWith(WIPortlet.WIP_REQUEST_PARAMS_PREFIX_KEY);
-			}
-		});
+		this.parameterMap = Maps.filterKeys(parameterMap, filterMapPredicate);
 	}
 
 	public HttpMethod getHttpMethod() {

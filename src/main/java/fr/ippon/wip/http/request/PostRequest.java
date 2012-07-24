@@ -46,7 +46,7 @@ public class PostRequest extends AbstractRequest implements Request, Serializabl
 	 * 
 	 * @param portletRequest
 	 */
-	protected PostRequest(String url, ResourceType resourceType, Map<String, String[]> parameterMap) {
+	protected PostRequest(String url, ResourceType resourceType, Map<String, List<String>> parameterMap) {
 		super(url, HttpMethod.POST, resourceType, parameterMap);
 	}
 
@@ -57,7 +57,7 @@ public class PostRequest extends AbstractRequest implements Request, Serializabl
 			return postRequest;
 
 		List<NameValuePair> httpParams = new LinkedList<NameValuePair>();
-		for (Map.Entry<String, String[]> entry : parameterMap.entrySet())
+		for (Map.Entry<String, List<String>> entry : parameterMap.entrySet())
 			for (String value : entry.getValue())
 				httpParams.add(new BasicNameValuePair(entry.getKey(), value));
 

@@ -1,16 +1,19 @@
 package fr.ippon.wip.http.request;
 
 import java.net.URI;
-import java.security.InvalidParameterException;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.PortletRequest;
 
+import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.portlet.PortletFileUpload;
 
+import com.google.common.base.Function;
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import fr.ippon.wip.portlet.WIPortlet;
@@ -30,7 +33,7 @@ public enum RequestFactory {
 	 * The singleton instance
 	 */
 	INSTANCE;
-
+	
 	/**
 	 * Return a request instance. The request type will be PostRequest if the
 	 * resource type is POST, GetRequest otherwise.
@@ -47,9 +50,8 @@ public enum RequestFactory {
 
 		String requestedURL = portletRequest.getParameter(WIPortlet.LINK_URL_KEY);
 		String urlConcat = portletRequest.getParameter(WIPortlet.URL_CONCATENATION_KEY);
-		if (urlConcat != null) {
+		if (!Strings.isNullOrEmpty(urlConcat))
 			requestedURL += urlConcat;
-		}
 
 		HttpMethod httpMethod;
 		if (isMultipart)
@@ -59,7 +61,14 @@ public enum RequestFactory {
 		else
 			httpMethod = HttpMethod.GET;
 
-		return getRequest(portletRequest, requestedURL, resourceType, httpMethod, Maps.newHashMap(portletRequest.getParameterMap()), isMultipart);
+		Map<String, List<String>> map = Maps.newHashMap(Maps.transformValues(portletRequest.getParameterMap(), new Function<String[], List<String>>() {
+
+			public List<String> apply(String[] input) {
+				return Lists.newArrayList(input);
+			}
+		}));
+		
+		return getRequest(portletRequest, requestedURL, resourceType, httpMethod, map, isMultipart);
 	}
 
 	/**
@@ -76,9 +85,14 @@ public enum RequestFactory {
 	 *            parameters map, if any
 	 * @return a implementation of Request
 	 */
-	private Request getRequest(PortletRequest portletRequest, String requestedURL, ResourceType resourceType, HttpMethod httpMethod, Map<String, String[]> parameterMap, boolean isMultipart) {
-		if (isMultipart)
-			throw new InvalidParameterException("Multipart forms are not managed yet.");
+	private Request getRequest(PortletRequest portletRequest, String requestedURL, ResourceType resourceType, HttpMethod httpMethod, Map<String, List<String>> parameterMap, boolean isMultipart) {
+//		if (isMultipart) {
+//			try {
+//				return new MultipartRequest(requestedURL, resourceType, (ActionRequest) portletRequest);
+//			} catch (FileUploadException e) {
+//				e.printStackTrace();
+//			}
+//		}
 
 		if (httpMethod == HttpMethod.POST)
 			return new PostRequest(requestedURL, resourceType, parameterMap);
@@ -89,19 +103,38 @@ public enum RequestFactory {
 		if (!Strings.isNullOrEmpty(query)) {
 			requestedURL = "http://" + uri.getHost() + uri.getPath();
 			if (parameterMap == null)
-				parameterMap = new HashMap<String, String[]>();
+				parameterMap = Maps.newHashMap();
 
-			String[] params = query.split("&amp;");
-			for (String element : params) {
-				String[] keyValue = element.split("=");
-				parameterMap.put(keyValue[0], new String[] { keyValue[1] });
-			}
+			updateParameterMap(parameterMap, query);
 		}
 
 		return new GetRequest(requestedURL, resourceType, parameterMap);
 	}
 
-	public Request getRequest(String requestedURL, ResourceType resourceType, HttpMethod httpMethod, Map<String, String[]> parameterMap) {
+	private void updateParameterMap(Map<String, List<String>> parameterMap, String query) {
+		String[] splittedElement;
+		List<String> values;
+		String key, value;
+		
+		for(String element : Splitter.on("&amp;").split(query)) {
+			splittedElement = element.split("=");
+			if(splittedElement.length != 2)
+				continue;
+			
+			key = splittedElement[0];
+			value = splittedElement[1];
+			values = parameterMap.get(key);
+			
+			if(values == null) {
+				values = Lists.newArrayList();
+				parameterMap.put(key,  values);
+			}
+			
+			values.add(value);
+		}
+	}
+	
+	public Request getRequest(String requestedURL, ResourceType resourceType, HttpMethod httpMethod, Map<String, List<String>> parameterMap) {
 		return getRequest(null, requestedURL, resourceType, httpMethod, parameterMap, false);
 	}
 }
