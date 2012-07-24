@@ -2,6 +2,7 @@ package fr.ippon.wip.config.dao;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -15,16 +16,19 @@ import java.util.zip.ZipFile;
 import org.apache.commons.io.FilenameUtils;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.Iterators;
 
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.ZipConfiguration;
 
+import static com.google.common.collect.Iterators.filter;
+import static com.google.common.collect.Iterators.forEnumeration;
+
 /**
- * A decorator checking if some configuration have been dropped into the deploy directory
+ * A decorator checking if some configuration have been dropped into the deploy
+ * directory
  * 
  * @author Yohan Legat
- *
+ * 
  */
 public class DeployConfigurationDecorator extends ConfigurationDAODecorator {
 
@@ -45,6 +49,14 @@ public class DeployConfigurationDecorator extends ConfigurationDAODecorator {
 		}
 	};
 
+	// filter all zip files
+	private FilenameFilter zipFilter = new FilenameFilter() {
+
+		public boolean accept(File dir, String name) {
+			return dir.isFile() && name.endsWith(".zip");
+		}
+	};
+
 	// directory in which configurations are past for deployment
 	private File deployPath;
 
@@ -52,7 +64,6 @@ public class DeployConfigurationDecorator extends ConfigurationDAODecorator {
 
 	public DeployConfigurationDecorator(ConfigurationDAO dao) {
 		super(dao);
-
 		try {
 			URL url = getClass().getResource("/deploy");
 			deployPath = new File(url.toURI());
@@ -71,17 +82,14 @@ public class DeployConfigurationDecorator extends ConfigurationDAODecorator {
 	 */
 	private void checkDeploy() {
 		List<WIPConfiguration> deployedConfigurations = new ArrayList<WIPConfiguration>();
+		for (File file : deployPath.listFiles(zipFilter)) {
+			try {
+				deployedConfigurations = unzip(new ZipFile(file));
 
-		for (File file : deployPath.listFiles()) {
-			if (file.getName().endsWith(".zip")) {
-				try {
-					deployedConfigurations = unzip(new ZipFile(file));
-
-				} catch (ZipException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+			} catch (ZipException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
 
@@ -122,9 +130,9 @@ public class DeployConfigurationDecorator extends ConfigurationDAODecorator {
 	 * @param zipFile
 	 *            the file containing the configurations
 	 */
-	private List<WIPConfiguration> unzip(ZipFile zipFile) {
+	private List<WIPConfiguration> unzip(final ZipFile zipFile) {
 		List<WIPConfiguration> configurations = new ArrayList<WIPConfiguration>();
-		Iterator<? extends ZipEntry> xmlEntries = Iterators.filter(Iterators.forEnumeration(zipFile.entries()), xmlPredicate);
+		Iterator<? extends ZipEntry> xmlEntries = filter(forEnumeration(zipFile.entries()), xmlPredicate);
 
 		while (xmlEntries.hasNext()) {
 			try {
