@@ -56,7 +56,7 @@ public enum RequestFactory {
 		HttpMethod httpMethod;
 		if (isMultipart)
 			httpMethod = HttpMethod.POST;
-		if (portletRequest.getParameter(WIPortlet.METHOD_TYPE) != null)
+		else if (portletRequest.getParameter(WIPortlet.METHOD_TYPE) != null)
 			httpMethod = HttpMethod.valueOf(portletRequest.getParameter(WIPortlet.METHOD_TYPE).toUpperCase());
 		else
 			httpMethod = HttpMethod.GET;
@@ -86,21 +86,14 @@ public enum RequestFactory {
 	 * @return a implementation of Request
 	 */
 	private Request getRequest(PortletRequest portletRequest, String requestedURL, ResourceType resourceType, HttpMethod httpMethod, Map<String, List<String>> parameterMap, boolean isMultipart) {
-//		if (isMultipart) {
-//			try {
-//				return new MultipartRequest(requestedURL, resourceType, (ActionRequest) portletRequest);
-//			} catch (FileUploadException e) {
-//				e.printStackTrace();
-//			}
-//		}
-
-		if (httpMethod == HttpMethod.POST)
-			return new PostRequest(requestedURL, resourceType, parameterMap);
 		
 		URI uri = URI.create(requestedURL);
 		String query = uri.getQuery();
 
 		if (!Strings.isNullOrEmpty(query)) {
+			// hack; can't figure why separators are sometime "&" or "&amp;"...
+			query = query.replaceAll("amp;", "");
+			
 			requestedURL = "http://" + uri.getHost() + uri.getPath();
 			if (parameterMap == null)
 				parameterMap = Maps.newHashMap();
@@ -108,7 +101,18 @@ public enum RequestFactory {
 			updateParameterMap(parameterMap, query);
 		}
 
-		return new GetRequest(requestedURL, resourceType, parameterMap);
+	/*	if (isMultipart) {
+			try {
+				return new MultipartRequest(requestedURL, resourceType, (ActionRequest) portletRequest, parameterMap);
+			} catch (FileUploadException e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
+		else */if (httpMethod == HttpMethod.POST)
+			return new PostRequest(requestedURL, resourceType, parameterMap);
+		else
+			return new GetRequest(requestedURL, resourceType, parameterMap);
 	}
 
 	private void updateParameterMap(Map<String, List<String>> parameterMap, String query) {
@@ -116,7 +120,7 @@ public enum RequestFactory {
 		List<String> values;
 		String key, value;
 		
-		for(String element : Splitter.on("&amp;").split(query)) {
+		for(String element : Splitter.on("&").split(query)) {
 			splittedElement = element.split("=");
 			if(splittedElement.length != 2)
 				continue;
