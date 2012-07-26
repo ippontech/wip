@@ -10,7 +10,10 @@
 
     <portlet>
         <portlet-name>WIPConfiguration</portlet-name>
-        <instanceable>true</instanceable>
+        <control-panel-entry-category>portal</control-panel-entry-category>
+        <control-panel-entry-weight>1.0</control-panel-entry-weight>
+
+        <instanceable>false</instanceable>
         
         <header-portlet-css>/CodeMirror-2.25/lib/codemirror.css</header-portlet-css>
         <header-portlet-javascript>/CodeMirror-2.25/lib/codemirror.js</header-portlet-javascript>
