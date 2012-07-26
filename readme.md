@@ -1,24 +1,28 @@
 Web Integration Portlet (WIP)
 =======================
 
-WIP is an open source Java EE portlet developed by Ippon Technologies under GNU Lesser General Public License.
-It allows the integration of web pages in a Java EE portail with better fidelity than classical solutions.
+WIP is an open source JavaEE portlet developed by Ippon Technologies under GNU Lesser General Public License.
+It allows the integration of web applications in a JavaEE portal with greater control on what is rendered and how it is rendered.
 
 Why another Web Integration Portlet ?
 -------------------------------------
 
-Others solutions to integrate Web page in a portail lead to lesser quality result or control on the integrated content.
+Others solutions for such integration have some important limitations :
 
- * Using an iFrame is the best "fidelity" solution but you loose all control on the page and cannot filter for instance what is rendered or in what size it's rendered
+ * Portlets based on iFrame integration are very simple to deploy but you cannot control what is rendered in the remote application and how it is rendered
 
- * Others Integration portlets don't work well with modern web pages which append to have a lot of Javascript and CSS and navigation often breaks the hosting portail
+ * Other open-source reverse-proxy based portlets are not actively maintained or very tightly tied to a specific portal (ie. uPortal)
 
-Wip allows control and fidelity
+ * Commercial products come with a high cost and don't offer the same low-level control on portal integration
+
+WIP allows control and fidelity
 -------------------------------
  
-The Wip portlet acts like a kind of reverse proxy on the target page. It analyses it and transforms lnks, Stylesheets and Javascript inclusion to bring the best compromise between fidelity and control.
+The WIP portlet acts as a reverse proxy between the target application and the portal. It analyses contents and transforms links, stylesheets and Javascript inclusion to bring the same integration level with a true portlet application.
 
 Most of the CSS, Javascript and HTML header information will be correctly managed by WIP at the cost of some little overhead processing.
+
+WIP is bundled with Apache HttpComponents 4.1 and takes advantage of its EhCache integration in order to provide the best performances and availability.
 
 You'll also be able to intercept processing and get only a part of target page by cropping original content.
 
@@ -31,9 +35,9 @@ Run :
 
 Compatibility
 -------------
-WIP should be compatible with any JSR 268 compatible portail. We tested it with Liferay 5.2X and 6.0X and GateIn 3.X
+WIP should be compatible with any JSR 268 portal. We specifically tested it with Liferay 6.1 and GateIn 3.3
 
 Contribution
 ------------
-We releasing this software under GNU Lesser General Public License, hopping it will help companies to integrates web site in their portails.
-If you find this portlet useful, your contribution to the code is welcome
+We are releasing this software under GNU Lesser General Public License, hoping it will help you to integrate web applications in your portals.
+If you find this portlet useful, your contribution to the code is welcomed.
