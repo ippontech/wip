@@ -53,7 +53,7 @@ public class DeployConfigurationDecorator extends ConfigurationDAODecorator {
 	private FilenameFilter zipFilter = new FilenameFilter() {
 
 		public boolean accept(File dir, String name) {
-			return dir.isFile() && name.endsWith(".zip");
+			return name.endsWith(".zip");
 		}
 	};
 

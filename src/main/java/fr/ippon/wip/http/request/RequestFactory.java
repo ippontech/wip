@@ -11,8 +11,10 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.portlet.PortletFileUpload;
 
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -34,6 +36,13 @@ public enum RequestFactory {
 	 */
 	INSTANCE;
 	
+	private static final Function<String[], List<String>> arrayToListFunction = new Function<String[], List<String>>() {
+
+		public List<String> apply(String[] input) {
+			return Lists.newArrayList(input);
+		}
+	};
+	
 	/**
 	 * Return a request instance. The request type will be PostRequest if the
 	 * resource type is POST, GetRequest otherwise.
@@ -46,7 +55,15 @@ public enum RequestFactory {
 		if (portletRequest instanceof ActionRequest)
 			isMultipart = PortletFileUpload.isMultipartContent((ActionRequest) portletRequest);
 
-		ResourceType resourceType = ResourceType.valueOf(portletRequest.getParameter(WIPortlet.RESOURCE_TYPE_KEY));
+		// javascript client may have append data to the WIP generated URL, so we make sure we get the appropriate resource type
+		final String resourceParameter = portletRequest.getParameter(WIPortlet.RESOURCE_TYPE_KEY);
+		ResourceType resourceType = Iterables.filter(Lists.newArrayList(ResourceType.values()), new Predicate<ResourceType>() {
+
+			public boolean apply(ResourceType input) {
+				return resourceParameter.startsWith(input.name());
+			}
+			
+		}).iterator().next();
 
 		String requestedURL = portletRequest.getParameter(WIPortlet.LINK_URL_KEY);
 		String urlConcat = portletRequest.getParameter(WIPortlet.URL_CONCATENATION_KEY);
@@ -61,12 +78,7 @@ public enum RequestFactory {
 		else
 			httpMethod = HttpMethod.GET;
 
-		Map<String, List<String>> map = Maps.newHashMap(Maps.transformValues(portletRequest.getParameterMap(), new Function<String[], List<String>>() {
-
-			public List<String> apply(String[] input) {
-				return Lists.newArrayList(input);
-			}
-		}));
+		Map<String, List<String>> map = Maps.newHashMap(Maps.transformValues(portletRequest.getParameterMap(), arrayToListFunction));
 		
 		return getRequest(portletRequest, requestedURL, resourceType, httpMethod, map, isMultipart);
 	}
@@ -86,7 +98,6 @@ public enum RequestFactory {
 	 * @return a implementation of Request
 	 */
 	private Request getRequest(PortletRequest portletRequest, String requestedURL, ResourceType resourceType, HttpMethod httpMethod, Map<String, List<String>> parameterMap, boolean isMultipart) {
-		
 		URI uri = URI.create(requestedURL);
 		String query = uri.getQuery();
 
@@ -101,7 +112,7 @@ public enum RequestFactory {
 			updateParameterMap(parameterMap, query);
 		}
 
-	/*	if (isMultipart) {
+		if (isMultipart) {
 			try {
 				return new MultipartRequest(requestedURL, resourceType, (ActionRequest) portletRequest, parameterMap);
 			} catch (FileUploadException e) {
@@ -109,7 +120,7 @@ public enum RequestFactory {
 				return null;
 			}
 		}
-		else */if (httpMethod == HttpMethod.POST)
+		else if (httpMethod == HttpMethod.POST)
 			return new PostRequest(requestedURL, resourceType, parameterMap);
 		else
 			return new GetRequest(requestedURL, resourceType, parameterMap);

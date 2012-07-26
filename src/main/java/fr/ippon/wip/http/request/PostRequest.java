@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Container class for all data describing an POST HTTP request from a remote host.
+ * Container class for all data describing a POST HTTP request from a remote host.
  * 
  * @author Yohan Legat
  */

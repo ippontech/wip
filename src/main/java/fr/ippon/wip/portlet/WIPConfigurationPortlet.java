@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipOutputStream;
 
@@ -49,7 +48,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.portlet.PortletFileUpload;
-import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
 
 import fr.ippon.wip.config.WIPConfiguration;
@@ -63,8 +62,10 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	private static final Logger LOG = Logger.getLogger(WIPConfigurationPortlet.class.getName());
 	
 	private ConfigurationDAO configurationDAO;
-	
+
 	private PortletFileUpload fileUploadPortlet;
+	
+	private File deployFile = null;
 
 	/**
 	 * Set if necessary the default configuration and page display in the
@@ -452,18 +453,19 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	}
 
 	@Override
-	public void init() throws PortletException {
-		super.init();
-		configurationDAO = ConfigurationDAOFactory.getInstance().getXMLInstance();
-
-		DiskFileItemFactory factory = new DiskFileItemFactory();
-		fileUploadPortlet = new PortletFileUpload(factory);
-	}
-
-	@Override
 	public void init(PortletConfig config) throws PortletException {
 		super.init(config);
 		configurationDAO = ConfigurationDAOFactory.getInstance().getXMLInstance();
+
+		try {
+			URL url = getClass().getResource("/deploy");
+			deployFile = new File(url.toURI());
+		} catch (URISyntaxException e) {
+			e.printStackTrace(); // should not happened
+		}
+		
+		DiskFileItemFactory factory = new DiskFileItemFactory(0, deployFile);
+		fileUploadPortlet = new PortletFileUpload(factory);
 	}
 
 	/**
@@ -473,26 +475,23 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	@Override
 	public void processAction(ActionRequest request, ActionResponse response) throws PortletException, IOException {
 		PortletSession session = request.getPortletSession();
-
-		if(PortletFileUpload.isMultipartContent(request)) {
+		
+		if(fileUploadPortlet.isMultipartContent(request)) {
 			try {
-				URL url = getClass().getResource("/deploy");
-				String deployPath = new File(url.toURI()).toString();
-				List<DiskFileItem> files = fileUploadPortlet.parseRequest(request);
-				for(DiskFileItem file : files) {
-					File deployFile = new File(deployPath + "/" + file.getName());
-					FileUtils.copyInputStreamToFile(file.getInputStream(), deployFile);
+				List<DiskFileItem> fileItems = fileUploadPortlet.parseRequest(request);
+				for(DiskFileItem fileItem : fileItems) {
+					String newName = FilenameUtils.concat(deployFile.getAbsolutePath(), fileItem.getName());
+					File file = fileItem.getStoreLocation();
+					file.renameTo(new File(newName));
 				}
 				
-				LOG.log(Level.FINE, "Configurations have been uploaded.");
+				request.setAttribute(Attributes.PAGE.name(), Pages.EXISTING_CONFIG.name());
 				
 			} catch (FileUploadException e) {
-				LOG.log(Level.WARNING, "The file upload has failed.", e);
-				return;
-			} catch (URISyntaxException e) {
-				LOG.log(Level.WARNING, "The file upload has failed.", e);
-				return;
+				e.printStackTrace();
 			}
+			
+			return;
 		}
 		
 		String page = request.getParameter(Attributes.PAGE.name());

@@ -60,15 +60,15 @@
 
 <div class="config_menu">
     <a href="<portlet:actionURL><portlet:param name="<%= Attributes.PAGE.name() %>" value="<%= Pages.GENERAL_SETTINGS.name() %>"/></portlet:actionURL>" title="Current config">
-        <fmt:message key="wip.config.current"/>
+        <fmt:message key="wip.config.edit"/>
     </a>
     <a href="<portlet:actionURL><portlet:param name="<%= Attributes.PAGE.name() %>" value="<%= Pages.EXISTING_CONFIG.name() %>"/></portlet:actionURL>"
        title="Saved config">
-        <fmt:message key="wip.config.existing"/>
+        <fmt:message key="wip.config.select"/>
     </a>
     <a href="<portlet:actionURL><portlet:param name="<%= Attributes.PAGE.name() %>" value="<%= Pages.SAVE_CONFIG.name() %>"/></portlet:actionURL>"
        title="Saving config">
-        <fmt:message key="wip.config.savecurrent"/>
+        <fmt:message key="wip.config.new"/>
     </a>
 </div>
 

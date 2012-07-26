@@ -11,7 +11,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
 
 /**
- * Container class for all data describing an POST HTTP request from a remote host.
+ * Container class for all data describing a GET HTTP request from a remote host.
  * 
  * @author Yohan Legat
  *
