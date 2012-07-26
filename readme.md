@@ -18,13 +18,13 @@ Others solutions for such integration have some important limitations :
 WIP allows control and fidelity
 -------------------------------
  
-The WIP portlet acts as a reverse proxy between the target application and the portal. It analyses contents and transforms links, stylesheets and Javascript inclusion to bring the same integration level with a true portlet application.
+The WIP portlet acts as a reverse proxy between the target application and the portal. It analyses contents and transforms links, stylesheets and Javascript inclusion to bring the same integration level than with a true portlet application.
 
 Most of the CSS, Javascript and HTML header information will be correctly managed by WIP at the cost of some little overhead processing.
 
 WIP is bundled with Apache HttpComponents 4.1 and takes advantage of its EhCache integration in order to provide the best performances and availability.
 
-You'll also be able to intercept processing and get only a part of target page by cropping original content.
+You'll also be able to control content processing and specify what part of the application you want to integrate with XSLT or XPath.
 
 
 Test it yourself
@@ -33,7 +33,7 @@ Follow our 30 minutes [tutorial](https://github.com/ippontech/wip/wiki/Tutorial)
 
 Compatibility
 -------------
-WIP should be compatible with any JSR 268 portal. We specifically tested it with Liferay 6.1 and GateIn 3.3
+WIP should work on any JSR 268 portal. We specifically tested it with Liferay 6.1 and GateIn 3.3
 
 Contribution
 ------------
