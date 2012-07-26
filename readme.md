@@ -27,11 +27,9 @@ WIP is bundled with Apache HttpComponents 4.1 and takes advantage of its EhCache
 You'll also be able to intercept processing and get only a part of target page by cropping original content.
 
 
-To Build
+Test it yourself
 --------
-Run :
-
-	mvn clean install
+Follow our 30 minutes [tutorial](https://github.com/ippontech/wip/wiki/Tutorial) to see for yourself the main features of WIP !
 
 Compatibility
 -------------
