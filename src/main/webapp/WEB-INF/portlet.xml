@@ -11,6 +11,11 @@
 
         <portlet-class>fr.ippon.wip.portlet.WIPortlet</portlet-class>
 
+        <init-param>
+            <name>RESPONSE_STORE_MAX_ENTRIES</name>
+            <value>100</value>
+        </init-param>
+
         <supports>
             <mime-type>text/html</mime-type>
             <portlet-mode>VIEW</portlet-mode>
@@ -28,10 +33,6 @@
             <keywords>WIP</keywords>
         </portlet-info>
         
-        <init-param>
-        	<name>RESPONSE_STORE_MAX_ENTRIES</name>
-        	<value>100</value>
-        </init-param>
     </portlet>
     
         <portlet>
