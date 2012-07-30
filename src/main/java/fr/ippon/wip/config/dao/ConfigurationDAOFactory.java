@@ -4,6 +4,8 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import javax.portlet.PortletContext;
+
 /**
  * A singleton factory for creating instances of WIP configuration data access
  * object.
@@ -11,26 +13,24 @@ import java.net.URL;
  * @author Yohan Legat
  * 
  */
-public class ConfigurationDAOFactory {
+public enum ConfigurationDAOFactory {
+
+	INSTANCE;
 
 	private ConfigurationDAO xmlDAO;
 
-	private static ConfigurationDAOFactory instance;
+	private PortletContext context;
 
 	/**
-	 * Get the unique instance of this class, creating it if necessary
+	 * We need a reference to the portlet context for retrieving the path to the
+	 * server configuration folder. Any portlet application using this factory
+	 * should call this method to make sure it has been set.
 	 * 
-	 * @return
+	 * @param context
 	 */
-	public synchronized static ConfigurationDAOFactory getInstance() {
-		if (instance == null)
-			instance = new ConfigurationDAOFactory();
-
-		return instance;
-	}
-
-	private ConfigurationDAOFactory() {
-
+	public synchronized void setPortletContext(PortletContext context) {
+		if (this.context == null)
+			this.context = context;
 	}
 
 	/**
@@ -39,19 +39,34 @@ public class ConfigurationDAOFactory {
 	 * 
 	 * @return the instance of a configuration DAO
 	 */
-	public synchronized ConfigurationDAO getXMLInstance() {
+	public synchronized ConfigurationDAO getXMLDAOInstance() {
 		if (xmlDAO == null) {
-			try {
-				// set the configuration files location
-				URL url = getClass().getResource("/configurations");
-				String pathConfigFiles = new File(url.toURI()).toString();
-				xmlDAO = new DeployConfigurationDecorator(new ConfigurationCacheDecorator(new XMLConfigurationDAO(pathConfigFiles)));
+			String pathConfigFiles = context.getRealPath("../../conf/wip");
+			File configFolder = new File(pathConfigFiles);
+			if(!configFolder.exists())
+				configFolder.mkdir();
+			
+			xmlDAO = new DeployConfigurationDecorator(new ConfigurationCacheDecorator(new XMLConfigurationDAO(pathConfigFiles)));
 
-			} catch (URISyntaxException e) {
-				e.printStackTrace();
-			}
+			// we create the default configuration if it does not exist in the
+			// server configuration folder
+			if (xmlDAO.getDefaultConfiguration() == null)
+				createDefaultConfiguration(xmlDAO);
 		}
 
 		return xmlDAO;
+	}
+
+	private void createDefaultConfiguration(ConfigurationDAO configurationDAO) {
+		try {
+			URL url = getClass().getResource("/default-configuration");
+			String defaultConfigurationFolder = new File(url.toURI()).toString();
+			ConfigurationDAO defaultConfigurationDAO = new XMLConfigurationDAO(defaultConfigurationFolder);
+			for (String configurationName : defaultConfigurationDAO.getConfigurationsNames())
+				configurationDAO.create(defaultConfigurationDAO.read(configurationName));
+
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
 	}
 }

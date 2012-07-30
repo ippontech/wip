@@ -20,6 +20,7 @@ package fr.ippon.wip.portlet;
 
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.dao.ConfigurationDAO;
+import fr.ippon.wip.config.dao.ConfigurationDAOFactory;
 import fr.ippon.wip.http.HttpExecutor;
 import fr.ippon.wip.http.Response;
 import fr.ippon.wip.http.hc.HttpClientExecutor;
@@ -76,6 +77,8 @@ public class WIPortlet extends GenericPortlet {
 
 		// initialization of logging singleton
 		WIPLogging logging = WIPLogging.INSTANCE;
+		
+		ConfigurationDAOFactory.INSTANCE.setPortletContext(config.getPortletContext());
 		
 		int responseStoreMaxEntries = Integer.parseInt(config.getInitParameter("RESPONSE_STORE_MAX_ENTRIES"));
 		ResponseStore.getInstance().setMaxEntries(responseStoreMaxEntries);

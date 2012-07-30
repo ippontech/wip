@@ -43,7 +43,7 @@ public class WIPUtil {
 
     private static final Map<Locale, ResourceBundle> bundles = new HashMap<Locale, ResourceBundle>();
 
-    private static ConfigurationDAO configurationDAO = ConfigurationDAOFactory.getInstance().getXMLInstance();
+    private static ConfigurationDAO configurationDAO = ConfigurationDAOFactory.INSTANCE.getXMLDAOInstance();
     
     public static String getMessage(String key, Locale locale) {
         ResourceBundle bundle = bundles.get(locale);

@@ -143,7 +143,7 @@ public class XMLConfigurationDAO extends ConfigurationDAO {
 	 * @return the file associated to the configuration
 	 */
 	public File getConfigurationFile(String name, int fileType) {
-		return new File(pathConfigFiles + "/" + getConfigurationName(name, fileType));
+		return new File(FilenameUtils.concat(pathConfigFiles, getConfigurationName(name, fileType)));
 	}
 
 	@Override

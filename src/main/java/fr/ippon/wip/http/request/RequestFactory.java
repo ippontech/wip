@@ -1,8 +1,8 @@
 package fr.ippon.wip.http.request;
 
 import java.net.URI;
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.PortletRequest;
@@ -10,13 +10,13 @@ import javax.portlet.PortletRequest;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.portlet.PortletFileUpload;
 
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 
 import fr.ippon.wip.portlet.WIPortlet;
 
@@ -35,13 +35,6 @@ public enum RequestFactory {
 	 * The singleton instance
 	 */
 	INSTANCE;
-	
-	private static final Function<String[], List<String>> arrayToListFunction = new Function<String[], List<String>>() {
-
-		public List<String> apply(String[] input) {
-			return Lists.newArrayList(input);
-		}
-	};
 	
 	/**
 	 * Return a request instance. The request type will be PostRequest if the
@@ -78,9 +71,7 @@ public enum RequestFactory {
 		else
 			httpMethod = HttpMethod.GET;
 
-		Map<String, List<String>> map = Maps.newHashMap(Maps.transformValues(portletRequest.getParameterMap(), arrayToListFunction));
-		
-		return getRequest(portletRequest, requestedURL, resourceType, httpMethod, map, isMultipart);
+		return getRequest(portletRequest, requestedURL, resourceType, httpMethod, portletRequest.getParameterMap(), isMultipart);
 	}
 
 	/**
@@ -97,18 +88,21 @@ public enum RequestFactory {
 	 *            parameters map, if any
 	 * @return a implementation of Request
 	 */
-	private Request getRequest(PortletRequest portletRequest, String requestedURL, ResourceType resourceType, HttpMethod httpMethod, Map<String, List<String>> parameterMap, boolean isMultipart) {
+	private Request getRequest(PortletRequest portletRequest, String requestedURL, ResourceType resourceType, HttpMethod httpMethod, Map<String, String[]> originalMap, boolean isMultipart) {
 		URI uri = URI.create(requestedURL);
 		String query = uri.getQuery();
 
+		Multimap<String, String> parameterMap = ArrayListMultimap.create();
+		if (originalMap != null)
+			for(Entry<String, String[]> entry : originalMap.entrySet())
+				for(String value : entry.getValue())
+					parameterMap.put(entry.getKey(), value);
+		
 		if (!Strings.isNullOrEmpty(query)) {
 			// hack; can't figure why separators are sometime "&" or "&amp;"...
 			query = query.replaceAll("amp;", "");
 			
 			requestedURL = "http://" + uri.getHost() + uri.getPath();
-			if (parameterMap == null)
-				parameterMap = Maps.newHashMap();
-
 			updateParameterMap(parameterMap, query);
 		}
 
@@ -126,9 +120,8 @@ public enum RequestFactory {
 			return new GetRequest(requestedURL, resourceType, parameterMap);
 	}
 
-	private void updateParameterMap(Map<String, List<String>> parameterMap, String query) {
+	private void updateParameterMap(Multimap<String, String> parameterMap, String query) {
 		String[] splittedElement;
-		List<String> values;
 		String key, value;
 		
 		for(String element : Splitter.on("&").split(query)) {
@@ -138,18 +131,11 @@ public enum RequestFactory {
 			
 			key = splittedElement[0];
 			value = splittedElement[1];
-			values = parameterMap.get(key);
-			
-			if(values == null) {
-				values = Lists.newArrayList();
-				parameterMap.put(key,  values);
-			}
-			
-			values.add(value);
+			parameterMap.put(key, value);
 		}
 	}
 	
-	public Request getRequest(String requestedURL, ResourceType resourceType, HttpMethod httpMethod, Map<String, List<String>> parameterMap) {
+	public Request getRequest(String requestedURL, ResourceType resourceType, HttpMethod httpMethod, Map<String, String[]> parameterMap) {
 		return getRequest(null, requestedURL, resourceType, httpMethod, parameterMap, false);
 	}
 }

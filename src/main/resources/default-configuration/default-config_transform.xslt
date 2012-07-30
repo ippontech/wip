@@ -104,7 +104,7 @@
                     <xsl:text>text/css</xsl:text>
                 </xsl:attribute>
                 <xsl:attribute name="href">
-                    <xsl:value-of
+                    <xsl:value-of 
                             select="urlfactory:createProxyUrl( $urlfact, ./@href, 'GET', 'CSS', $response)"/>
                 </xsl:attribute>
             </xsl:element>

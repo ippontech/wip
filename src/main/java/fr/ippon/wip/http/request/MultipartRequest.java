@@ -4,7 +4,6 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.portlet.ActionRequest;
@@ -19,6 +18,8 @@ import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.entity.mime.content.StringBody;
+
+import com.google.common.collect.Multimap;
 
 /**
  * Container class for all data describing a POST multipart-content request from
@@ -38,7 +39,7 @@ public class MultipartRequest extends AbstractRequest implements Serializable, R
 		fileUploadPortlet = new PortletFileUpload(factory);
 	}
 
-	protected MultipartRequest(String url, ResourceType resourceType, ActionRequest portletRequest, Map<String, List<String>> parameterMap) throws FileUploadException {
+	protected MultipartRequest(String url, ResourceType resourceType, ActionRequest portletRequest, Multimap<String, String> parameterMap) throws FileUploadException {
 		super(url, HttpMethod.POST, resourceType, parameterMap);
 		files = fileUploadPortlet.parseRequest(portletRequest);
 	}
@@ -58,9 +59,8 @@ public class MultipartRequest extends AbstractRequest implements Serializable, R
 
 			// some request may have additional parameters in a query string
 			if(parameterMap != null)
-				for (Entry<String, List<String>> entry : parameterMap.entrySet())
-					for (String value : entry.getValue())
-						multipartEntity.addPart(entry.getKey(), new StringBody(value));
+				for (Entry<String, String> entry : parameterMap.entries())
+					multipartEntity.addPart(entry.getKey(), new StringBody(entry.getValue()));
 
 		
 		} catch (Exception e) {

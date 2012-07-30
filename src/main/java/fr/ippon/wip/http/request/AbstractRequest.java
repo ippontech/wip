@@ -1,10 +1,8 @@
 package fr.ippon.wip.http.request;
 
-import java.util.List;
-import java.util.Map;
-
 import com.google.common.base.Predicate;
-import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 import fr.ippon.wip.portlet.WIPortlet;
 
@@ -22,7 +20,7 @@ public abstract class AbstractRequest implements Request {
 
 	protected ResourceType resourceType;
 
-	protected Map<String, List<String>> parameterMap;
+	protected Multimap<String, String> parameterMap;
 	
 	private static final Predicate<String> filterMapPredicate = new Predicate<String>() {
 		
@@ -31,7 +29,7 @@ public abstract class AbstractRequest implements Request {
 		}
 	};
 
-	protected AbstractRequest(String url, HttpMethod httpMethod, ResourceType resourceType, Map<String, List<String>> parameterMap) {
+	protected AbstractRequest(String url, HttpMethod httpMethod, ResourceType resourceType, Multimap<String, String> parameterMap) {
 		this.requestedURL = url;
 		this.httpMethod = httpMethod;
 		this.resourceType = resourceType;
@@ -44,11 +42,11 @@ public abstract class AbstractRequest implements Request {
 	 * 
 	 * @param parameterMap
 	 */
-	private void copyParameters(Map<String, List<String>> parameterMap) {
+	private void copyParameters(Multimap<String, String> parameterMap) {
 		if (parameterMap == null || parameterMap.size() == 0)
 			return;
 
-		this.parameterMap = Maps.filterKeys(parameterMap, filterMapPredicate);
+		this.parameterMap = Multimaps.filterKeys(parameterMap, filterMapPredicate);
 	}
 
 	public HttpMethod getHttpMethod() {

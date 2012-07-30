@@ -455,7 +455,8 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	@Override
 	public void init(PortletConfig config) throws PortletException {
 		super.init(config);
-		configurationDAO = ConfigurationDAOFactory.getInstance().getXMLInstance();
+		ConfigurationDAOFactory.INSTANCE.setPortletContext(config.getPortletContext());
+		configurationDAO = ConfigurationDAOFactory.INSTANCE.getXMLDAOInstance();
 
 		try {
 			URL url = getClass().getResource("/deploy");
