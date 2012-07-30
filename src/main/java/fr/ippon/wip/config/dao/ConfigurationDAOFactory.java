@@ -1,7 +1,6 @@
 package fr.ippon.wip.config.dao;
 
 import java.io.File;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import javax.portlet.PortletContext;
@@ -43,9 +42,9 @@ public enum ConfigurationDAOFactory {
 		if (xmlDAO == null) {
 			String pathConfigFiles = context.getRealPath("../../conf/wip");
 			File configFolder = new File(pathConfigFiles);
-			if(!configFolder.exists())
+			if (!configFolder.exists())
 				configFolder.mkdir();
-			
+
 			xmlDAO = new DeployConfigurationDecorator(new ConfigurationCacheDecorator(new XMLConfigurationDAO(pathConfigFiles)));
 
 			// we create the default configuration if it does not exist in the
@@ -58,15 +57,10 @@ public enum ConfigurationDAOFactory {
 	}
 
 	private void createDefaultConfiguration(ConfigurationDAO configurationDAO) {
-		try {
-			URL url = getClass().getResource("/default-configuration");
-			String defaultConfigurationFolder = new File(url.toURI()).toString();
-			ConfigurationDAO defaultConfigurationDAO = new XMLConfigurationDAO(defaultConfigurationFolder);
-			for (String configurationName : defaultConfigurationDAO.getConfigurationsNames())
-				configurationDAO.create(defaultConfigurationDAO.read(configurationName));
-
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
+		URL url = getClass().getResource("/default-configuration");
+		String defaultConfigurationFolder = url.getFile();
+		ConfigurationDAO defaultConfigurationDAO = new XMLConfigurationDAO(defaultConfigurationFolder);
+		for (String configurationName : defaultConfigurationDAO.getConfigurationsNames())
+			configurationDAO.create(defaultConfigurationDAO.read(configurationName));
 	}
 }
