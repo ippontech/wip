@@ -48,22 +48,7 @@
                 <%= printHelp("wip.help.forcepagecaching", locale) %>
             </p>
 
-            <p class="line" id="pageCacheTimeoutBloc" <% if (!wipConf.isForcePageCaching())
-                out.print("style=\"display:none;\""); %>>
-                <label for="pageCacheTimeout"><fmt:message key="wip.config.pagecachetimeout"/> :</label>
-                <input type="text" name="pageCacheTimeout" id="pageCacheTimeout"
-                       value="<%= wipConf.getPageCacheTimeout() %>" size="10"/>
-                <%= printHelp("wip.help.pagecachetimeout", locale) %>
-            </p>
-
             <h5><fmt:message key="wip.config.resourcecache"/></h5>
-
-            <p class="line">
-                <label for="resourceCachePublic"><fmt:message key="wip.config.resourcecachepublic"/> :</label>
-                <input type="checkbox" name="resourceCachePublic"
-                       id="resourceCachePublic" <% if (wipConf.isResourceCachePublic()) out.print("checked"); %> />
-                <%= printHelp("wip.help.resourcecachepublic", locale) %>
-            </p>
 
             <p class="line">
                 <label for="forceResourceCaching"><fmt:message key="wip.config.forceresourcecaching"/> :</label>
@@ -71,14 +56,6 @@
                        onclick="checkForceResourceCaching();" <% if (wipConf.isForceResourceCaching())
                     out.print("checked"); %> />
                 <%= printHelp("wip.help.forceresourcecaching", locale) %>
-            </p>
-
-            <p class="line" id="resourceCacheTimeoutBloc" <% if (!wipConf.isForceResourceCaching())
-                out.print("style=\"display:none;\""); %>>
-                <label for="resourceCacheTimeout"><fmt:message key="wip.config.resourcecachetimeout"/> :</label>
-                <input type="text" name="resourceCacheTimeout" id="resourceCacheTimeout"
-                       value="<%= wipConf.getResourceCacheTimeout() %>" size="10"/>
-                <%= printHelp("wip.help.resourcecachetimeout", locale) %>
             </p>
         </div>
         <p class="submit">

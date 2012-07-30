@@ -48,17 +48,9 @@
 
         <pageCachePrivate>false</pageCachePrivate>
 
-        <resourceCachePublic>false</resourceCachePublic>
-
         <forcePageCaching>false</forcePageCaching>
 
         <forceResourceCaching>false</forceResourceCaching>
-
-        <pageCacheTimeout>0</pageCacheTimeout>
-
-        <resourceCacheTimeout>0</resourceCacheTimeout>
-
-        <cacheDateRate>30</cacheDateRate>
 
         <!-- LTPA SSO Authentication -->
 

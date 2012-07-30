@@ -52,15 +52,9 @@ public class WIPConfiguration implements Cloneable {
 
 	private boolean ltpaSsoAuthentication;
 
-	private int resourceCacheTimeout;
-
-	private int pageCacheTimeout;
-
 	private boolean forceResourceCaching;
 
 	private boolean forcePageCaching;
-
-	private boolean resourceCachePublic;
 
 	private boolean pageCachePrivate;
 
@@ -102,8 +96,6 @@ public class WIPConfiguration implements Cloneable {
 
 	private String xsltTransform;
 
-	private int cacheDateRate;
-
 	private List<String> javascriptUrls;
 
 	private Map<String, PostRequest.ResourceType> javascriptResourcesMap;
@@ -133,16 +125,6 @@ public class WIPConfiguration implements Cloneable {
 		}
 
 		return clone;
-	}
-
-	/**
-	 * Get the date rate to determinate the freshness according to creation
-	 * date, current date and last modification date.
-	 * 
-	 * @return the cache date rate
-	 */
-	public int getCacheDateRate() {
-		return cacheDateRate;
 	}
 
 	/**
@@ -268,15 +250,6 @@ public class WIPConfiguration implements Cloneable {
 	}
 
 	/**
-	 * Get the timeout for page caching.
-	 * 
-	 * @return the timeout
-	 */
-	public int getPageCacheTimeout() {
-		return pageCacheTimeout;
-	}
-
-	/**
 	 * Get the current id of the div containing the content of the distant
 	 * application.
 	 * 
@@ -293,15 +266,6 @@ public class WIPConfiguration implements Cloneable {
 	 */
 	public String getPortletTitle() {
 		return portletTitle;
-	}
-
-	/**
-	 * Get the timeout for resource caching.
-	 * 
-	 * @return the timeout
-	 */
-	public int getResourceCacheTimeout() {
-		return resourceCacheTimeout;
 	}
 
 	/**
@@ -462,15 +426,6 @@ public class WIPConfiguration implements Cloneable {
 	}
 
 	/**
-	 * Check if resources have to be cached as public.
-	 * 
-	 * @return true if public, else false
-	 */
-	public boolean isResourceCachePublic() {
-		return resourceCachePublic;
-	}
-
-	/**
 	 * Enable or not to replace CSS absolute positioning by relative
 	 * positioning.
 	 * 
@@ -491,10 +446,6 @@ public class WIPConfiguration implements Cloneable {
 	 */
 	public void setAddPrefix(boolean addPrefix) {
 		this.addPrefix = addPrefix;
-	}
-
-	public void setCacheDateRate(int cacheDateRate) {
-		this.cacheDateRate = cacheDateRate;
 	}
 
 	/**
@@ -689,16 +640,6 @@ public class WIPConfiguration implements Cloneable {
 	}
 
 	/**
-	 * Set the timeout for page caching.
-	 * 
-	 * @param pageCacheTimeout
-	 *            the timeout to set
-	 */
-	public void setPageCacheTimeout(int pageCacheTimeout) {
-		this.pageCacheTimeout = pageCacheTimeout;
-	}
-
-	/**
 	 * Set the id of the div containing the content of the distant application.
 	 * This is useful to protect the CSS code of the portal from the CSS
 	 * retrieved from the distant application
@@ -718,26 +659,6 @@ public class WIPConfiguration implements Cloneable {
 	 */
 	public void setPortletTitle(String portletTitle) {
 		this.portletTitle = portletTitle;
-	}
-
-	/**
-	 * Force the resources to be cached as public or not.
-	 * 
-	 * @param resourceCachePublic
-	 *            true to force public, else false
-	 */
-	public void setResourceCachePublic(boolean resourceCachePublic) {
-		this.resourceCachePublic = resourceCachePublic;
-	}
-
-	/**
-	 * Set the timeout for resource caching.
-	 * 
-	 * @param resourceCacheTimeout
-	 *            the timeout to set
-	 */
-	public void setResourceCacheTimeout(int resourceCacheTimeout) {
-		this.resourceCacheTimeout = resourceCacheTimeout;
 	}
 
 	/**

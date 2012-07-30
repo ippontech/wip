@@ -164,11 +164,6 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 			if (tmpPageCachePrivate == null)
 				pageCachePrivate = false;
 
-			String tmpResourceCachePublic = request.getParameter("resourceCachePublic");
-			boolean resourceCachePublic = true;
-			if (tmpResourceCachePublic == null)
-				resourceCachePublic = false;
-
 			String tmpForcePageCaching = request.getParameter("forcePageCaching");
 			boolean forcePageCaching = true;
 			if (tmpForcePageCaching == null)
@@ -179,23 +174,9 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 			if (tmpForceResourceCaching == null)
 				forceResourceCaching = false;
 
-			String tmpPageCacheTimeout = request.getParameter("pageCacheTimeout");
-			int pageCacheTimeout = 0;
-			if (tmpPageCacheTimeout != null)
-				pageCacheTimeout = Integer.parseInt(tmpPageCacheTimeout);
-
-			String tmpResourceCacheTimeout = request.getParameter("resourceCacheTimeout");
-			int resourceCacheTimeout = 0;
-			if (tmpResourceCacheTimeout != null)
-				resourceCacheTimeout = Integer.parseInt(tmpResourceCacheTimeout);
-
 			wipConfig.setPageCachePrivate(pageCachePrivate);
-			wipConfig.setResourceCachePublic(resourceCachePublic);
 			wipConfig.setForcePageCaching(forcePageCaching);
 			wipConfig.setForceResourceCaching(forceResourceCaching);
-			wipConfig.setPageCacheTimeout(pageCacheTimeout);
-			wipConfig.setResourceCacheTimeout(resourceCacheTimeout);
-
 		}
 
 		// Sending errors to the portlet session
