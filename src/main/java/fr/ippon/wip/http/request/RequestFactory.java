@@ -117,7 +117,7 @@ public enum RequestFactory {
 		else if (httpMethod == HttpMethod.POST)
 			return new PostRequest(requestedURL, resourceType, parameterMap);
 		else
-			return new GetRequest(requestedURL, resourceType, parameterMap);
+			return new CacheExtensionRequestDecorator(new GetRequest(requestedURL, resourceType, parameterMap));
 	}
 
 	private void updateParameterMap(Multimap<String, String> parameterMap, String query) {
