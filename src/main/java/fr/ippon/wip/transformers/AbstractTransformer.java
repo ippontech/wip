@@ -27,7 +27,6 @@ import org.xml.sax.SAXException;
 import javax.portlet.PortletRequest;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 
 /**
@@ -42,8 +41,6 @@ public abstract class AbstractTransformer implements WIPTransformer {
     protected final UrlFactory urlFactory;
     
     protected final PortletRequest portletRequest;
-    
-    private static final Logger LOG = Logger.getLogger(AbstractTransformer.class.getName());
     
     public AbstractTransformer(PortletRequest portletRequest, String actualUrl) {
     	this.portletRequest = portletRequest;

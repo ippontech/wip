@@ -20,13 +20,12 @@ package fr.ippon.wip.transformers;
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.http.UrlFactory;
 import fr.ippon.wip.transformers.handler.BaseHandlerDecorator;
+import fr.ippon.wip.transformers.pool.CloseableXmlReader;
 import fr.ippon.wip.util.WIPUtil;
 
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
-import org.xml.sax.helpers.XMLReaderFactory;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
@@ -44,105 +43,100 @@ import java.net.MalformedURLException;
 /**
  * A transformer to process the rewriting of HTML content. This transformer uses
  * a XSLT stylesheet to perform its modifications.
- *
+ * 
  * @author François Prot
  */
 public class HTMLTransformer extends AbstractTransformer {
 
-    /**
-     * The parser used to parse content from html to xhtml
-     */
-    private static final String parserClassName = "org.cyberneko.html.parsers.SAXParser";
+	/**
+	 * The instance of the WIPConfiguration class
+	 */
+	private final WIPConfiguration wipConfig;
 
-    /**
-     * The instance of the WIPConfiguration class
-     */
-    private final WIPConfiguration wipConfig;
+	/**
+	 * A portletRequest object
+	 */
+	private final PortletRequest request;
 
-    /**
-     * A portletRequest object
-     */
-    private final PortletRequest request;
+	/**
+	 * A portletResponse object sent to the rewriters to create PortletURLs when
+	 * needed
+	 */
+	private final PortletResponse response;
 
-    /**
-     * A portletResponse object sent to the rewriters  to create PortletURLs when needed
-     */
-    private final PortletResponse response;
-    
-    /**
-     * A constructor who will create a HTMLTransformer using the given fields
-     *
-     * @param request  The request object
-     * @param response The response object used to build PortletURL when needed
-     * @throws MalformedURLException
-     */
-    public HTMLTransformer(PortletRequest request, PortletResponse response, String actualURL) {
-        super(request, actualURL);
-        this.wipConfig = WIPUtil.getConfiguration(request);
-        this.request = request;
-        this.response = response;
-    }
+	private CloseableXmlReader parser;
 
-    @Override
-    public String transform(String input) throws SAXException, IOException, TransformerException {
-    	super.transform(input);
-    	
-        //TODO: manage a pool of XMLReader objects
-        // Create HTML-capable CyberNeko SAX parser
-        XMLReader parser = XMLReaderFactory.createXMLReader(parserClassName);
-        parser.setFeature("http://cyberneko.org/html/features/override-namespaces", true);
-        parser.setFeature("http://cyberneko.org/html/features/insert-namespaces", true);
-        parser.setFeature("http://cyberneko.org/html/features/scanner/ignore-specified-charset", true);
-        parser.setProperty("http://cyberneko.org/html/properties/default-encoding", "UTF-8");
-        parser.setProperty("http://cyberneko.org/html/properties/doctype/pubid", "-//W3C//DTD XHTML 1.0 Transitional//EN");
-        parser.setProperty("http://cyberneko.org/html/properties/doctype/sysid", "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd");
-        parser.setFeature("http://cyberneko.org/html/features/insert-doctype", true);
-        parser.setFeature("http://apache.org/xml/features/scanner/notify-builtin-refs", true);
-        parser.setFeature("http://cyberneko.org/html/features/scanner/notify-builtin-refs", true);
+	/**
+	 * A constructor who will create a HTMLTransformer using the given fields
+	 * 
+	 * @param request
+	 *            The request object
+	 * @param response
+	 *            The response object used to build PortletURL when needed
+	 * @throws MalformedURLException
+	 */
+	public HTMLTransformer(PortletRequest request, PortletResponse response, String actualURL, CloseableXmlReader parser) {
+		super(request, actualURL);
+		this.wipConfig = WIPUtil.getConfiguration(request);
+		this.request = request;
+		this.response = response;
+		this.parser = parser;
+	}
 
-        // Create XSL TransformerFactory
-        SAXTransformerFactory transformerFactory = (SAXTransformerFactory) TransformerFactory.newInstance();
+	@Override
+	public String transform(String input) throws SAXException, IOException, TransformerException {
+		super.transform(input);
 
-        // Set URIResolver
-        transformerFactory.setURIResolver(new ClippingURIResolver(wipConfig));
+		try {
+			// Create XSL TransformerFactory
+			SAXTransformerFactory transformerFactory = (SAXTransformerFactory) TransformerFactory.newInstance();
 
-        //TODO: manage a map of javax.xml.transform.Templates (one per config) and create a Transformer instances from it
-        String xsltTransform = wipConfig.getXsltTransform();
-        StreamSource rewriteXslt = new StreamSource(new ByteArrayInputStream(xsltTransform.getBytes()));
-        TransformerHandler transformerHandler = transformerFactory.newTransformerHandler(rewriteXslt);
+			// Set URIResolver
+			transformerFactory.setURIResolver(new ClippingURIResolver(wipConfig));
 
-        // Set parameters
-        UrlFactory urlFactory = new UrlFactory(request, actualUrl);
-        transformerHandler.getTransformer().setParameter("type", wipConfig.getClippingType());
-        transformerHandler.getTransformer().setParameter("request", request);
-        transformerHandler.getTransformer().setParameter("response", response);
-        transformerHandler.getTransformer().setParameter("actualUrl", actualUrl);
-        transformerHandler.getTransformer().setParameter("wip_divClassName", wipConfig.getPortletDivId());
-        transformerHandler.getTransformer().setParameter("retrieveCss", wipConfig.isEnableCssRetrieving());
-        transformerHandler.getTransformer().setParameter("rewriteUrl", wipConfig.isEnableUrlRewriting());
-        transformerHandler.getTransformer().setParameter("urlfact", urlFactory);
+			// TODO: manage a map of javax.xml.transform.Templates (one per
+			// config)
+			// and create a Transformer instances from it
+			String xsltTransform = wipConfig.getXsltTransform();
+			StreamSource rewriteXslt = new StreamSource(new ByteArrayInputStream(xsltTransform.getBytes()));
+			UrlFactory urlFactory = new UrlFactory(request, actualUrl);
 
-        // Set XPath expression for clipping
-        if (wipConfig.getClippingType().equals("xpath")) {
-            transformerHandler.getTransformer().setParameter("xpath", wipConfig.getXPath());
-        }
+			// Set parameters
+			TransformerHandler transformerHandler = transformerFactory.newTransformerHandler(rewriteXslt);
+			transformerHandler.getTransformer().setParameter("type", wipConfig.getClippingType());
+			transformerHandler.getTransformer().setParameter("request", request);
+			transformerHandler.getTransformer().setParameter("response", response);
+			transformerHandler.getTransformer().setParameter("actualUrl", actualUrl);
+			transformerHandler.getTransformer().setParameter("wip_divClassName", wipConfig.getPortletDivId());
+			transformerHandler.getTransformer().setParameter("retrieveCss", wipConfig.isEnableCssRetrieving());
+			transformerHandler.getTransformer().setParameter("rewriteUrl", wipConfig.isEnableUrlRewriting());
+			transformerHandler.getTransformer().setParameter("urlfact", urlFactory);
 
-        // Set ErrorListener
-        transformerHandler.getTransformer().setErrorListener(new ParserErrorListener());
+			// Set XPath expression for clipping
+			if (wipConfig.getClippingType().equals("xpath")) {
+				transformerHandler.getTransformer().setParameter("xpath", wipConfig.getXPath());
+			}
 
-        // Create input source
-        InputSource inputSource = new InputSource(new ByteArrayInputStream(input.getBytes()));
+			// Set ErrorListener
+			transformerHandler.getTransformer().setErrorListener(new ParserErrorListener());
 
-        // Execute transformation
-        StringWriter resultWriter = new StringWriter();
-        StreamResult streamResult = new StreamResult(resultWriter);
-        transformerHandler.setResult(streamResult);
-        
-        ContentHandler decoratedHandler = new BaseHandlerDecorator(transformerHandler, urlFactory);
-        parser.setContentHandler(decoratedHandler);
-        parser.setProperty("http://xml.org/sax/properties/lexical-handler", transformerHandler);
-        parser.parse(inputSource);
+			// Create input source
+			InputSource inputSource = new InputSource(new ByteArrayInputStream(input.getBytes()));
 
-        return resultWriter.toString();
-    }
+			// Execute transformation
+			StringWriter resultWriter = new StringWriter();
+			StreamResult streamResult = new StreamResult(resultWriter);
+			transformerHandler.setResult(streamResult);
+
+			ContentHandler decoratedHandler = new BaseHandlerDecorator(transformerHandler, urlFactory);
+			parser.setContentHandler(decoratedHandler);
+			parser.setProperty("http://xml.org/sax/properties/lexical-handler", transformerHandler);
+			parser.parse(inputSource);
+			
+			return resultWriter.toString();
+
+		} finally {
+			parser.close();
+		}
+	}
 }

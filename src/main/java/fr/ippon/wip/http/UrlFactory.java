@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.http.request.PostRequest;
 import fr.ippon.wip.portlet.WIPortlet;
-import fr.ippon.wip.transformers.HTMLTransformer;
 import fr.ippon.wip.util.WIPUtil;
 
 import javax.portlet.BaseURL;
@@ -38,7 +37,7 @@ public class UrlFactory {
 	
 	private static final String[] TOKENS = { "<", "$" };
 	
-	private static final Logger LOG = Logger.getLogger(HTMLTransformer.class.getName());
+	private static final Logger LOG = Logger.getLogger(UrlFactory.class.getName());
 	
 	private final WIPConfiguration configuration;
 	

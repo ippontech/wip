@@ -65,7 +65,7 @@ public class CSSTransformer extends AbstractTransformer {
 	 *            The PortletResponse used to build ResourceURLs
 	 * @throws MalformedURLException
 	 */
-	public CSSTransformer(PortletRequest request, PortletResponse response, String actualUrl) throws MalformedURLException {
+	public CSSTransformer(PortletRequest request, PortletResponse response, String actualUrl) {
 		super(request, actualUrl);
 		this.response = response;
 		wipConfig = WIPUtil.getConfiguration(request);

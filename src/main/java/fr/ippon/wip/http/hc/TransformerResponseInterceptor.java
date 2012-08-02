@@ -21,6 +21,9 @@ package fr.ippon.wip.http.hc;
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.http.request.Request;
 import fr.ippon.wip.transformers.*;
+import fr.ippon.wip.transformers.pool.CloseableXmlReader;
+import fr.ippon.wip.transformers.pool.Pool;
+import fr.ippon.wip.transformers.pool.XMLReaderPool;
 import fr.ippon.wip.util.WIPUtil;
 
 import org.apache.http.*;
@@ -54,14 +57,16 @@ import java.util.logging.Logger;
 class TransformerResponseInterceptor implements HttpResponseInterceptor {
 
 	private static final Logger LOG = Logger.getLogger(TransformerResponseInterceptor.class.getName());
+	
+	private static final Pool<CloseableXmlReader> xmlReaderPool = new XMLReaderPool(25);
 
-	private void emtpyResponse(HttpResponse httpResponse) {
+	private void emptyResponse(HttpResponse httpResponse) {
 		EntityUtils.consumeQuietly(httpResponse.getEntity());
 		httpResponse.setEntity(new StringEntity("", Charset.defaultCharset()));
 		httpResponse.setStatusCode(HttpStatus.SC_NOT_FOUND);
 		httpResponse.setReasonPhrase("Deleted by WIP");
 	}
-
+	
 	/**
 	 * If httpResponse must be transformed, creates an instance of
 	 * WIPTransformer, executes WIPTransformer#transform on the response content
@@ -95,7 +100,7 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
 
 		String actualURL;
 		RedirectLocations redirectLocations = (RedirectLocations) context.getAttribute("http.protocol.redirect-locations");
-		if(redirectLocations != null)
+		if (redirectLocations != null)
 			actualURL = Iterables.getLast(redirectLocations.getAll()).toString();
 		else if (context.getAttribute(CachingHttpClient.CACHE_RESPONSE_STATUS) == CacheResponseStatus.CACHE_HIT) {
 			actualURL = request.getRequestedURL();
@@ -109,65 +114,33 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
 		if (!config.isProxyURI(actualURL))
 			return;
 
+		TransformerBuilder transformerBuilder = new TransformerBuilder().
+				setActualURL(actualURL).
+				setMimeType(mimeType).
+				setPortletRequest(portletRequest).
+				setPortletResponse(portletResponse).
+				setResourceType(request.getResourceType()).
+				setXmlReaderPool(xmlReaderPool);
+
 		// Creates an instance of Transformer depending on ResourceType and
 		// MimeType
-		// May returns directly if no transformation is need
-		WIPTransformer transformer = null;
-		switch (request.getResourceType()) {
-		// Direct link or form submit
-		case HTML:
-			if (!mimeType.equals("text/html") && !mimeType.equals("application/xhtml+xml")) {
-				// No transformation
-				return;
-			} else {
-				// HTML transformation
-				transformer = new HTMLTransformer(portletRequest, portletResponse, actualURL);
-			}
-			break;
-		case JS:
-			// JavaScript transformation
-			transformer = new JSTransformer(portletRequest, portletResponse, actualURL);
-			// Empty content
-			if (((JSTransformer) transformer).isDeletedScript(actualURL)) {
-				// Send à 404 empty response
-				emtpyResponse(httpResponse);
-				return;
-			} else if (((JSTransformer) transformer).isIgnoredScript(actualURL)) {
-				return;
-			}
-			break;
-		case CSS:
-			// CSS transformation
-			transformer = new CSSTransformer(portletRequest, portletResponse, actualURL);
-			break;
-		case AJAX:
-			if (mimeType == null) {
-				return;
-			} else if (mimeType.equals("text/html") || mimeType.equals("application/xhtml+xml")) {
-				// HTML transformation
-				transformer = new HTMLTransformer(portletRequest, portletResponse, actualURL);
-			} else if (mimeType.equals("text/javascript") || mimeType.equals("application/javascript")) {
-				// JavaScript transformation
-				transformer = new JSTransformer(portletRequest, portletResponse, actualURL);
-			} else if (mimeType.equals("application/json")) {
-				// JSON transformation
-				transformer = new JSONTransformer(portletRequest, actualURL);
-			} else {
-				// No transformation
-				return;
-			}
-			break;
-		case RAW:
-			// No transformation
+		int status = transformerBuilder.build();
+		if (status == TransformerBuilder.STATUS_NO_TRANSFORMATION)
+			return;
+
+		// Send à 404 empty response
+		if (status == TransformerBuilder.STATUS_EMPTY_HTTP_RESPONSE) {
+			emptyResponse(httpResponse);
 			return;
 		}
 
+		WIPTransformer transformer = transformerBuilder.getTransformer();
 		// Call WIPTransformer#transform method and update the response Entity
 		// object
 		try {
 			String content = EntityUtils.toString(entity);
-			String transformedContent = transformer.transform(content);
-
+			String transformedContent = ((AbstractTransformer) transformer).transform(content);
+			
 			StringEntity transformedEntity;
 			if (contentType.getCharset() != null) {
 				transformedEntity = new StringEntity(transformedContent, contentType);
