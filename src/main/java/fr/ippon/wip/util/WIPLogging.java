@@ -7,7 +7,9 @@ import java.text.NumberFormat;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
+import java.util.logging.Filter;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
@@ -54,8 +56,23 @@ public enum WIPLogging {
 			accessFileHandler = new FileHandler("%h/wip/access.log", true);
 			accessFileHandler.setLevel(Level.INFO);
 			accessFileHandler.setFormatter(new SimpleFormatter());
-			Logger.getLogger("fr.ippon.wip.http.hc.HttpClientExecutor").addHandler(accessFileHandler);
-			Logger.getLogger("fr.ippon.wip").addHandler(new ConsoleHandler());
+			Logger.getLogger("fr.ippon.wip.http.hc.HttpClientExecutor.AccessLog").addHandler(accessFileHandler);
+			
+			ConsoleHandler consoleHandler = new ConsoleHandler();
+			consoleHandler.setFilter(new Filter() {
+				
+				public boolean isLoggable(LogRecord record) {
+					return !record.getLoggerName().equals("fr.ippon.wip.http.hc.HttpClientExecutor.AccessLog");
+				}
+			});
+			
+			Logger.getLogger("fr.ippon.wip").addHandler(consoleHandler);
+			
+//			For HttpClient debugging			
+//			FileHandler fileHandler = new FileHandler("%h/wip/httpclient.log", true);
+//			fileHandler.setLevel(Level.ALL);
+//			Logger.getLogger("org.apache.http.headers").addHandler(fileHandler);
+//			Logger.getLogger("org.apache.http.headers").setLevel(Level.ALL);
 
 		} catch (SecurityException e) {
 			e.printStackTrace();

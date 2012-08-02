@@ -61,6 +61,8 @@ public class HttpClientExecutor implements HttpExecutor {
 
 	private static final Logger LOG = Logger.getLogger(HttpClientExecutor.class.getName());
 	
+	private static final Logger ACCESS_LOG = Logger.getLogger(HttpClientExecutor.class.getName() + ".AccessLog");
+	
     /**
      * Send an HTTP request to the remote site and process the returned HTTP response
      * This method:
@@ -148,14 +150,13 @@ public class HttpClientExecutor implements HttpExecutor {
                 for(Header header : httpResponse.getAllHeaders())
                 	buffer.append(header.getName() + " : " + header.getValue() + "\n");
 
-                LOG.log(Level.INFO, buffer.toString());
+                ACCESS_LOG.log(Level.INFO, buffer.toString());
 
                 // logging if enabled
                 if(WIPUtil.isDebugMode(portletRequest) && responseBody != null && !response.isBinary())
                     WIPLogging.INSTANCE.logTransform(new String(responseBody) + "\n");
 
             } catch (RuntimeException rte) {
-               	LOG.log(Level.WARNING, "[ ERROR ] \"" + httpRequest.getMethod() + " " + request.getRequestedURL() + " " + httpRequest.getProtocolVersion() + "\" " + httpResponse.getStatusLine().getStatusCode(), rte);
                 throw rte;
             }
             
