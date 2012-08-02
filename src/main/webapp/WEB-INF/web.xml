@@ -27,9 +27,11 @@
         <url-pattern>/ResourceHandler/*</url-pattern>
     </servlet-mapping>
 
+	<listener>
+		<listener-class>org.apache.commons.fileupload.servlet.FileCleanerCleanup</listener-class>
+	</listener>
+	
     <listener>
-        <listener-class>fr.ippon.wip.http.hc.HttpClientSessionListener</listener-class>
-        <listener-class>org.apache.commons.fileupload.servlet.FileCleanerCleanup</listener-class>
+    	<listener-class>fr.ippon.wip.http.hc.HttpClientSessionListener</listener-class>
     </listener>
-
 </web-app>
