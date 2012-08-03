@@ -114,6 +114,7 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
 		if (!config.isProxyURI(actualURL))
 			return;
 
+		// a builder for creating a WIPTransformer instance
 		TransformerBuilder transformerBuilder = new TransformerBuilder().
 				setActualURL(actualURL).
 				setMimeType(mimeType).
