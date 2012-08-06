@@ -23,7 +23,7 @@
     <form method="POST" action="<portlet:actionURL/>" name="wipform" class="wip_form">
         <input type="hidden" name="form" value="3"/>
         <p style="font-weight: bold"><fmt:message key="wip.config.xslttransform"/> : (<a href="#" onclick="reset();">reset</a>)</p>
-         <p class="line">
+        <p class="line">
             <textarea name="xsltTransform" id="xsltTransform"><%=wipConf.getXsltTransform()%></textarea>
              <%=printHelp("wip.help.xslttransform", locale)%>
             <br/>

@@ -53,7 +53,7 @@ public enum RequestFactory {
 	 * The singleton instance
 	 */
 	INSTANCE;
-	
+
 	/**
 	 * Return a request instance. The request type will be PostRequest if the
 	 * resource type is POST, GetRequest otherwise.
@@ -66,14 +66,15 @@ public enum RequestFactory {
 		if (portletRequest instanceof ActionRequest)
 			isMultipart = PortletFileUpload.isMultipartContent((ActionRequest) portletRequest);
 
-		// javascript client may have append data to the WIP generated URL, so we make sure we get the appropriate resource type
+		// javascript client may have append data to the WIP generated URL, so
+		// we make sure we get the appropriate resource type
 		final String resourceParameter = portletRequest.getParameter(WIPortlet.RESOURCE_TYPE_KEY);
 		ResourceType resourceType = Iterables.filter(Lists.newArrayList(ResourceType.values()), new Predicate<ResourceType>() {
 
 			public boolean apply(ResourceType input) {
 				return resourceParameter.startsWith(input.name());
 			}
-			
+
 		}).iterator().next();
 
 		String requestedURL = portletRequest.getParameter(WIPortlet.LINK_URL_KEY);
@@ -106,20 +107,20 @@ public enum RequestFactory {
 	 *            parameters map, if any
 	 * @return a implementation of Request
 	 */
-	private Request getRequest(PortletRequest portletRequest, String requestedURL, ResourceType resourceType, HttpMethod httpMethod, Map<String, String[]> originalMap, boolean isMultipart) {
+	public Request getRequest(PortletRequest portletRequest, String requestedURL, ResourceType resourceType, HttpMethod httpMethod, Map<String, String[]> originalMap, boolean isMultipart) {
 		URI uri = URI.create(requestedURL);
 		String query = uri.getQuery();
 
 		Multimap<String, String> parameterMap = ArrayListMultimap.create();
 		if (originalMap != null)
-			for(Entry<String, String[]> entry : originalMap.entrySet())
-				for(String value : entry.getValue())
+			for (Entry<String, String[]> entry : originalMap.entrySet())
+				for (String value : entry.getValue())
 					parameterMap.put(entry.getKey(), value);
-		
+
 		if (!Strings.isNullOrEmpty(query)) {
 			// hack; can't figure why separators are sometime "&" or "&amp;"...
 			query = query.replaceAll("amp;", "");
-			
+
 			requestedURL = "http://" + uri.getHost() + uri.getPath();
 			updateParameterMap(parameterMap, query);
 		}
@@ -131,29 +132,31 @@ public enum RequestFactory {
 				e.printStackTrace();
 				return null;
 			}
-		}
-		else if (httpMethod == HttpMethod.POST)
+			
+		} else if (httpMethod == HttpMethod.POST)
 			return new PostRequest(requestedURL, resourceType, parameterMap);
-		else
-			return new CacheExtensionRequestDecorator(new GetRequest(requestedURL, resourceType, parameterMap));
+		
+		else {
+			Integer staleIfErrorTime = (Integer) portletRequest.getAttribute("STALE_IF_ERROR");
+			if (staleIfErrorTime != null && staleIfErrorTime > 0)
+				return new CacheExtensionRequestDecorator(new GetRequest(requestedURL, resourceType, parameterMap), staleIfErrorTime);
+			else
+				return new GetRequest(requestedURL, resourceType, parameterMap);
+		}
 	}
 
 	private void updateParameterMap(Multimap<String, String> parameterMap, String query) {
 		String[] splittedElement;
 		String key, value;
-		
-		for(String element : Splitter.on("&").split(query)) {
+
+		for (String element : Splitter.on("&").split(query)) {
 			splittedElement = element.split("=");
-			if(splittedElement.length != 2)
+			if (splittedElement.length != 2)
 				continue;
-			
+
 			key = splittedElement[0];
 			value = splittedElement[1];
 			parameterMap.put(key, value);
 		}
-	}
-	
-	public Request getRequest(String requestedURL, ResourceType resourceType, HttpMethod httpMethod, Map<String, String[]> parameterMap) {
-		return getRequest(null, requestedURL, resourceType, httpMethod, parameterMap, false);
 	}
 }

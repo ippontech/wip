@@ -38,10 +38,6 @@ public class CacheExtensionRequestDecorator extends RequestDecorator {
 		this.time = time;
 	}
 	
-	public CacheExtensionRequestDecorator(Request decorated) {
-		this(decorated, 0);
-	}
-	
 	@Override
 	public HttpRequestBase buildHttpRequest() throws URISyntaxException {
 		HttpRequestBase httpRequest = super.buildHttpRequest();

@@ -22,6 +22,9 @@ import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.http.request.Request;
 import fr.ippon.wip.util.WIPUtil;
 
+import net.sf.ehcache.CacheManager;
+import net.sf.ehcache.Ehcache;
+
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
@@ -38,12 +41,15 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.LaxRedirectStrategy;
 import org.apache.http.impl.client.cache.CacheConfig;
 import org.apache.http.impl.client.cache.CachingHttpClient;
+import org.apache.http.impl.client.cache.ehcache.EhcacheHttpCacheStorage;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
+
+import java.net.URL;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -58,22 +64,27 @@ public class HttpClientResourceManager {
 
     private static final Logger LOG = Logger.getLogger(HttpClientResourceManager.class.getName());
     
-    private final Map<String, HttpClient> perUserClientMap;
-    private final Map<String, CookieStore> perUserCookieStoreMap;
-    private final Map<String, CredentialsProvider> perUserWindowCredentialProviderMap;
-    private final HttpClient rootClient;
-    private final PoolingClientConnectionManager connectionManager;
-
-	private final ThreadLocal<PortletRequest> currentPortletRequest;
-
-    private final ThreadLocal<PortletResponse> currentPortletResponse;
-    private final ThreadLocal<Request> currentRequest;
-    private static final String USER_WINDOW_KEY_SEPARATOR = "?";
-
     public static HttpClientResourceManager getInstance() {
         return instance;
     }
+    
+    private double heuristicCacheRatio = 0.0;
 
+	private final Map<String, HttpClient> perUserClientMap;
+
+	private final Map<String, CookieStore> perUserCookieStoreMap;
+    private final Map<String, CredentialsProvider> perUserWindowCredentialProviderMap;
+    private final HttpClient rootClient;
+    private final PoolingClientConnectionManager connectionManager;
+    private final ThreadLocal<PortletRequest> currentPortletRequest;
+
+	private final ThreadLocal<PortletResponse> currentPortletResponse;
+
+    private final ThreadLocal<Request> currentRequest;
+    private static final String USER_WINDOW_KEY_SEPARATOR = "?";
+    
+    private CacheManager cacheManager;
+    
     private HttpClientResourceManager() {
         perUserClientMap = Collections.synchronizedMap(new HashMap<String, HttpClient>());
         perUserCookieStoreMap = Collections.synchronizedMap(new HashMap<String, CookieStore>());
@@ -93,6 +104,7 @@ public class HttpClientResourceManager {
             connectionManager = new PoolingClientConnectionManager(registry);
             connectionManager.setDefaultMaxPerRoute(10);
             connectionManager.setMaxTotal(100);
+            
             DefaultHttpClient defaultHttpClient = new DefaultHttpClient(connectionManager);
 
             // automatically redirects all HEAD, GET and POST requests
@@ -101,18 +113,36 @@ public class HttpClientResourceManager {
             // TODO add Ehcache configuration
             //Ehcache ehCache = CacheManager.getInstance().addCacheIfAbsent("wip.shared.cached");
             //EhcacheHttpCacheStorage cacheStorage = new EhcacheHttpCacheStorage (ehCache);
-            HttpClient sharedCacheClient = new CachingHttpClient(defaultHttpClient);
+            CacheConfig cacheConfig = new CacheConfig();
+            cacheConfig.setHeuristicCachingEnabled(true);
+            cacheConfig.setHeuristicCoefficient((float) heuristicCacheRatio);
+            cacheConfig.setHeuristicDefaultLifetime(0);
+
+            URL ehCacheConfig = getClass().getResource("/ehcache.xml");
+            cacheManager = CacheManager.create(ehCacheConfig);
+            Ehcache ehcache = cacheManager.getEhcache("public");
+            EhcacheHttpCacheStorage httpCacheStorage = new EhcacheHttpCacheStorage(ehcache);
+            
+            CachingHttpClient sharedCacheClient = new CachingHttpClient(defaultHttpClient, httpCacheStorage, cacheConfig);
+            
             HttpClientDecorator decoratedClient = new HttpClientDecorator(sharedCacheClient);
             decoratedClient.addPreProcessor(new LtpaRequestInterceptor());
             decoratedClient.addPostProcessor(new TransformerResponseInterceptor());
 
             rootClient = decoratedClient;
+            
         } catch (Exception e) {
             throw new RuntimeException("Could not initialize connection manager", e);
         }
 
     }
 
+    @Override
+    protected void finalize() throws Throwable {
+    	super.finalize();
+    	cacheManager.shutdown();
+    }
+    
     private CookieStore getCookieStore(PortletRequest request) {
         String userSessionId = request.getPortletSession().getId();
         CookieStore store;
@@ -125,7 +155,7 @@ public class HttpClientResourceManager {
         }
         return store;
     }
-
+    
     /**
      * Retrieve or create a CredentialsProvider per sessionID/windowID
      * @param request Gives access to javax.portlet.PortletSession and windowID
@@ -173,6 +203,10 @@ public class HttpClientResourceManager {
     public Request getCurrentRequest() {
         return currentRequest.get();
     }
+
+    public double getHeuristicCacheRation() {
+		return heuristicCacheRatio;
+	}
 
     /**
      * Get or create an instance of org.apache.http.client.HttpClient.
@@ -278,4 +312,8 @@ public class HttpClientResourceManager {
         currentPortletResponse.remove();
         currentRequest.remove();
     }
+
+    public void setHeuristicCacheRation(double heuristicCacheRatio) {
+		this.heuristicCacheRatio = heuristicCacheRatio;
+	}
 }

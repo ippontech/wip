@@ -60,7 +60,7 @@
 <fmt:setBundle basename="content.Language" />
 
 <div class="config_menu">
-	<%if(selectedPage != Pages.GENERAL_SETTINGS) { %>
+	<%if(selectedPage == Pages.EXISTING_CONFIG || selectedPage == Pages.SAVE_CONFIG) { %>
 	<a
 		href="<portlet:actionURL><portlet:param name="<%= Attributes.PAGE.name() %>" value="<%= Pages.GENERAL_SETTINGS.name() %>"/></portlet:actionURL>"
 		title="Current config"> <fmt:message key="wip.config.edit" />
@@ -122,9 +122,15 @@
 	text-align: right;
 }
 
+#editForm {
+	width: 100%;
+}
+
 .wip_form {
 	padding: 10px 20px;
-	width: 500px;
+	min-width: 500px;
+	max-width: 1000px;
+	width: 100%;
 	margin: auto;
 }
 
@@ -204,7 +210,7 @@
 
 .wip_help {
 	float: right;
-	margin: 0px;
+	margin: 20px;
 }
 
 .wip_help a {

@@ -24,6 +24,7 @@ import fr.ippon.wip.config.dao.ConfigurationDAOFactory;
 import fr.ippon.wip.http.HttpExecutor;
 import fr.ippon.wip.http.Response;
 import fr.ippon.wip.http.hc.HttpClientExecutor;
+import fr.ippon.wip.http.hc.HttpClientResourceManager;
 import fr.ippon.wip.http.request.Request;
 import fr.ippon.wip.http.request.RequestFactory;
 import fr.ippon.wip.state.PortletWindow;
@@ -61,6 +62,8 @@ public class WIPortlet extends GenericPortlet {
 	public static final String RESOURCE_TYPE_KEY = "WIP_RESOURCE_TYPE";
 	public static final String URL_CONCATENATION_KEY = "WIP_URL_CONCATENATION";
 
+	private int staleIfErrorTime;
+	
 	// Class attributes
 	private HttpExecutor executor;
 
@@ -80,6 +83,11 @@ public class WIPortlet extends GenericPortlet {
 		
 		ConfigurationDAOFactory.INSTANCE.setPortletContext(config.getPortletContext());
 		
+		double heuristicCacheRatio = Double.parseDouble(config.getInitParameter("HEURISTIC_CACHE_RATIO"));
+		HttpClientResourceManager.getInstance().setHeuristicCacheRation(heuristicCacheRatio);
+
+		staleIfErrorTime = Integer.parseInt(config.getInitParameter("STALE_IF_ERROR"));
+		
 		int responseStoreMaxEntries = Integer.parseInt(config.getInitParameter("RESPONSE_STORE_MAX_ENTRIES"));
 		ResponseStore.getInstance().setMaxEntries(responseStoreMaxEntries);
 		executor = new HttpClientExecutor();
@@ -90,6 +98,8 @@ public class WIPortlet extends GenericPortlet {
 	 * @param request
 	 */
 	private void checkIsConfigurationSet(PortletRequest request) {
+		request.setAttribute("STALE_IF_ERROR", staleIfErrorTime);
+		
 		String configurationName = (String) request.getPortletSession().getAttribute(Attributes.CONFIGURATION_NAME.name());
 		if(!StringUtils.isEmpty(configurationName))
 			return;
@@ -132,7 +142,7 @@ public class WIPortlet extends GenericPortlet {
 		// If no pending response, create a new request
 		if (wipResponse == null) {
 			String requestUrl = windowState.getActualURL();
-			Request wipRequest = RequestFactory.INSTANCE.getRequest(requestUrl, Request.ResourceType.HTML, Request.HttpMethod.GET, null);
+			Request wipRequest = RequestFactory.INSTANCE.getRequest(request, requestUrl, Request.ResourceType.HTML, Request.HttpMethod.GET, null, false);
 
 			// TODO: copy global parameters from PortletRequest ?
 			

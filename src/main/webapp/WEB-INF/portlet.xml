@@ -16,6 +16,16 @@
             <value>100</value>
         </init-param>
 
+        <init-param>
+            <name>HEURISTIC_CACHE_RATIO</name>
+            <value>0.5</value>
+        </init-param>
+        
+        <init-param>
+            <name>STALE_IF_ERROR</name>
+            <value>0</value>
+        </init-param>
+        
         <supports>
             <mime-type>text/html</mime-type>
             <portlet-mode>VIEW</portlet-mode>
@@ -35,7 +45,7 @@
         
     </portlet>
     
-        <portlet>
+	<portlet>
 
         <description>WIP Configurations management portlet</description>
         <portlet-name>WIPConfiguration</portlet-name>
@@ -60,4 +70,16 @@
         </portlet-info>
 
     </portlet>
+    
+     <filter>
+		<filter-name>Performance filter</filter-name>
+		<filter-class>fr.ippon.wip.filter.PerformanceFilter</filter-class>
+		<lifecycle>RENDER_PHASE</lifecycle>
+	</filter>
+
+	<filter-mapping>
+		<filter-name>Performance filter</filter-name>
+		<portlet-name>WIP</portlet-name>
+	</filter-mapping>
+	
 </portlet-app>
