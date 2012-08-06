@@ -27,8 +27,14 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import com.google.common.base.Optional;
+import com.google.common.base.Stopwatch;
+
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
+import javax.xml.transform.Templates;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXTransformerFactory;
@@ -39,14 +45,43 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * A transformer to process the rewriting of HTML content. This transformer uses
  * a XSLT stylesheet to perform its modifications.
  * 
  * @author François Prot
+ * @author Yohan Legat
  */
 public class HTMLTransformer extends AbstractTransformer {
+
+	private class TimestampedTemplates implements Templates {
+
+		private final Templates templates;
+
+		private final long timestamp;
+
+		public TimestampedTemplates(Templates templates, long timestamp) {
+			this.timestamp = timestamp;
+			this.templates = templates;
+		}
+
+		public Properties getOutputProperties() {
+			return templates.getOutputProperties();
+		}
+
+		public long getTimestamp() {
+			return timestamp;
+		}
+
+		public Transformer newTransformer() throws TransformerConfigurationException {
+			return templates.newTransformer();
+		}
+	}
 
 	/**
 	 * The instance of the WIPConfiguration class
@@ -65,6 +100,12 @@ public class HTMLTransformer extends AbstractTransformer {
 	private final PortletResponse response;
 
 	private CloseableXmlReader parser;
+
+	private static Map<String, TimestampedTemplates> templatesMap = new HashMap<String, TimestampedTemplates>();
+
+	private static final ReentrantLock lock = new ReentrantLock();
+
+	public static ThreadLocal<Optional<Long>> timeProcess = new ThreadLocal<Optional<Long>>();
 
 	/**
 	 * A constructor who will create a HTMLTransformer using the given fields
@@ -87,6 +128,7 @@ public class HTMLTransformer extends AbstractTransformer {
 	public String transform(String input) throws SAXException, IOException, TransformerException {
 		super.transform(input);
 
+		Stopwatch stopwatch = new Stopwatch().start();
 		try {
 			// Create XSL TransformerFactory
 			SAXTransformerFactory transformerFactory = (SAXTransformerFactory) TransformerFactory.newInstance();
@@ -94,15 +136,25 @@ public class HTMLTransformer extends AbstractTransformer {
 			// Set URIResolver
 			transformerFactory.setURIResolver(new ClippingURIResolver(wipConfig));
 
-			// TODO: manage a map of javax.xml.transform.Templates (one per
-			// config)
-			// and create a Transformer instances from it
-			String xsltTransform = wipConfig.getXsltTransform();
-			StreamSource rewriteXslt = new StreamSource(new ByteArrayInputStream(xsltTransform.getBytes()));
-			UrlFactory urlFactory = new UrlFactory(request, actualUrl);
+			TimestampedTemplates template;
+			TransformerHandler transformerHandler;
+			try {
+				lock.lock();
+				template = templatesMap.get(wipConfig.getName());
+
+				if (template == null || template.getTimestamp() < wipConfig.getTimestamp()) {
+					String xsltTransform = wipConfig.getXsltTransform();
+					StreamSource rewriteXslt = new StreamSource(new ByteArrayInputStream(xsltTransform.getBytes()));
+					template = new TimestampedTemplates(transformerFactory.newTemplates(rewriteXslt), wipConfig.getTimestamp());
+					templatesMap.put(wipConfig.getName(), template);
+				}
+			} finally {
+				lock.unlock();
+			}
+			
+			transformerHandler = transformerFactory.newTransformerHandler(template);
 
 			// Set parameters
-			TransformerHandler transformerHandler = transformerFactory.newTransformerHandler(rewriteXslt);
 			transformerHandler.getTransformer().setParameter("type", wipConfig.getClippingType());
 			transformerHandler.getTransformer().setParameter("request", request);
 			transformerHandler.getTransformer().setParameter("response", response);
@@ -110,7 +162,7 @@ public class HTMLTransformer extends AbstractTransformer {
 			transformerHandler.getTransformer().setParameter("wip_divClassName", wipConfig.getPortletDivId());
 			transformerHandler.getTransformer().setParameter("retrieveCss", wipConfig.isEnableCssRetrieving());
 			transformerHandler.getTransformer().setParameter("rewriteUrl", wipConfig.isEnableUrlRewriting());
-			transformerHandler.getTransformer().setParameter("urlfact", urlFactory);
+			transformerHandler.getTransformer().setParameter("urlfact", new UrlFactory(request, actualUrl));
 
 			// Set XPath expression for clipping
 			if (wipConfig.getClippingType().equals("xpath")) {
@@ -132,7 +184,9 @@ public class HTMLTransformer extends AbstractTransformer {
 			parser.setContentHandler(decoratedHandler);
 			parser.setProperty("http://xml.org/sax/properties/lexical-handler", transformerHandler);
 			parser.parse(inputSource);
-			
+
+			timeProcess.set(Optional.of(stopwatch.elapsedMillis()));
+
 			return resultWriter.toString();
 
 		} finally {

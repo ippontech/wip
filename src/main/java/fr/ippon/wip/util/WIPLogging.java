@@ -61,7 +61,7 @@ public enum WIPLogging {
 	 * Several threads can be started when serving dependances of a resource, so
 	 * transform log file handlers have to be linked to those threads.
 	 */
-	private ThreadLocal<File> localLogFile = new ThreadLocal<File>();
+	private static ThreadLocal<File> localLogFile = new ThreadLocal<File>();
 
 	private WIPLogging() {
 		try {
@@ -98,7 +98,7 @@ public enum WIPLogging {
 			e.printStackTrace();
 		}
 	}
-
+	
 	/**
 	 * Close the log access file handler
 	 */

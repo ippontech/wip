@@ -292,13 +292,15 @@ public class HttpClientResourceManager {
     public void releaseSessionResources(String sessionId) {
         perUserClientMap.remove(sessionId);
         perUserCookieStoreMap.remove(sessionId);
+        
         Set<String> keySet = perUserWindowCredentialProviderMap.keySet();
         synchronized (perUserWindowCredentialProviderMap) {
             Iterator<String> contextKeyIter = keySet.iterator();
             while (contextKeyIter.hasNext()) {
                 String key = contextKeyIter.next();
+                
                 if (key.indexOf(sessionId + USER_WINDOW_KEY_SEPARATOR) == 0) {
-                    perUserWindowCredentialProviderMap.remove(key);
+                	contextKeyIter.remove();
                 }
             }
         }

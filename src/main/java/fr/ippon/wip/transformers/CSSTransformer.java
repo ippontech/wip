@@ -23,6 +23,9 @@ import fr.ippon.wip.util.WIPUtil;
 
 import org.xml.sax.SAXException;
 
+import com.google.common.base.Optional;
+import com.google.common.base.Stopwatch;
+
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 import javax.xml.transform.TransformerException;
@@ -54,6 +57,8 @@ public class CSSTransformer extends AbstractTransformer {
 	 * An empty PortletResponse used to create ResourceURLs
 	 */
 	private final PortletResponse response;
+
+	public static ThreadLocal<Optional<Long>> timeProcess = new ThreadLocal<Optional<Long>>();
 
 	/**
 	 * Create a new CSSTransformer by getting the portlet configuration,
@@ -131,13 +136,14 @@ public class CSSTransformer extends AbstractTransformer {
 	public String transform(String input) throws SAXException, IOException, TransformerException {
 		super.transform(input);
 
+		Stopwatch stopwatch = new Stopwatch().start();
 		if (wipConfig.isEnableCssRewriting()) {
 			// Getting prefix
 			final String wip = "\n." + wipConfig.getPortletDivId() + " ";
 
 			// removing comments
 			input = input.replaceAll("\\/\\*.*\\*\\/", "");
-			
+
 			// Removing all double white spaced characters
 			input = input.replaceAll("\\r|\\n", "");
 			input = input.replaceAll(System.getProperty("line.separator"), "");
@@ -164,35 +170,43 @@ public class CSSTransformer extends AbstractTransformer {
 
 						} else {
 							if (selector.startsWith("@media")) {
-								// this code should transform css code inside @media, but it make the browser freezing...
-//								Pattern pattern = Pattern.compile("\\s*\\{");
-//								Matcher matcher = pattern.matcher(input).region(index + 1, input.length());
-//								matcher.find();
-//								int startMediaCss = matcher.end();
-//
-//								pattern = Pattern.compile("\\}\\s*\\}");
-//								matcher = pattern.matcher(input).region(startMediaCss, input.length());
-//								matcher.find();
-//								int endMediaCss = matcher.start() + 1;
-//								blocEnd = matcher.end();
-//
-//								String transformedMediaCss = transform(input.substring(startMediaCss, endMediaCss));
-//								String result = "\n" + selector + "{" + transformedMediaCss + "}";
-//								aux.append(result);
-								
+								// this code should transform css code inside
+								// @media, but it make the browser freezing...
+								// Pattern pattern = Pattern.compile("\\s*\\{");
+								// Matcher matcher =
+								// pattern.matcher(input).region(index + 1,
+								// input.length());
+								// matcher.find();
+								// int startMediaCss = matcher.end();
+								//
+								// pattern = Pattern.compile("\\}\\s*\\}");
+								// matcher =
+								// pattern.matcher(input).region(startMediaCss,
+								// input.length());
+								// matcher.find();
+								// int endMediaCss = matcher.start() + 1;
+								// blocEnd = matcher.end();
+								//
+								// String transformedMediaCss =
+								// transform(input.substring(startMediaCss,
+								// endMediaCss));
+								// String result = "\n" + selector + "{" +
+								// transformedMediaCss + "}";
+								// aux.append(result);
+
 								// Copy the entire bloc without modification
-                                blocEnd = input.indexOf("}}", index) + 1;
-                                if (blocEnd < 1)
-                                	blocEnd = input.indexOf("} }", index) + 1;
-                                
-                                aux.append("\n" + selector);
-                                aux.append(input.substring(blocStart, blocEnd + 1));
+								blocEnd = input.indexOf("}}", index) + 1;
+								if (blocEnd < 1)
+									blocEnd = input.indexOf("} }", index) + 1;
+
+								aux.append("\n" + selector);
+								aux.append(input.substring(blocStart, blocEnd + 1));
 
 							} else {
-                                if (selector.contains(","))
-                                    selector = selector.replaceAll(",", "," + wip);
-                                aux.append("\n" + wip + selector);
-                                aux.append(input.substring(blocStart, blocEnd + 1));
+								if (selector.contains(","))
+									selector = selector.replaceAll(",", "," + wip);
+								aux.append("\n" + wip + selector);
+								aux.append(input.substring(blocStart, blocEnd + 1));
 							}
 
 							// Next step
@@ -215,6 +229,8 @@ public class CSSTransformer extends AbstractTransformer {
 				input = input.replaceAll("absolute", "relative");
 
 		}
+
+		timeProcess.set(Optional.of(stopwatch.elapsedMillis()));
 		return input;
 	}
 }

@@ -27,6 +27,9 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
+import com.google.common.base.Optional;
+import com.google.common.base.Stopwatch;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.LinkedList;
@@ -40,7 +43,7 @@ import java.util.logging.Logger;
  *
  * @author François Prot
  */
-class HttpClientDecorator implements HttpClient {
+public class HttpClientDecorator implements HttpClient {
 	
 	private static final Logger LOG = Logger.getLogger(HttpClientDecorator.class.getName());
 			
@@ -49,6 +52,8 @@ class HttpClientDecorator implements HttpClient {
     private final List<HttpRequestInterceptor> preProcessors = new LinkedList<HttpRequestInterceptor>();
     private final List<HttpResponseInterceptor> postProcessors = new LinkedList<HttpResponseInterceptor>();
 
+    public static ThreadLocal<Optional<Long>> timeProcess = new ThreadLocal<Optional<Long>>();
+    
     /**
      * @param backend Instance of HttpClient that shall be used to execute requests
      */
@@ -126,7 +131,10 @@ class HttpClientDecorator implements HttpClient {
                 preProcessor.process(request, context);
             }
             
+            Stopwatch stopwatch = new Stopwatch().start();
             HttpResponse response = backend.execute(target, request, context);
+            timeProcess.set(Optional.of(stopwatch.elapsedMillis()));
+            
             for (HttpResponseInterceptor postProcessor : postProcessors) {
                 postProcessor.process(response, context);
             }
