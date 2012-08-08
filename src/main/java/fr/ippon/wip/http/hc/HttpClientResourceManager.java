@@ -136,12 +136,6 @@ public class HttpClientResourceManager {
         }
 
     }
-
-    @Override
-    protected void finalize() throws Throwable {
-    	super.finalize();
-    	cacheManager.shutdown();
-    }
     
     private CookieStore getCookieStore(PortletRequest request) {
         String userSessionId = request.getPortletSession().getId();
@@ -283,6 +277,7 @@ public class HttpClientResourceManager {
      */
     public void releaseGlobalResources() {
         rootClient.getConnectionManager().shutdown();
+        cacheManager.shutdown();
     }
 
     /**
