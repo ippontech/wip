@@ -54,263 +54,294 @@ import java.util.*;
 import java.util.logging.Logger;
 
 /**
- * This class implements the Singleton pattern and manages all Apache HttpComponents resources
- *
+ * This class implements the Singleton pattern and manages all Apache
+ * HttpComponents resources
+ * 
  * @author François Prot
  */
 public class HttpClientResourceManager {
 
-    private static final HttpClientResourceManager instance = new HttpClientResourceManager();
+	private static final HttpClientResourceManager instance = new HttpClientResourceManager();
 
-    private static final Logger LOG = Logger.getLogger(HttpClientResourceManager.class.getName());
-    
-    public static HttpClientResourceManager getInstance() {
-        return instance;
-    }
-    
-    private double heuristicCacheRatio = 0.0;
+	private static final Logger LOG = Logger.getLogger(HttpClientResourceManager.class.getName());
+
+	public static HttpClientResourceManager getInstance() {
+		return instance;
+	}
+
+	private double heuristicCacheRatio = 0.0;
 
 	private final Map<String, HttpClient> perUserClientMap;
 
 	private final Map<String, CookieStore> perUserCookieStoreMap;
-    private final Map<String, CredentialsProvider> perUserWindowCredentialProviderMap;
-    private final HttpClient rootClient;
-    private final PoolingClientConnectionManager connectionManager;
-    private final ThreadLocal<PortletRequest> currentPortletRequest;
+	private final Map<String, CredentialsProvider> perUserWindowCredentialProviderMap;
+	private final HttpClient rootClient;
+	private final PoolingClientConnectionManager connectionManager;
+	private final ThreadLocal<PortletRequest> currentPortletRequest;
 
 	private final ThreadLocal<PortletResponse> currentPortletResponse;
 
-    private final ThreadLocal<Request> currentRequest;
-    private static final String USER_WINDOW_KEY_SEPARATOR = "?";
-    
-    private CacheManager cacheManager;
-    
-    private HttpClientResourceManager() {
-        perUserClientMap = Collections.synchronizedMap(new HashMap<String, HttpClient>());
-        perUserCookieStoreMap = Collections.synchronizedMap(new HashMap<String, CookieStore>());
-        perUserWindowCredentialProviderMap = Collections.synchronizedMap(new HashMap<String, CredentialsProvider>());
-        currentPortletRequest = new ThreadLocal<PortletRequest>();
-        currentPortletResponse = new ThreadLocal<PortletResponse>();
-        currentRequest = new ThreadLocal<Request>();
+	private final ThreadLocal<Request> currentRequest;
+	private static final String USER_WINDOW_KEY_SEPARATOR = "?";
 
-        try {
-            SSLSocketFactory ssf = new SSLSocketFactory(new TrustSelfSignedStrategy(), new AllowAllHostnameVerifier());
-            Scheme httpsScheme = new Scheme("https", 443, ssf);
-            PlainSocketFactory psf = new PlainSocketFactory();
-            Scheme httpScheme = new Scheme("http", 80, psf);
-            SchemeRegistry registry = new SchemeRegistry();
-            registry.register(httpsScheme);
-            registry.register(httpScheme);
-            connectionManager = new PoolingClientConnectionManager(registry);
-            connectionManager.setDefaultMaxPerRoute(10);
-            connectionManager.setMaxTotal(100);
-            
-            DefaultHttpClient defaultHttpClient = new DefaultHttpClient(connectionManager);
+	private int staleIfErrorTime = 0;
 
-            // automatically redirects all HEAD, GET and POST requests
-            defaultHttpClient.setRedirectStrategy(new LaxRedirectStrategy());
-            
-            // TODO add Ehcache configuration
-            //Ehcache ehCache = CacheManager.getInstance().addCacheIfAbsent("wip.shared.cached");
-            //EhcacheHttpCacheStorage cacheStorage = new EhcacheHttpCacheStorage (ehCache);
-            CacheConfig cacheConfig = new CacheConfig();
-            cacheConfig.setHeuristicCachingEnabled(true);
-            cacheConfig.setHeuristicCoefficient((float) heuristicCacheRatio);
-            cacheConfig.setHeuristicDefaultLifetime(0);
+	private CacheManager cacheManager;
 
-            URL ehCacheConfig = getClass().getResource("/ehcache.xml");
-            cacheManager = CacheManager.create(ehCacheConfig);
-            Ehcache ehcache = cacheManager.getEhcache("public");
-            EhcacheHttpCacheStorage httpCacheStorage = new EhcacheHttpCacheStorage(ehcache);
-            
-            CachingHttpClient sharedCacheClient = new CachingHttpClient(defaultHttpClient, httpCacheStorage, cacheConfig);
-            
-            HttpClientDecorator decoratedClient = new HttpClientDecorator(sharedCacheClient);
-            decoratedClient.addPreProcessor(new LtpaRequestInterceptor());
-            decoratedClient.addPostProcessor(new TransformerResponseInterceptor());
+	private HttpClientResourceManager() {
+		perUserClientMap = Collections.synchronizedMap(new HashMap<String, HttpClient>());
+		perUserCookieStoreMap = Collections.synchronizedMap(new HashMap<String, CookieStore>());
+		perUserWindowCredentialProviderMap = Collections.synchronizedMap(new HashMap<String, CredentialsProvider>());
+		currentPortletRequest = new ThreadLocal<PortletRequest>();
+		currentPortletResponse = new ThreadLocal<PortletResponse>();
+		currentRequest = new ThreadLocal<Request>();
 
-            rootClient = decoratedClient;
-            
-        } catch (Exception e) {
-            throw new RuntimeException("Could not initialize connection manager", e);
-        }
+		try {
+			SSLSocketFactory ssf = new SSLSocketFactory(new TrustSelfSignedStrategy(), new AllowAllHostnameVerifier());
+			Scheme httpsScheme = new Scheme("https", 443, ssf);
+			PlainSocketFactory psf = new PlainSocketFactory();
+			Scheme httpScheme = new Scheme("http", 80, psf);
+			SchemeRegistry registry = new SchemeRegistry();
+			registry.register(httpsScheme);
+			registry.register(httpScheme);
+			connectionManager = new PoolingClientConnectionManager(registry);
+			connectionManager.setDefaultMaxPerRoute(10);
+			connectionManager.setMaxTotal(100);
 
-    }
-    
-    private CookieStore getCookieStore(PortletRequest request) {
-        String userSessionId = request.getPortletSession().getId();
-        CookieStore store;
-        synchronized (perUserCookieStoreMap) {
-            store = perUserCookieStoreMap.get(userSessionId);
-            if (store == null) {
-                store = new BasicCookieStore();
-                perUserCookieStoreMap.put(userSessionId, store);
-            }
-        }
-        return store;
-    }
-    
-    /**
-     * Retrieve or create a CredentialsProvider per sessionID/windowID
-     * @param request Gives access to javax.portlet.PortletSession and windowID
-     * @return
-     */
-    public CredentialsProvider getCredentialsProvider(PortletRequest request) {
-        CredentialsProvider credentialsProvider;
-        synchronized (perUserWindowCredentialProviderMap) {
-            credentialsProvider = perUserWindowCredentialProviderMap.get(getUserWindowId(request));
+			DefaultHttpClient defaultHttpClient = new DefaultHttpClient(connectionManager);
 
-            if (credentialsProvider == null) {
-                credentialsProvider = new BasicCredentialsProvider();
-                perUserWindowCredentialProviderMap.put(getUserWindowId(request), credentialsProvider);
-            }
-        }
-        return credentialsProvider;
-    }
+			// automatically redirects all HEAD, GET and POST requests
+			defaultHttpClient.setRedirectStrategy(new LaxRedirectStrategy());
 
-    /**
-     * Get the PortletRequest instance associated to the current thread
-     *
-     * #initExecutionContext must have been called before
-     * @return
-     */
-    public PortletRequest getCurrentPortletRequest() {
-        return currentPortletRequest.get();
-    }
+			// TODO add Ehcache configuration
+			// Ehcache ehCache =
+			// CacheManager.getInstance().addCacheIfAbsent("wip.shared.cached");
+			// EhcacheHttpCacheStorage cacheStorage = new
+			// EhcacheHttpCacheStorage (ehCache);
+			CacheConfig cacheConfig = new CacheConfig();
+			cacheConfig.setHeuristicCachingEnabled(true);
+			cacheConfig.setHeuristicCoefficient((float) heuristicCacheRatio);
+			cacheConfig.setHeuristicDefaultLifetime(60);
 
-    /**
-     * Get the PortletResponse instance associated to the current thread
-     *
-     * #initExecutionContext must have been called before
-     * @return
-     */
-    public PortletResponse getCurrentPortletResponse() {
-        return currentPortletResponse.get();
-    }
+			URL ehCacheConfig = getClass().getResource("/ehcache.xml");
+			cacheManager = CacheManager.create(ehCacheConfig);
+			Ehcache ehcache = cacheManager.getEhcache("public");
+			EhcacheHttpCacheStorage httpCacheStorage = new EhcacheHttpCacheStorage(ehcache);
 
-    /**
-     * Get the Request instance associated to the current thread
-     *
-     * #initExecutionContext must have been called before
-     * @return
-     */
-    public Request getCurrentRequest() {
-        return currentRequest.get();
-    }
+			CachingHttpClient sharedCacheClient = new CachingHttpClient(defaultHttpClient, httpCacheStorage, cacheConfig);
+			HttpClientDecorator decoratedClient = new HttpClientDecorator(sharedCacheClient);
 
-    public double getHeuristicCacheRation() {
+			decoratedClient.addPreProcessor(new LtpaRequestInterceptor());
+			decoratedClient.addPreProcessor(new StaleIfErrorRequestInterceptor(staleIfErrorTime));
+
+			decoratedClient.addPostProcessor(new TransformerResponseInterceptor());
+
+			rootClient = decoratedClient;
+
+		} catch (Exception e) {
+			throw new RuntimeException("Could not initialize connection manager", e);
+		}
+
+	}
+
+	private CookieStore getCookieStore(PortletRequest request) {
+		String userSessionId = request.getPortletSession().getId();
+		CookieStore store;
+		synchronized (perUserCookieStoreMap) {
+			store = perUserCookieStoreMap.get(userSessionId);
+			if (store == null) {
+				store = new BasicCookieStore();
+				perUserCookieStoreMap.put(userSessionId, store);
+			}
+		}
+		return store;
+	}
+
+	/**
+	 * Retrieve or create a CredentialsProvider per sessionID/windowID
+	 * 
+	 * @param request
+	 *            Gives access to javax.portlet.PortletSession and windowID
+	 * @return
+	 */
+	public CredentialsProvider getCredentialsProvider(PortletRequest request) {
+		CredentialsProvider credentialsProvider;
+		synchronized (perUserWindowCredentialProviderMap) {
+			credentialsProvider = perUserWindowCredentialProviderMap.get(getUserWindowId(request));
+
+			if (credentialsProvider == null) {
+				credentialsProvider = new BasicCredentialsProvider();
+				perUserWindowCredentialProviderMap.put(getUserWindowId(request), credentialsProvider);
+			}
+		}
+		return credentialsProvider;
+	}
+
+	/**
+	 * Get the PortletRequest instance associated to the current thread
+	 * 
+	 * #initExecutionContext must have been called before
+	 * 
+	 * @return
+	 */
+	public PortletRequest getCurrentPortletRequest() {
+		return currentPortletRequest.get();
+	}
+
+	/**
+	 * Get the PortletResponse instance associated to the current thread
+	 * 
+	 * #initExecutionContext must have been called before
+	 * 
+	 * @return
+	 */
+	public PortletResponse getCurrentPortletResponse() {
+		return currentPortletResponse.get();
+	}
+
+	/**
+	 * Get the Request instance associated to the current thread
+	 * 
+	 * #initExecutionContext must have been called before
+	 * 
+	 * @return
+	 */
+	public Request getCurrentRequest() {
+		return currentRequest.get();
+	}
+
+	public double getHeuristicCacheRatio() {
 		return heuristicCacheRatio;
 	}
 
-    /**
-     * Get or create an instance of org.apache.http.client.HttpClient.
-     * If private cache is disabled for this portlet windowID, the instance returned is always the same.
-     * If it is enabled, a specific instance is returned for each windowID/sessionID.
-     * The instance returned wraps multiple decorators on a unique org.apache.http.impl.client.DefaultHttpClient instance:
-     * <ol>
-     *     <li>org.apache.http.impl.client.cache.CachingHttpClient for shared cache (unique instance)</li>
-     *     <li>fr.ippon.wip.http.hc.HttpClientDecorator to inject specific pre-precessor and post-processor
-     *     interceptors: LtpaRequestInterceptor and TransformerResponseInterceptor (unique instance)</li>
-     *     <li>org.apache.http.impl.client.cache.CachingHttpClient for private cache (optional, one instance per
-     *     windowID/sessionID</li>
-     * </ol>
-     * @param request Gives access to javax.portlet.PortletSession and windowID
-     * @return
-     */
-    public HttpClient getHttpClient(PortletRequest request) {
-        String userSessionId = request.getPortletSession().getId();
-        HttpClient client;
-        synchronized (perUserClientMap) {
-            client = perUserClientMap.get(userSessionId);
-            if (client == null) {
-                WIPConfiguration config = WIPUtil.getConfiguration(request);
-                if (!config.isPageCachePrivate()) {
-                    client = rootClient;
-                } else {
-                	CacheConfig cacheConfig = new CacheConfig();
-                	cacheConfig.setSharedCache(false);
-                    client = new CachingHttpClient(rootClient, cacheConfig);
-                }
-                perUserClientMap.put(userSessionId, client);
-            }
-        }
-        return client;
-    }
+	/**
+	 * Get or create an instance of org.apache.http.client.HttpClient. If
+	 * private cache is disabled for this portlet windowID, the instance
+	 * returned is always the same. If it is enabled, a specific instance is
+	 * returned for each windowID/sessionID. The instance returned wraps
+	 * multiple decorators on a unique
+	 * org.apache.http.impl.client.DefaultHttpClient instance:
+	 * <ol>
+	 * <li>org.apache.http.impl.client.cache.CachingHttpClient for shared cache
+	 * (unique instance)</li>
+	 * <li>fr.ippon.wip.http.hc.HttpClientDecorator to inject specific
+	 * pre-precessor and post-processor interceptors: LtpaRequestInterceptor and
+	 * TransformerResponseInterceptor (unique instance)</li>
+	 * <li>org.apache.http.impl.client.cache.CachingHttpClient for private cache
+	 * (optional, one instance per windowID/sessionID</li>
+	 * </ol>
+	 * 
+	 * @param request
+	 *            Gives access to javax.portlet.PortletSession and windowID
+	 * @return
+	 */
+	public HttpClient getHttpClient(PortletRequest request) {
+		String userSessionId = request.getPortletSession().getId();
+		HttpClient client;
+		synchronized (perUserClientMap) {
+			client = perUserClientMap.get(userSessionId);
+			if (client == null) {
+				WIPConfiguration config = WIPUtil.getConfiguration(request);
+				if (!config.isPageCachePrivate()) {
+					client = rootClient;
+				} else {
+					CacheConfig cacheConfig = new CacheConfig();
+					cacheConfig.setSharedCache(false);
+					client = new CachingHttpClient(rootClient, cacheConfig);
+				}
+				perUserClientMap.put(userSessionId, client);
+			}
+		}
+		return client;
+	}
 
-    public HttpClient getRootClient() {
+	public HttpClient getRootClient() {
 		return rootClient;
 	}
 
-    private String getUserWindowId(PortletRequest request) {
-        return request.getPortletSession().getId() + USER_WINDOW_KEY_SEPARATOR + request.getWindowID();
-    }
+	public int getStaleIfErrorTime() {
+		return staleIfErrorTime;
+	}
 
-    /**
-     * Create an HttpContext configured with a CredentialsProvider and a CookieStore according to the current
-     * sessionID/windowID.
-     *
-     * Current PortletRequest, PortletResponse and Request instances are also associated to
-     * the current for future usage (@see TransformerResponseInterceptor and LtpaRequestInterceptor).
-     *
-     * It is necessary to call #releaseThreadResources in a finally clause when HTTP processing is done.
-     *
-     * @param portletRequest
-     * @param portletResponse
-     * @param request
-     * @return
-     */
-    public HttpContext initExecutionContext(PortletRequest portletRequest, PortletResponse portletResponse, Request request) {
-        HttpContext context = new BasicHttpContext();
-        CredentialsProvider credentialsProvider = getCredentialsProvider(portletRequest);
-        context.setAttribute(ClientContext.CREDS_PROVIDER, credentialsProvider);
-        context.setAttribute(ClientContext.COOKIE_STORE, getCookieStore(portletRequest));
+	private String getUserWindowId(PortletRequest request) {
+		return request.getPortletSession().getId() + USER_WINDOW_KEY_SEPARATOR + request.getWindowID();
+	}
 
-        currentPortletRequest.set(portletRequest);
-        currentPortletResponse.set(portletResponse);
-        currentRequest.set(request);
+	/**
+	 * Create an HttpContext configured with a CredentialsProvider and a
+	 * CookieStore according to the current sessionID/windowID.
+	 * 
+	 * Current PortletRequest, PortletResponse and Request instances are also
+	 * associated to the current for future usage (@see
+	 * TransformerResponseInterceptor and LtpaRequestInterceptor).
+	 * 
+	 * It is necessary to call #releaseThreadResources in a finally clause when
+	 * HTTP processing is done.
+	 * 
+	 * @param portletRequest
+	 * @param portletResponse
+	 * @param request
+	 * @return
+	 */
+	public HttpContext initExecutionContext(PortletRequest portletRequest, PortletResponse portletResponse, Request request) {
+		HttpContext context = new BasicHttpContext();
+		CredentialsProvider credentialsProvider = getCredentialsProvider(portletRequest);
+		context.setAttribute(ClientContext.CREDS_PROVIDER, credentialsProvider);
+		context.setAttribute(ClientContext.COOKIE_STORE, getCookieStore(portletRequest));
 
-        return context;
-    }
+		currentPortletRequest.set(portletRequest);
+		currentPortletResponse.set(portletResponse);
+		currentRequest.set(request);
 
-    /**
-     * Shutdown the connection manager on portlet un-deploy
-     */
-    public void releaseGlobalResources() {
-        rootClient.getConnectionManager().shutdown();
-        cacheManager.shutdown();
-    }
+		return context;
+	}
 
-    /**
-     * Releases the HttpClient, CookieStore and CredentialsProvider instances associated to this session
-     * @param sessionId
-     */
-    public void releaseSessionResources(String sessionId) {
-        perUserClientMap.remove(sessionId);
-        perUserCookieStoreMap.remove(sessionId);
-        
-        Set<String> keySet = perUserWindowCredentialProviderMap.keySet();
-        synchronized (perUserWindowCredentialProviderMap) {
-            Iterator<String> contextKeyIter = keySet.iterator();
-            while (contextKeyIter.hasNext()) {
-                String key = contextKeyIter.next();
-                
-                if (key.indexOf(sessionId + USER_WINDOW_KEY_SEPARATOR) == 0) {
-                	contextKeyIter.remove();
-                }
-            }
-        }
-    }
+	/**
+	 * Shutdown the connection manager on portlet un-deploy
+	 */
+	public void releaseGlobalResources() {
+		rootClient.getConnectionManager().shutdown();
+		cacheManager.shutdown();
+	}
 
-    /**
-     * Releases the PortletRequest, PortletResponse and Request instances associated to the current thread
-     */
-    public void releaseThreadResources() {
-        currentPortletRequest.remove();
-        currentPortletResponse.remove();
-        currentRequest.remove();
-    }
+	/**
+	 * Releases the HttpClient, CookieStore and CredentialsProvider instances
+	 * associated to this session
+	 * 
+	 * @param sessionId
+	 */
+	public void releaseSessionResources(String sessionId) {
+		perUserClientMap.remove(sessionId);
+		perUserCookieStoreMap.remove(sessionId);
 
-    public void setHeuristicCacheRation(double heuristicCacheRatio) {
+		Set<String> keySet = perUserWindowCredentialProviderMap.keySet();
+		synchronized (perUserWindowCredentialProviderMap) {
+			Iterator<String> contextKeyIter = keySet.iterator();
+			while (contextKeyIter.hasNext()) {
+				String key = contextKeyIter.next();
+
+				if (key.indexOf(sessionId + USER_WINDOW_KEY_SEPARATOR) == 0) {
+					contextKeyIter.remove();
+				}
+			}
+		}
+	}
+
+	/**
+	 * Releases the PortletRequest, PortletResponse and Request instances
+	 * associated to the current thread
+	 */
+	public void releaseThreadResources() {
+		currentPortletRequest.remove();
+		currentPortletResponse.remove();
+		currentRequest.remove();
+	}
+
+	public void setHeuristicCacheRation(double heuristicCacheRatio) {
 		this.heuristicCacheRatio = heuristicCacheRatio;
+	}
+
+	public void setStaleIfErrorTime(int staleIfErrorTime) {
+		this.staleIfErrorTime = staleIfErrorTime;
 	}
 }

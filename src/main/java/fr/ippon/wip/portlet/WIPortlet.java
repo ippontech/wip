@@ -62,8 +62,6 @@ public class WIPortlet extends GenericPortlet {
 	public static final String RESOURCE_TYPE_KEY = "WIP_RESOURCE_TYPE";
 	public static final String URL_CONCATENATION_KEY = "WIP_URL_CONCATENATION";
 
-	private int staleIfErrorTime;
-	
 	// Class attributes
 	private HttpExecutor executor;
 
@@ -86,7 +84,8 @@ public class WIPortlet extends GenericPortlet {
 		double heuristicCacheRatio = Double.parseDouble(config.getInitParameter("HEURISTIC_CACHE_RATIO"));
 		HttpClientResourceManager.getInstance().setHeuristicCacheRation(heuristicCacheRatio);
 
-		staleIfErrorTime = Integer.parseInt(config.getInitParameter("STALE_IF_ERROR"));
+		int staleIfErrorTime = Integer.parseInt(config.getInitParameter("STALE_IF_ERROR"));
+		HttpClientResourceManager.getInstance().setStaleIfErrorTime(staleIfErrorTime);
 		
 		int responseStoreMaxEntries = Integer.parseInt(config.getInitParameter("RESPONSE_STORE_MAX_ENTRIES"));
 		ResponseStore.getInstance().setMaxEntries(responseStoreMaxEntries);
@@ -98,8 +97,6 @@ public class WIPortlet extends GenericPortlet {
 	 * @param request
 	 */
 	private void checkIsConfigurationSet(PortletRequest request) {
-		request.setAttribute("STALE_IF_ERROR", staleIfErrorTime);
-		
 		String configurationName = (String) request.getPortletSession().getAttribute(Attributes.CONFIGURATION_NAME.name());
 		if(!StringUtils.isEmpty(configurationName))
 			return;

@@ -135,14 +135,8 @@ public enum RequestFactory {
 			
 		} else if (httpMethod == HttpMethod.POST)
 			return new PostRequest(requestedURL, resourceType, parameterMap);
-		
-		else {
-			Integer staleIfErrorTime = (Integer) portletRequest.getAttribute("STALE_IF_ERROR");
-			if (staleIfErrorTime != null && staleIfErrorTime > 0)
-				return new CacheExtensionRequestDecorator(new GetRequest(requestedURL, resourceType, parameterMap), staleIfErrorTime);
-			else
-				return new GetRequest(requestedURL, resourceType, parameterMap);
-		}
+		else
+			return new GetRequest(requestedURL, resourceType, parameterMap);
 	}
 
 	private void updateParameterMap(Multimap<String, String> parameterMap, String query) {
