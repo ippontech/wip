@@ -27,7 +27,6 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 
 import javax.portlet.PortletRequest;
@@ -105,7 +104,7 @@ public class HTMLTransformer extends AbstractTransformer {
 
 	private static final ReentrantLock lock = new ReentrantLock();
 
-	public static ThreadLocal<Optional<Long>> timeProcess = new ThreadLocal<Optional<Long>>();
+	public static ThreadLocal<Long> timeProcess = new ThreadLocal<Long>();
 
 	/**
 	 * A constructor who will create a HTMLTransformer using the given fields
@@ -185,7 +184,7 @@ public class HTMLTransformer extends AbstractTransformer {
 			parser.setProperty("http://xml.org/sax/properties/lexical-handler", transformerHandler);
 			parser.parse(inputSource);
 
-			timeProcess.set(Optional.of(stopwatch.elapsedMillis()));
+			timeProcess.set(stopwatch.elapsedMillis());
 
 			return resultWriter.toString();
 

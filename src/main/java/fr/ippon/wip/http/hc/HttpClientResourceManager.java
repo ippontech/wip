@@ -122,6 +122,7 @@ public class HttpClientResourceManager {
 			cacheConfig.setHeuristicCachingEnabled(true);
 			cacheConfig.setHeuristicCoefficient((float) heuristicCacheRatio);
 			cacheConfig.setHeuristicDefaultLifetime(60);
+			cacheConfig.setMaxObjectSize(4000000);
 
 			URL ehCacheConfig = getClass().getResource("/ehcache.xml");
 			cacheManager = CacheManager.create(ehCacheConfig);
@@ -288,6 +289,7 @@ public class HttpClientResourceManager {
 		CredentialsProvider credentialsProvider = getCredentialsProvider(portletRequest);
 		context.setAttribute(ClientContext.CREDS_PROVIDER, credentialsProvider);
 		context.setAttribute(ClientContext.COOKIE_STORE, getCookieStore(portletRequest));
+		context.setAttribute("WIP_CONFIGURATION", WIPUtil.getConfiguration(portletRequest));
 
 		currentPortletRequest.set(portletRequest);
 		currentPortletResponse.set(portletResponse);

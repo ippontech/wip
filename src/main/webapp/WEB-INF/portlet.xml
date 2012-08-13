@@ -75,6 +75,8 @@
 		<filter-name>Performance filter</filter-name>
 		<filter-class>fr.ippon.wip.filter.PerformanceFilter</filter-class>
 		<lifecycle>RENDER_PHASE</lifecycle>
+		<lifecycle>ACTION_PHASE</lifecycle>
+		<lifecycle>RESOURCE_PHASE</lifecycle>
 	</filter>
 
 	<filter-mapping>

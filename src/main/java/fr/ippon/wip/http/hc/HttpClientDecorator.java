@@ -21,20 +21,27 @@ package fr.ippon.wip.http.hc;
 import org.apache.http.*;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
+
+import fr.ippon.wip.config.WIPConfiguration;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * This class uses the decorator pattern to inject preProcessor (HttpRequestInterceptor)
@@ -46,13 +53,15 @@ import java.util.logging.Logger;
 public class HttpClientDecorator implements HttpClient {
 	
 	private static final Logger LOG = Logger.getLogger(HttpClientDecorator.class.getName());
-			
+	
+	private static final HttpResponse NotFoundResponse = new BasicHttpResponse(HttpVersion.HTTP_1_1, HttpStatus.SC_NOT_FOUND, "Deleted by WIP");
+	
     private final HttpClient backend;
 
     private final List<HttpRequestInterceptor> preProcessors = new LinkedList<HttpRequestInterceptor>();
     private final List<HttpResponseInterceptor> postProcessors = new LinkedList<HttpResponseInterceptor>();
 
-    public static ThreadLocal<Optional<Long>> timeProcess = new ThreadLocal<Optional<Long>>();
+    public static ThreadLocal<Long> timeProcess = new ThreadLocal<Long>();
     
     /**
      * @param backend Instance of HttpClient that shall be used to execute requests
@@ -68,7 +77,7 @@ public class HttpClientDecorator implements HttpClient {
     public void addPreProcessor(HttpRequestInterceptor interceptor) {
         preProcessors.add(interceptor);
     }
-
+    
     /**
      * Add a post-processor interceptor
      * The order of execution interceptors will be the same as the order in which this method is called
@@ -127,13 +136,19 @@ public class HttpClientDecorator implements HttpClient {
      */
     public HttpResponse execute(HttpHost target, HttpRequest request, HttpContext context) throws IOException {
         try {
+//        	WIPConfiguration configuration = (WIPConfiguration) context.getAttribute("WIP_CONFIGURATION");
+//        	
+//        	HttpRequestBase base = (HttpRequestBase) request;
+//        	if(isDeletedScript(configuration, base.getURI().toString()))
+//        		return NotFoundResponse;
+        	
             for (HttpRequestInterceptor preProcessor : preProcessors) {
                 preProcessor.process(request, context);
             }
             
             Stopwatch stopwatch = new Stopwatch().start();
             HttpResponse response = backend.execute(target, request, context);
-            timeProcess.set(Optional.of(stopwatch.elapsedMillis()));
+            timeProcess.set(stopwatch.elapsedMillis());
             
             for (HttpResponseInterceptor postProcessor : postProcessors) {
                 postProcessor.process(response, context);
@@ -144,6 +159,28 @@ public class HttpClientDecorator implements HttpClient {
             throw new RuntimeException(he);
         }
     }
+    
+	/**
+	 * Check if the script from the given URL has to be deleted
+	 * 
+	 * @param url
+	 *            the script URL
+	 * @return a boolean indicating if the script has to be deleted
+	 */
+	private boolean isDeletedScript(WIPConfiguration configuration, String url) {
+		for (String regex : configuration.getScriptsToDelete()) {
+			try {
+				Pattern p = Pattern.compile(regex);
+				Matcher m = p.matcher(url);
+				if (m.find())
+					return true;
+			} catch (PatternSyntaxException e) {
+				LOG.log(Level.WARNING, "Could not parse deletedScript regex: ", e);
+			}
+		}
+
+		return false;
+	}
 
     /**
      * Calls #execute(HttpHost, HttpRequest, ResponseHandler, HttpContext)

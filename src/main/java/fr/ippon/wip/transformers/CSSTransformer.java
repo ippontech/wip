@@ -23,7 +23,6 @@ import fr.ippon.wip.util.WIPUtil;
 
 import org.xml.sax.SAXException;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 
 import javax.portlet.PortletRequest;
@@ -58,7 +57,7 @@ public class CSSTransformer extends AbstractTransformer {
 	 */
 	private final PortletResponse response;
 
-	public static ThreadLocal<Optional<Long>> timeProcess = new ThreadLocal<Optional<Long>>();
+	public static ThreadLocal<Long> timeProcess = new ThreadLocal<Long>();
 
 	/**
 	 * Create a new CSSTransformer by getting the portlet configuration,
@@ -230,7 +229,7 @@ public class CSSTransformer extends AbstractTransformer {
 
 		}
 
-		timeProcess.set(Optional.of(stopwatch.elapsedMillis()));
+		timeProcess.set(stopwatch.elapsedMillis());
 		return input;
 	}
 }

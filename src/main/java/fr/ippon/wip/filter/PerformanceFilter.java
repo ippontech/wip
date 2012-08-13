@@ -18,19 +18,29 @@
 
 package fr.ippon.wip.filter;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 
+import javax.portlet.ActionRequest;
+import javax.portlet.ActionResponse;
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
+import javax.portlet.ResourceRequest;
+import javax.portlet.ResourceResponse;
+import javax.portlet.filter.ActionFilter;
 import javax.portlet.filter.FilterChain;
 import javax.portlet.filter.FilterConfig;
 import javax.portlet.filter.RenderFilter;
+import javax.portlet.filter.ResourceFilter;
+
+import com.google.common.base.Optional;
+import com.google.common.base.Stopwatch;
 
 import fr.ippon.wip.http.hc.HttpClientDecorator;
+import fr.ippon.wip.portlet.WIPortlet;
 import fr.ippon.wip.transformers.CSSTransformer;
 import fr.ippon.wip.transformers.HTMLTransformer;
 import fr.ippon.wip.transformers.JSTransformer;
@@ -41,11 +51,11 @@ import fr.ippon.wip.transformers.JSTransformer;
  * @author Yohan Legat
  *
  */
-public class PerformanceFilter implements RenderFilter {
+public class PerformanceFilter implements RenderFilter, ActionFilter, ResourceFilter {
 
 	private final String HOME = System.getProperty("user.home");
 	
-	private BufferedWriter out;
+	private Writer out;
 	
 	public PerformanceFilter() {
 		// TODO Auto-generated constructor stub
@@ -55,9 +65,9 @@ public class PerformanceFilter implements RenderFilter {
 		String logDirectory = HOME + "/wip";
 		try {
 			File file = new File(logDirectory + "/timeProcess");
-			out = new BufferedWriter(new FileWriter(file));
+			out = new FileWriter(file);
 			if(!file.exists())
-				out.write("HTML,CSS,JS,HTTP_COMPONENTS");
+				out.write("TYPE\tREQUEST\tTOTAL\tHTML\tCSS\tJS\tHTTP_COMPONENTS");
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -74,14 +84,56 @@ public class PerformanceFilter implements RenderFilter {
 	}
 	
 	public void doFilter(RenderRequest request, RenderResponse response, FilterChain chain) throws IOException, PortletException {
+		Stopwatch timeProcess = new Stopwatch().start();
 		chain.doFilter(request, response);
-
 		StringBuilder data = new StringBuilder();
-		data.append(Long.toString(HTMLTransformer.timeProcess.get().or(0L)) + ",");
-		data.append(Long.toString(CSSTransformer.timeProcess.get().or(0L)) + ",");
-		data.append(Long.toString(JSTransformer.timeProcess.get().or(0L)) + ",");
-		data.append(Long.toString(HttpClientDecorator.timeProcess.get().or(0L)) + ",");
+		writePerformance(data.append("RENDER\t").append(request.getParameter(WIPortlet.LINK_URL_KEY) + "\t").append(timeProcess.elapsedMillis() + "\t"));
+	}
+
+	public void doFilter(ActionRequest request, ActionResponse response, FilterChain chain) throws IOException, PortletException {
+		Stopwatch timeProcess = new Stopwatch().start();
+		chain.doFilter(request, response);
+		StringBuilder data = new StringBuilder();
+		writePerformance(data.append("ACTION\t").append(request.getParameter(WIPortlet.LINK_URL_KEY) + "\t").append(timeProcess.elapsedMillis() + "\t"));
+	}
+
+	public void doFilter(ResourceRequest request, ResourceResponse response, FilterChain chain) throws IOException, PortletException {
+		Stopwatch timeProcess = new Stopwatch().start();
+		chain.doFilter(request, response);
+		StringBuilder data = new StringBuilder();
+		writePerformance(data.append("RESOURCE\t").append(request.getParameter(WIPortlet.LINK_URL_KEY) + "\t").append(timeProcess.elapsedMillis() + "\t"));
+	}
+	
+	private void  writePerformance(StringBuilder data) {
+		Optional<Long> optionalTime;
+		
+		optionalTime = Optional.fromNullable(HTMLTransformer.timeProcess.get());
+		data.append(optionalTime.or(0L) + "\t");
+		if(optionalTime.isPresent())
+			HTMLTransformer.timeProcess.remove();
+		
+		optionalTime = Optional.fromNullable(CSSTransformer.timeProcess.get());
+		data.append(optionalTime.or(0L) + "\t");
+		if(optionalTime.isPresent())
+			CSSTransformer.timeProcess.remove();
+		
+		optionalTime = Optional.fromNullable(JSTransformer.timeProcess.get());
+		data.append(optionalTime.or(0L) + "\t");
+		if(optionalTime.isPresent())
+			JSTransformer.timeProcess.remove();
+		
+		optionalTime = Optional.fromNullable(HttpClientDecorator.timeProcess.get());
+		data.append(optionalTime.or(0L) + "\t");
+		if(optionalTime.isPresent())
+			HttpClientDecorator.timeProcess.remove();
+		
 		data.append("\n");
-		out.write(data.toString());
+		
+		try {
+			out.write(data.toString());
+			out.flush();		
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

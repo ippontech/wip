@@ -25,7 +25,6 @@ import fr.ippon.wip.util.WIPUtil;
 
 import org.xml.sax.SAXException;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Stopwatch;
 
 import javax.portlet.PortletRequest;
@@ -63,8 +62,8 @@ public class JSTransformer extends AbstractTransformer {
 	 */
 	private final WIPConfiguration wipConfig;
 
-	public static ThreadLocal<Optional<Long>> timeProcess = new ThreadLocal<Optional<Long>>();
-
+	public static ThreadLocal<Long> timeProcess = new ThreadLocal<Long>();
+	
 	/**
 	 * Create a new JSTransformer by initializing the rewriter, getting the
 	 * portlet configuration and initializing the other fields with given
@@ -179,7 +178,7 @@ public class JSTransformer extends AbstractTransformer {
 
 		input = transformAjaxJQuery(input);
 
-		timeProcess.set(Optional.of(stopwatch.elapsedMillis()));
+		timeProcess.set(stopwatch.elapsedMillis());
 		return input;
 	}
 
