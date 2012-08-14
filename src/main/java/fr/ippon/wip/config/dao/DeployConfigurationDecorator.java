@@ -80,7 +80,7 @@ public class DeployConfigurationDecorator extends ConfigurationDAODecorator {
 
 	private ZipConfiguration zip;
 
-	public DeployConfigurationDecorator(ConfigurationDAO dao) {
+	public DeployConfigurationDecorator(AbstractConfigurationDAO dao) {
 		super(dao);
 		try {
 			URL url = getClass().getResource("/deploy");
@@ -98,7 +98,7 @@ public class DeployConfigurationDecorator extends ConfigurationDAODecorator {
 	 * 
 	 * @return the configuration to deploy
 	 */
-	private void checkDeploy() {
+	private synchronized void checkDeploy() {
 		List<WIPConfiguration> deployedConfigurations = new ArrayList<WIPConfiguration>();
 		for (File file : deployPath.listFiles(zipFilter)) {
 			try {

@@ -16,7 +16,7 @@ public enum ConfigurationDAOFactory {
 
 	INSTANCE;
 
-	private ConfigurationDAO xmlDAO;
+	private AbstractConfigurationDAO xmlDAO;
 
 	private PortletContext context;
 
@@ -38,7 +38,7 @@ public enum ConfigurationDAOFactory {
 	 * 
 	 * @return the instance of a configuration DAO
 	 */
-	public synchronized ConfigurationDAO getXMLDAOInstance() {
+	public synchronized AbstractConfigurationDAO getXMLDAOInstance() {
 		if (xmlDAO == null) {
 			String pathConfigFiles = context.getRealPath("../../conf/wip");
 			File configFolder = new File(pathConfigFiles);
@@ -56,10 +56,10 @@ public enum ConfigurationDAOFactory {
 		return xmlDAO;
 	}
 
-	private void createDefaultConfiguration(ConfigurationDAO configurationDAO) {
+	private void createDefaultConfiguration(AbstractConfigurationDAO configurationDAO) {
 		URL url = getClass().getResource("/default-configuration");
 		String defaultConfigurationFolder = url.getFile();
-		ConfigurationDAO defaultConfigurationDAO = new XMLConfigurationDAO(defaultConfigurationFolder);
+		AbstractConfigurationDAO defaultConfigurationDAO = new XMLConfigurationDAO(defaultConfigurationFolder);
 		for (String configurationName : defaultConfigurationDAO.getConfigurationsNames())
 			configurationDAO.create(defaultConfigurationDAO.read(configurationName));
 	}

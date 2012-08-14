@@ -27,7 +27,7 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletSession;
 
 import fr.ippon.wip.config.WIPConfiguration;
-import fr.ippon.wip.config.dao.ConfigurationDAO;
+import fr.ippon.wip.config.dao.AbstractConfigurationDAO;
 import fr.ippon.wip.config.dao.ConfigurationDAOFactory;
 import fr.ippon.wip.portlet.Attributes;
 
@@ -43,7 +43,7 @@ public class WIPUtil {
 
     private static final Map<Locale, ResourceBundle> bundles = new HashMap<Locale, ResourceBundle>();
 
-    private static ConfigurationDAO configurationDAO = ConfigurationDAOFactory.INSTANCE.getXMLDAOInstance();
+    private static AbstractConfigurationDAO configurationDAO = ConfigurationDAOFactory.INSTANCE.getXMLDAOInstance();
     
     public static String getMessage(String key, Locale locale) {
         ResourceBundle bundle = bundles.get(locale);

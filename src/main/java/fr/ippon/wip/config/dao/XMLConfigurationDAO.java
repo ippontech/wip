@@ -49,7 +49,7 @@ import fr.ippon.wip.config.WIPConfiguration;
  * @author Quentin Thierry
  * @author Yohan Legat
  */
-public class XMLConfigurationDAO extends ConfigurationDAO {
+public class XMLConfigurationDAO extends AbstractConfigurationDAO {
 
 	private static final Logger LOG = Logger.getLogger(XMLConfigurationDAO.class.getName());
 
@@ -110,6 +110,7 @@ public class XMLConfigurationDAO extends ConfigurationDAO {
 			configuration.setName(name);
 		}
 
+		updateTimestamp(configuration);
 		write(configuration);
 		return configuration;
 	}
@@ -199,8 +200,6 @@ public class XMLConfigurationDAO extends ConfigurationDAO {
 	 */
 	@Override
 	public synchronized WIPConfiguration update(WIPConfiguration configuration) {
-		super.update(configuration);
-
 		String name = configuration.getName();
 		// the default configuration can't be changed
 		if (DEFAULT_CONFIG_NAME.equals(name))
@@ -208,7 +207,8 @@ public class XMLConfigurationDAO extends ConfigurationDAO {
 
 		if (!exists(name))
 			return null;
-
+		
+		updateTimestamp(configuration);
 		write(configuration);
 		return configuration;
 	}

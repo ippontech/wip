@@ -19,7 +19,7 @@
 package fr.ippon.wip.portlet;
 
 import fr.ippon.wip.config.WIPConfiguration;
-import fr.ippon.wip.config.dao.ConfigurationDAO;
+import fr.ippon.wip.config.dao.AbstractConfigurationDAO;
 import fr.ippon.wip.config.dao.ConfigurationDAOFactory;
 import fr.ippon.wip.http.HttpExecutor;
 import fr.ippon.wip.http.Response;
@@ -102,7 +102,7 @@ public class WIPortlet extends GenericPortlet {
 			return;
 		
 		PortletPreferences preferences = request.getPreferences();
-		configurationName = preferences.getValue(Attributes.CONFIGURATION_NAME.name(), ConfigurationDAO.DEFAULT_CONFIG_NAME);
+		configurationName = preferences.getValue(Attributes.CONFIGURATION_NAME.name(), AbstractConfigurationDAO.DEFAULT_CONFIG_NAME);
 		request.getPortletSession().setAttribute(Attributes.CONFIGURATION_NAME.name(), configurationName);
 	}
 

@@ -29,7 +29,7 @@ import fr.ippon.wip.config.WIPConfiguration;
  * @author Yohan Legat
  * 
  */
-public abstract class ConfigurationDAO {
+public abstract class AbstractConfigurationDAO {
 
 	/**
 	 * The default configuration name.
@@ -116,8 +116,9 @@ public abstract class ConfigurationDAO {
 	 *            the configuration to save
 	 * @return the saved configuration
 	 */
-	public WIPConfiguration update(WIPConfiguration configuration) {
+	public abstract WIPConfiguration update(WIPConfiguration configuration);
+	
+	protected void updateTimestamp(WIPConfiguration configuration) {
 		configuration.setTimestamp(System.currentTimeMillis());
-		return configuration;
 	}
 }

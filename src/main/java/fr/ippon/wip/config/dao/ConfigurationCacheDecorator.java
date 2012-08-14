@@ -48,7 +48,7 @@ public class ConfigurationCacheDecorator extends ConfigurationDAODecorator {
 		}
 	};
 
-	public ConfigurationCacheDecorator(ConfigurationDAO decoratedDAO) {
+	public ConfigurationCacheDecorator(AbstractConfigurationDAO decoratedDAO) {
 		super(decoratedDAO);
 		configurationNames = super.getConfigurationsNames();
 		Collections.sort(configurationNames, lowerCaseComparator);

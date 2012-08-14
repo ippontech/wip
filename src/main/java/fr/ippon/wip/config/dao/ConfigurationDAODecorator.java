@@ -28,11 +28,11 @@ import fr.ippon.wip.config.WIPConfiguration;
  * @author Yohan Legat
  *
  */
-public abstract class ConfigurationDAODecorator extends ConfigurationDAO {
+public abstract class ConfigurationDAODecorator extends AbstractConfigurationDAO {
 
-	private ConfigurationDAO decoratedDAO;
+	private AbstractConfigurationDAO decoratedDAO;
 
-	public ConfigurationDAODecorator(ConfigurationDAO dao) {
+	public ConfigurationDAODecorator(AbstractConfigurationDAO dao) {
 		this.decoratedDAO = dao;
 	}
 

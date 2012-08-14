@@ -53,7 +53,7 @@ import org.apache.commons.lang.StringUtils;
 
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.ZipConfiguration;
-import fr.ippon.wip.config.dao.ConfigurationDAO;
+import fr.ippon.wip.config.dao.AbstractConfigurationDAO;
 import fr.ippon.wip.config.dao.ConfigurationDAOFactory;
 import fr.ippon.wip.util.WIPUtil;
 
@@ -61,7 +61,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 
 	private static final Logger LOG = Logger.getLogger(WIPConfigurationPortlet.class.getName());
 	
-	private ConfigurationDAO configurationDAO;
+	private AbstractConfigurationDAO configurationDAO;
 
 	private PortletFileUpload fileUploadPortlet;
 	
@@ -79,7 +79,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 		// check and set if necessary the selected configuration in session
 		String configName = (String) session.getAttribute(Attributes.CONFIGURATION_NAME.name());
 		if (StringUtils.isEmpty(configName))
-			session.setAttribute(Attributes.CONFIGURATION_NAME.name(), ConfigurationDAO.DEFAULT_CONFIG_NAME);
+			session.setAttribute(Attributes.CONFIGURATION_NAME.name(), AbstractConfigurationDAO.DEFAULT_CONFIG_NAME);
 
 		// check and set if necessary the configuration page in session
 		Pages page = (Pages) session.getAttribute(Attributes.PAGE.name());
@@ -492,7 +492,7 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 		configName = request.getParameter(Attributes.ACTION_DELETE_CONFIGURATION.name());
 		if (!StringUtils.isEmpty(configName)) {
 			if(WIPUtil.getConfiguration(request).getName().equals(configName))
-				session.setAttribute(Attributes.CONFIGURATION_NAME.name(), ConfigurationDAO.DEFAULT_CONFIG_NAME);
+				session.setAttribute(Attributes.CONFIGURATION_NAME.name(), AbstractConfigurationDAO.DEFAULT_CONFIG_NAME);
 			
 			configurationDAO.delete(configurationDAO.read(configName));
 			return;
