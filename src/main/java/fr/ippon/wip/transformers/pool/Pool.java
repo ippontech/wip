@@ -31,12 +31,12 @@ public interface Pool<T> {
 	 * Return a resource from the pool
 	 * @return a resource from the pool
 	 */
-	public T pick();
+	public T acquire();
 	
 	/**
 	 * Put a resource inside the pool
 	 * @param o the resource to put in the pool
 	 */
-	public void leave(T resource);
+	public void release(T resource);
 	
 }

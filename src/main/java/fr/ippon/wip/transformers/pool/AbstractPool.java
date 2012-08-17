@@ -18,12 +18,11 @@
 
 package fr.ippon.wip.transformers.pool;
 
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.Stack;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * An abstract pool providing concurrency managment, so that it is multithread-safe
+ * An abstract pool providing concurrency managment, so that it is multithread-safe.
  * 
  * @author Yohan Legat
  *
@@ -35,37 +34,50 @@ public abstract class AbstractPool<T> implements Pool<T> {
 	private ReentrantLock lock = new ReentrantLock();
 
 	// the resources pool
-	protected Collection<T> pool;
+	protected Stack<T> pool;
+	
+	// the max number of resources which can be created
+	protected final int poolSize;
+	
+	// the actual number of resources created
+	protected int resourcesCreatedNbr;
 
-	protected AbstractPool(Collection<T> pool) {
-		this.pool = pool;
+	protected AbstractPool(int poolSize) {
+		this.pool = new Stack<T>();
+		this.poolSize = poolSize;
+		resourcesCreatedNbr = 0;
 	}
 	
 	/**
 	 * {@inheritDoc}
 	 */
-	public void leave(T resource) {
+	public void release(T resource) {
 		try {
 			lock.lock();
-			pool.add(resource);
+			pool.push(resource);
 
 		} finally {
 			lock.unlock();
 		}
 	}
+	
+	protected abstract T buildResource();
 
 	/**
 	 * {@inheritDoc}
 	 */
-	public T pick() {
+	public T acquire() {
 		try {
 			lock.lock();
-			if (!pool.isEmpty()) {
-				Iterator<T> iterator = pool.iterator();
-				T resource = iterator.next();
-				iterator.remove();
+			if (!pool.isEmpty())
+				return pool.pop();
+				
+			if(resourcesCreatedNbr < poolSize) {
+				T resource = buildResource();
+				resourcesCreatedNbr++;
 				return resource;
 			}
+			
 		} finally {
 			lock.unlock();
 		}
@@ -76,6 +88,6 @@ public abstract class AbstractPool<T> implements Pool<T> {
 			e.printStackTrace();
 		}
 
-		return pick();
+		return acquire();
 	}
 }

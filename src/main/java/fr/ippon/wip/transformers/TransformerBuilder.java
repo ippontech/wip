@@ -95,7 +95,7 @@ public class TransformerBuilder {
 
 		// HTML transformation
 		if (mimeType.equals("text/html") || mimeType.equals("application/xhtml+xml"))
-			return new HTMLTransformer(portletRequest, portletResponse, actualURL, xmlReaderPool.pick());
+			return new HTMLTransformer(portletRequest, portletResponse, actualURL, xmlReaderPool.acquire());
 
 		// JavaScript transformation
 		if (mimeType.equals("text/javascript") || mimeType.equals("application/javascript"))
@@ -121,7 +121,7 @@ public class TransformerBuilder {
 		}
 
 		// HTML transformation
-		return new HTMLTransformer(portletRequest, portletResponse, actualURL, xmlReaderPool.pick());
+		return new HTMLTransformer(portletRequest, portletResponse, actualURL, xmlReaderPool.acquire());
 	}
 
 	private WIPTransformer buildJavascriptTransformer() {

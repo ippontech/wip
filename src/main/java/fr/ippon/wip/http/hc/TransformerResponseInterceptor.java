@@ -58,7 +58,7 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
 
 	private static final Logger LOG = Logger.getLogger(TransformerResponseInterceptor.class.getName());
 	
-	private static final Pool<CloseableXmlReader> xmlReaderPool = new XMLReaderPool(25);
+	private static final Pool<CloseableXmlReader> xmlReaderPool = new XMLReaderPool(100);
 
 	private void emptyResponse(HttpResponse httpResponse) {
 		EntityUtils.consumeQuietly(httpResponse.getEntity());

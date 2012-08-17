@@ -108,7 +108,7 @@ public class CloseableXmlReader implements XMLReader, Closeable {
 	}
 
 	public void close() throws IOException {
-		pool.leave(this);
+		pool.release(this);
 	}
 
 }
