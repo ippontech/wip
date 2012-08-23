@@ -16,7 +16,7 @@
  *	along with Web Integration Portlet (WIP).  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package fr.ippon.wip.http;
+package fr.ippon.wip.http.reponse;
 
 import fr.ippon.wip.state.PortletWindow;
 import fr.ippon.wip.transformers.ActionToRenderTransformer;

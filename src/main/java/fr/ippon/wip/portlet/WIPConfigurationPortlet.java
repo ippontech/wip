@@ -178,6 +178,8 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 			wipConfig.setForcePageCaching(forcePageCaching);
 			wipConfig.setForceResourceCaching(forceResourceCaching);
 		}
+		
+		configurationDAO.update(wipConfig);
 
 		// Sending errors to the portlet session
 		request.getPortletSession().setAttribute("errors", errors, PortletSession.APPLICATION_SCOPE);

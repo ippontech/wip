@@ -113,16 +113,7 @@ public class HttpClientResourceManager {
 			// automatically redirects all HEAD, GET and POST requests
 			defaultHttpClient.setRedirectStrategy(new LaxRedirectStrategy());
 
-			// TODO add Ehcache configuration
-			// Ehcache ehCache =
-			// CacheManager.getInstance().addCacheIfAbsent("wip.shared.cached");
-			// EhcacheHttpCacheStorage cacheStorage = new
-			// EhcacheHttpCacheStorage (ehCache);
-			CacheConfig cacheConfig = new CacheConfig();
-			cacheConfig.setHeuristicCachingEnabled(true);
-			cacheConfig.setHeuristicCoefficient((float) heuristicCacheRatio);
-			cacheConfig.setHeuristicDefaultLifetime(60);
-			cacheConfig.setMaxObjectSize(4000000);
+			CacheConfig cacheConfig = createAndConfigureCache();
 
 			URL ehCacheConfig = getClass().getResource("/ehcache.xml");
 			cacheManager = CacheManager.create(ehCacheConfig);
@@ -246,14 +237,31 @@ public class HttpClientResourceManager {
 				if (!config.isPageCachePrivate()) {
 					client = rootClient;
 				} else {
-					CacheConfig cacheConfig = new CacheConfig();
-					cacheConfig.setSharedCache(false);
-					client = new CachingHttpClient(rootClient, cacheConfig);
+					CacheConfig cacheConfig = createAndConfigureCache();
+					
+					URL ehCacheConfig = getClass().getResource("/ehcache.xml");
+					cacheManager = CacheManager.create(ehCacheConfig);
+					Ehcache ehcache = cacheManager.getEhcache("private");
+					EhcacheHttpCacheStorage httpCacheStorage = new EhcacheHttpCacheStorage(ehcache);
+
+					client = new CachingHttpClient(rootClient, httpCacheStorage, cacheConfig);
 				}
+				
 				perUserClientMap.put(userSessionId, client);
 			}
 		}
 		return client;
+	}
+	
+	private CacheConfig createAndConfigureCache() {
+		CacheConfig cacheConfig = new CacheConfig();
+		cacheConfig.setSharedCache(false);
+		cacheConfig.setHeuristicCachingEnabled(true);
+		cacheConfig.setHeuristicCoefficient((float) heuristicCacheRatio);
+		cacheConfig.setHeuristicDefaultLifetime(60);
+		cacheConfig.setMaxObjectSize(4000000);
+		
+		return cacheConfig;
 	}
 
 	public HttpClient getRootClient() {

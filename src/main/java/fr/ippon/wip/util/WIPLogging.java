@@ -34,7 +34,10 @@ import java.util.logging.SimpleFormatter;
 import org.apache.commons.io.FileUtils;
 
 /**
- * Logging managment singleton for access log and transformation logs.
+ * Logging managment singleton for access log and transformation log.
+ * Transformation log are only taking care of in debug mode. This mode should
+ * not be activated in production: the naming log file process is not well
+ * suited when several users access to the portlet.
  * 
  * @author Yohan Legat
  * 
@@ -47,10 +50,10 @@ public enum WIPLogging {
 	// the access log file handler
 	private FileHandler accessFileHandler;
 
-	// the resource retrieved
-	private String resource;
+	// the url retrieved
+	private String url;
 
-	// accumulator used for creating unique file handler
+	// accumulator used for creating unique file handlers.
 	private final AtomicInteger acc = new AtomicInteger(1);
 
 	private final NumberFormat format = new DecimalFormat("000");
@@ -75,22 +78,23 @@ public enum WIPLogging {
 			accessFileHandler.setLevel(Level.INFO);
 			accessFileHandler.setFormatter(new SimpleFormatter());
 			Logger.getLogger("fr.ippon.wip.http.hc.HttpClientExecutor.AccessLog").addHandler(accessFileHandler);
-			
+
 			ConsoleHandler consoleHandler = new ConsoleHandler();
 			consoleHandler.setFilter(new Filter() {
-				
+
 				public boolean isLoggable(LogRecord record) {
 					return !record.getLoggerName().equals("fr.ippon.wip.http.hc.HttpClientExecutor.AccessLog");
 				}
 			});
-			
+
 			Logger.getLogger("fr.ippon.wip").addHandler(consoleHandler);
-			
-//			For HttpClient debugging			
-//			FileHandler fileHandler = new FileHandler("%h/wip/httpclient.log", true);
-//			fileHandler.setLevel(Level.ALL);
-//			Logger.getLogger("org.apache.http.headers").addHandler(fileHandler);
-//			Logger.getLogger("org.apache.http.headers").setLevel(Level.ALL);
+
+			// For HttpClient debugging
+			// FileHandler fileHandler = new
+			// FileHandler("%h/wip/httpclient.log", true);
+			// fileHandler.setLevel(Level.ALL);
+			// Logger.getLogger("org.apache.http.headers").addHandler(fileHandler);
+			// Logger.getLogger("org.apache.http.headers").setLevel(Level.ALL);
 
 		} catch (SecurityException e) {
 			e.printStackTrace();
@@ -98,7 +102,7 @@ public enum WIPLogging {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Close the log access file handler
 	 */
@@ -115,12 +119,12 @@ public enum WIPLogging {
 	}
 
 	/**
-	 * Create a new transform log file handler associated to the resource and to
+	 * Create a new transform log file handler associated to the current url and to
 	 * the thread calling this method
 	 */
 	private File createTransformLogFile() {
 		String number = format.format(acc.getAndIncrement());
-		File logFile = new File(HOME + "/wip/" + resource + "_" + number + ".log");
+		File logFile = new File(HOME + "/wip/" + url + "_" + number + ".log");
 		localLogFile.set(logFile);
 		return logFile;
 	}
@@ -139,7 +143,7 @@ public enum WIPLogging {
 
 		// retrieve the origin of the log call
 		StackTraceElement broadcaster = Thread.currentThread().getStackTrace()[2];
-		
+
 		try {
 			FileUtils.write(logFile, broadcaster + "\n" + log + "\n\n", true);
 
@@ -149,18 +153,18 @@ public enum WIPLogging {
 	}
 
 	/**
-	 * Change the state of this instance so that next transform log file
-	 * created will be named after the given name
+	 * Change the state of this instance so that next transform log file created
+	 * will be named after the given name
 	 * 
 	 * @param url
 	 */
-	public void resetForResource(String url) {
+	public void resetForUrl(String url) {
 		url = (url.endsWith("/")) ? url.substring(0, url.length() - 1) : url;
-		resource = url.substring(url.lastIndexOf("/") + 1);
+		this.url = url.substring(url.lastIndexOf("/") + 1);
 		acc.set(1);
-		
-		for(File file : new File(HOME + "/wip").listFiles())
-			if(file.getName().startsWith(resource))
+
+		for (File file : new File(HOME + "/wip").listFiles())
+			if (file.getName().startsWith(this.url))
 				FileUtils.deleteQuietly(file);
 	}
 }

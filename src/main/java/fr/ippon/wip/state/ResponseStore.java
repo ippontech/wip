@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 
-import fr.ippon.wip.http.Response;
+import fr.ippon.wip.http.reponse.Response;
 
 /**
  * Singleton class used to store Response from ACTION to RENDER phase (or servlet)

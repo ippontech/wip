@@ -126,7 +126,7 @@
             <input type="hidden" name="scriptIgnoredUrls" id="scriptIgnoredUrlToSave"/>
             <input type="hidden" name="scriptDeletedUrls" id="scriptDeletedUrlToSave"/>
        		<%
-       			if(!ConfigurationDAO.DEFAULT_CONFIG_NAME.equals(wipConf.getName())) {
+       			if(!AbstractConfigurationDAO.DEFAULT_CONFIG_NAME.equals(wipConf.getName())) {
        		%>
 	            <input type="submit" value="<fmt:message key='wip.config.save' />"/>
     	    <%} %>

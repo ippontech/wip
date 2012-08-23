@@ -18,7 +18,7 @@
 
 package fr.ippon.wip.servlet;
 
-import fr.ippon.wip.http.Response;
+import fr.ippon.wip.http.reponse.Response;
 import fr.ippon.wip.state.ResponseStore;
 
 import javax.servlet.ServletException;

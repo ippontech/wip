@@ -21,7 +21,7 @@
     <xsl:param name="actualUrl"/>
     <xsl:param name="urlfact"/>
 
-	<!-- WARNING: DON'T INSTANCIATE GENERIC CLASSES IF THE XSLT IS PARSED BY NEKOHTML  -->
+	<!-- WARNING: DON'T INSTANCIATE GENERIC CLASS IF THE XSLT IS PARSED BY NEKOHTML  -->
     <xsl:variable name="jstrans" select="jstransformer:new( $request, $response, $actualUrl )"/>
     <xsl:variable name="csstrans" select="csstransformer:new( $request, $response, $actualUrl )"/>
 

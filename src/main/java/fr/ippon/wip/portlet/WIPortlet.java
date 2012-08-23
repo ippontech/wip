@@ -22,9 +22,9 @@ import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.dao.AbstractConfigurationDAO;
 import fr.ippon.wip.config.dao.ConfigurationDAOFactory;
 import fr.ippon.wip.http.HttpExecutor;
-import fr.ippon.wip.http.Response;
 import fr.ippon.wip.http.hc.HttpClientExecutor;
 import fr.ippon.wip.http.hc.HttpClientResourceManager;
+import fr.ippon.wip.http.reponse.Response;
 import fr.ippon.wip.http.request.Request;
 import fr.ippon.wip.http.request.RequestFactory;
 import fr.ippon.wip.state.PortletWindow;
@@ -144,7 +144,7 @@ public class WIPortlet extends GenericPortlet {
 			// TODO: copy global parameters from PortletRequest ?
 			
             if(WIPUtil.isDebugMode(request))
-            	WIPLogging.INSTANCE.resetForResource(wipRequest.getRequestedURL());
+            	WIPLogging.INSTANCE.resetForUrl(wipRequest.getRequestedURL());
 
 			// Execute request
 			wipResponse = executor.execute(wipRequest, request, response);
@@ -219,7 +219,7 @@ public class WIPortlet extends GenericPortlet {
 		Request wipRequest = RequestFactory.INSTANCE.getRequest(request);
 		
         if(WIPUtil.isDebugMode(request))
-        	WIPLogging.INSTANCE.resetForResource(wipRequest.getRequestedURL());
+        	WIPLogging.INSTANCE.resetForUrl(wipRequest.getRequestedURL());
 
 		Response wipResponse = executor.execute(wipRequest, request, response);
 

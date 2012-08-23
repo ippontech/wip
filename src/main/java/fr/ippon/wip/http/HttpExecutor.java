@@ -21,6 +21,7 @@ package fr.ippon.wip.http;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 
+import fr.ippon.wip.http.reponse.Response;
 import fr.ippon.wip.http.request.Request;
 
 import java.io.IOException;

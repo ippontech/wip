@@ -66,7 +66,7 @@
 
         <p class="submit">
        		<%
-       			if(!ConfigurationDAO.DEFAULT_CONFIG_NAME.equals(wipConf.getName())) {
+       			if(!AbstractConfigurationDAO.DEFAULT_CONFIG_NAME.equals(wipConf.getName())) {
        		%>
 	            <input type="submit" value="<fmt:message key='wip.config.save' />"/>
     	    <%} %>

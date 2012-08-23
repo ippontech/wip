@@ -19,7 +19,7 @@
 package fr.ippon.wip.http.hc;
 
 import fr.ippon.wip.http.HttpExecutor;
-import fr.ippon.wip.http.Response;
+import fr.ippon.wip.http.reponse.Response;
 import fr.ippon.wip.http.request.Request;
 import fr.ippon.wip.state.PortletWindow;
 import fr.ippon.wip.util.WIPLogging;
