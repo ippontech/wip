@@ -20,7 +20,7 @@ package fr.ippon.wip.http.hc;
 
 import fr.ippon.wip.http.HttpExecutor;
 import fr.ippon.wip.http.reponse.Response;
-import fr.ippon.wip.http.request.Request;
+import fr.ippon.wip.http.request.RequestBuilder;
 import fr.ippon.wip.state.PortletWindow;
 import fr.ippon.wip.util.WIPLogging;
 import fr.ippon.wip.util.WIPUtil;
@@ -80,7 +80,7 @@ public class HttpClientExecutor implements HttpExecutor {
      *         to release the underlying HTTP connection.
      * @throws IOException
      */
-    public Response execute(Request request, PortletRequest portletRequest, PortletResponse portletResponse) throws IOException {
+    public Response execute(RequestBuilder request, PortletRequest portletRequest, PortletResponse portletResponse) throws IOException {
         if(WIPUtil.isDebugMode(portletRequest))
         	WIPLogging.INSTANCE.logTransform(request.getRequestedURL());
 

@@ -26,7 +26,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import fr.ippon.wip.config.WIPConfiguration;
-import fr.ippon.wip.http.request.PostRequest;
+import fr.ippon.wip.http.request.PostRequestBuilder;
 import fr.ippon.wip.portlet.WIPortlet;
 import fr.ippon.wip.util.WIPUtil;
 
@@ -109,8 +109,8 @@ public class UrlFactory {
 	 */
 	public String createProxyUrl(String relativeUrl, String method, String type, PortletResponse portletResponse) {
 		String proxyUrl;
-		PostRequest.HttpMethod httpMethod = PostRequest.HttpMethod.valueOf(method);
-		PostRequest.ResourceType resourceType = PostRequest.ResourceType.valueOf(type);
+		PostRequestBuilder.HttpMethod httpMethod = PostRequestBuilder.HttpMethod.valueOf(method);
+		PostRequestBuilder.ResourceType resourceType = PostRequestBuilder.ResourceType.valueOf(type);
 
 		// Convert to absolute URL
 		String absoluteUrl;
@@ -123,7 +123,7 @@ public class UrlFactory {
 		if (portletResponse instanceof MimeResponse) {
 			// Create a portal URL
 			BaseURL baseURL;
-			if (resourceType == PostRequest.ResourceType.HTML) {
+			if (resourceType == PostRequestBuilder.ResourceType.HTML) {
 				// Create an ActionURL
 				baseURL = ((MimeResponse) portletResponse).createActionURL();
 			} else {
@@ -137,7 +137,7 @@ public class UrlFactory {
 			// Get portlet URL as String
 			proxyUrl = baseURL.toString();
 			// Append concatenation key for AJAX URLs (hack !)
-			if (resourceType == PostRequest.ResourceType.AJAX) {
+			if (resourceType == PostRequestBuilder.ResourceType.AJAX) {
 				proxyUrl += "&" + WIPortlet.URL_CONCATENATION_KEY + "=";
 			}
 		} else {

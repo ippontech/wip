@@ -25,8 +25,8 @@ import fr.ippon.wip.http.HttpExecutor;
 import fr.ippon.wip.http.hc.HttpClientExecutor;
 import fr.ippon.wip.http.hc.HttpClientResourceManager;
 import fr.ippon.wip.http.reponse.Response;
-import fr.ippon.wip.http.request.Request;
-import fr.ippon.wip.http.request.RequestFactory;
+import fr.ippon.wip.http.request.RequestBuilder;
+import fr.ippon.wip.http.request.RequestBuilderFactory;
 import fr.ippon.wip.state.PortletWindow;
 import fr.ippon.wip.state.ResponseStore;
 import fr.ippon.wip.util.WIPLogging;
@@ -139,7 +139,7 @@ public class WIPortlet extends GenericPortlet {
 		// If no pending response, create a new request
 		if (wipResponse == null) {
 			String requestUrl = windowState.getActualURL();
-			Request wipRequest = RequestFactory.INSTANCE.getRequest(request, requestUrl, Request.ResourceType.HTML, Request.HttpMethod.GET, null, false);
+			RequestBuilder wipRequest = RequestBuilderFactory.INSTANCE.getRequest(request, requestUrl, RequestBuilder.ResourceType.HTML, RequestBuilder.HttpMethod.GET, null, false);
 
 			// TODO: copy global parameters from PortletRequest ?
 			
@@ -216,7 +216,7 @@ public class WIPortlet extends GenericPortlet {
 			return;
 		}
 
-		Request wipRequest = RequestFactory.INSTANCE.getRequest(request);
+		RequestBuilder wipRequest = RequestBuilderFactory.INSTANCE.getRequest(request);
 		
         if(WIPUtil.isDebugMode(request))
         	WIPLogging.INSTANCE.resetForUrl(wipRequest.getRequestedURL());
@@ -259,7 +259,7 @@ public class WIPortlet extends GenericPortlet {
 		checkIsConfigurationSet(request);
 		
 		// Create request
-		Request wipRequest = RequestFactory.INSTANCE.getRequest(request);
+		RequestBuilder wipRequest = RequestBuilderFactory.INSTANCE.getRequest(request);
 
 		// Execute request
 		Response wipResponse = executor.execute(wipRequest, request, response);

@@ -22,7 +22,7 @@ import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 
 import fr.ippon.wip.http.reponse.Response;
-import fr.ippon.wip.http.request.Request;
+import fr.ippon.wip.http.request.RequestBuilder;
 
 import java.io.IOException;
 
@@ -31,7 +31,7 @@ import java.io.IOException;
  * @author François Prot
  */
 public interface HttpExecutor {
-    public Response execute(Request request, PortletRequest portletRequest, PortletResponse portletResponse) throws IOException;
+    public Response execute(RequestBuilder request, PortletRequest portletRequest, PortletResponse portletResponse) throws IOException;
 
     public void login(String login, String password, PortletRequest portletRequest);
 

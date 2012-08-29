@@ -21,7 +21,7 @@ package fr.ippon.wip.transformers;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
 
-import fr.ippon.wip.http.request.Request.ResourceType;
+import fr.ippon.wip.http.request.RequestBuilder.ResourceType;
 import fr.ippon.wip.transformers.pool.CloseableXmlReader;
 import fr.ippon.wip.transformers.pool.Pool;
 

@@ -38,8 +38,8 @@ import com.google.common.collect.Multimap;
 
 import fr.ippon.wip.portlet.WIPortlet;
 
-import static fr.ippon.wip.http.request.Request.ResourceType;
-import static fr.ippon.wip.http.request.Request.HttpMethod;
+import static fr.ippon.wip.http.request.RequestBuilder.ResourceType;
+import static fr.ippon.wip.http.request.RequestBuilder.HttpMethod;
 
 /**
  * A factory for building Request instance.
@@ -47,7 +47,7 @@ import static fr.ippon.wip.http.request.Request.HttpMethod;
  * @author Yohan Legat
  * 
  */
-public enum RequestFactory {
+public enum RequestBuilderFactory {
 
 	/**
 	 * The singleton instance
@@ -61,7 +61,7 @@ public enum RequestFactory {
 	 * @param portletRequest
 	 * @return
 	 */
-	public Request getRequest(PortletRequest portletRequest) {
+	public RequestBuilder getRequest(PortletRequest portletRequest) {
 		boolean isMultipart = false;
 		if (portletRequest instanceof ActionRequest)
 			isMultipart = PortletFileUpload.isMultipartContent((ActionRequest) portletRequest);
@@ -107,7 +107,7 @@ public enum RequestFactory {
 	 *            parameters map, if any
 	 * @return a implementation of Request
 	 */
-	public Request getRequest(PortletRequest portletRequest, String requestedURL, ResourceType resourceType, HttpMethod httpMethod, Map<String, String[]> originalMap, boolean isMultipart) {
+	public RequestBuilder getRequest(PortletRequest portletRequest, String requestedURL, ResourceType resourceType, HttpMethod httpMethod, Map<String, String[]> originalMap, boolean isMultipart) {
 		URI uri = URI.create(requestedURL);
 		String query = uri.getQuery();
 
@@ -127,16 +127,16 @@ public enum RequestFactory {
 
 		if (isMultipart) {
 			try {
-				return new MultipartRequest(requestedURL, resourceType, (ActionRequest) portletRequest, parameterMap);
+				return new MultipartRequestBuilder(requestedURL, resourceType, (ActionRequest) portletRequest, parameterMap);
 			} catch (FileUploadException e) {
 				e.printStackTrace();
 				return null;
 			}
 			
 		} else if (httpMethod == HttpMethod.POST)
-			return new PostRequest(requestedURL, resourceType, parameterMap);
+			return new PostRequestBuilder(requestedURL, resourceType, parameterMap);
 		else
-			return new GetRequest(requestedURL, resourceType, parameterMap);
+			return new GetRequestBuilder(requestedURL, resourceType, parameterMap);
 	}
 
 	private void updateParameterMap(Multimap<String, String> parameterMap, String query) {

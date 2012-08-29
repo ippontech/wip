@@ -35,9 +35,9 @@ import com.google.common.collect.Multimap;
  * @author Yohan Legat
  *
  */
-public class GetRequest extends AbstractRequest implements Request, Serializable {
+public class GetRequestBuilder extends AbstractRequestBuilder implements RequestBuilder, Serializable {
 
-	protected GetRequest(String url, ResourceType resourceType, Multimap<String, String> parameterMap) {
+	protected GetRequestBuilder(String url, ResourceType resourceType, Multimap<String, String> parameterMap) {
 		super(url, HttpMethod.GET, resourceType, parameterMap);
 	}
 

@@ -19,7 +19,7 @@
 package fr.ippon.wip.http.hc;
 
 import fr.ippon.wip.config.WIPConfiguration;
-import fr.ippon.wip.http.request.Request;
+import fr.ippon.wip.http.request.RequestBuilder;
 import fr.ippon.wip.util.WIPUtil;
 
 import net.sf.ehcache.CacheManager;
@@ -81,7 +81,7 @@ public class HttpClientResourceManager {
 
 	private final ThreadLocal<PortletResponse> currentPortletResponse;
 
-	private final ThreadLocal<Request> currentRequest;
+	private final ThreadLocal<RequestBuilder> currentRequest;
 	private static final String USER_WINDOW_KEY_SEPARATOR = "?";
 
 	private int staleIfErrorTime = 0;
@@ -94,7 +94,7 @@ public class HttpClientResourceManager {
 		perUserWindowCredentialProviderMap = Collections.synchronizedMap(new HashMap<String, CredentialsProvider>());
 		currentPortletRequest = new ThreadLocal<PortletRequest>();
 		currentPortletResponse = new ThreadLocal<PortletResponse>();
-		currentRequest = new ThreadLocal<Request>();
+		currentRequest = new ThreadLocal<RequestBuilder>();
 
 		try {
 			SSLSocketFactory ssf = new SSLSocketFactory(new TrustSelfSignedStrategy(), new AllowAllHostnameVerifier());
@@ -198,7 +198,7 @@ public class HttpClientResourceManager {
 	 * 
 	 * @return
 	 */
-	public Request getCurrentRequest() {
+	public RequestBuilder getCurrentRequest() {
 		return currentRequest.get();
 	}
 
@@ -292,7 +292,7 @@ public class HttpClientResourceManager {
 	 * @param request
 	 * @return
 	 */
-	public HttpContext initExecutionContext(PortletRequest portletRequest, PortletResponse portletResponse, Request request) {
+	public HttpContext initExecutionContext(PortletRequest portletRequest, PortletResponse portletResponse, RequestBuilder request) {
 		HttpContext context = new BasicHttpContext();
 		CredentialsProvider credentialsProvider = getCredentialsProvider(portletRequest);
 		context.setAttribute(ClientContext.CREDS_PROVIDER, credentialsProvider);

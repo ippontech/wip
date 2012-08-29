@@ -40,24 +40,24 @@
                     <%=printHelp("wip.help.urllistajax", locale)%>
                     <ul id="javascriptUrlList">
                         <%
-                        	Map<String, Request.ResourceType> l = wipConf.getJavascriptResourcesMap();
-                                                                            for (String s : l.keySet()) {
-                                                                                String entry = s + "::::" + l.get(s).name();
-                                                                                out.println(
-                                                                                        "<li id=\"javascriptUrl" + entry + "\">"
-                                                                                                + "<a href=\"JavaScript:removeUrl('javascriptUrl" + entry + "')\">"
-                                                                                                + "<img src=\"" + src + "\" alt=\"remove\" />"
-                                                                                                + "</a>"
-                                                                                                + "<span style='padding-left:15px'>" + s + " - " + l.get(s).name() + "</span>"
-                                                                                                + "</li>"
-                                                                                );
-                                                                            }
+                        	Map<String, RequestBuilder.ResourceType> l = wipConf.getJavascriptResourcesMap();
+                                                                                                    for (String s : l.keySet()) {
+                                                                                                        String entry = s + "::::" + l.get(s).name();
+                                                                                                        out.println(
+                                                                                                                "<li id=\"javascriptUrl" + entry + "\">"
+                                                                                                                        + "<a href=\"JavaScript:removeUrl('javascriptUrl" + entry + "')\">"
+                                                                                                                        + "<img src=\"" + src + "\" alt=\"remove\" />"
+                                                                                                                        + "</a>"
+                                                                                                                        + "<span style='padding-left:15px'>" + s + " - " + l.get(s).name() + "</span>"
+                                                                                                                        + "</li>"
+                                                                                                        );
+                                                                                                    }
                         %>
                     </ul>
                     <input type="text" name="javascriptUrlToAdd" id="javascriptUrlToAdd"/>
                     <select name="javascriptUrlTypeToAdd" id="javascriptUrlTypeToAdd">
                         <%
-                        	for (Request.ResourceType type : Request.ResourceType.values()) {
+                        	for (RequestBuilder.ResourceType type : RequestBuilder.ResourceType.values()) {
                         %>
                         <option value="<%=type.name()%>"><%=type.name()%>
                         </option>

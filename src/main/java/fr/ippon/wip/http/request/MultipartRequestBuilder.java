@@ -46,7 +46,7 @@ import com.google.common.collect.Multimap;
  * @author Yohan Legat
  * 
  */
-public class MultipartRequest extends AbstractRequest implements Serializable, Request {
+public class MultipartRequestBuilder extends AbstractRequestBuilder implements Serializable, RequestBuilder {
 
 	private static PortletFileUpload fileUploadPortlet;
 
@@ -57,7 +57,7 @@ public class MultipartRequest extends AbstractRequest implements Serializable, R
 		fileUploadPortlet = new PortletFileUpload(factory);
 	}
 
-	protected MultipartRequest(String url, ResourceType resourceType, ActionRequest portletRequest, Multimap<String, String> parameterMap) throws FileUploadException {
+	protected MultipartRequestBuilder(String url, ResourceType resourceType, ActionRequest portletRequest, Multimap<String, String> parameterMap) throws FileUploadException {
 		super(url, HttpMethod.POST, resourceType, parameterMap);
 		files = fileUploadPortlet.parseRequest(portletRequest);
 	}

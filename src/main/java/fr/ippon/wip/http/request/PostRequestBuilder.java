@@ -40,7 +40,7 @@ import java.util.Map;
  * 
  * @author Yohan Legat
  */
-public class PostRequest extends AbstractRequest implements Request, Serializable {
+public class PostRequestBuilder extends AbstractRequestBuilder implements RequestBuilder, Serializable {
 
 	/**
 	 * Gets url, methodType, resourceType and optional parameters from
@@ -48,7 +48,7 @@ public class PostRequest extends AbstractRequest implements Request, Serializabl
 	 * 
 	 * @param portletRequest
 	 */
-	protected PostRequest(String url, ResourceType resourceType, Multimap<String, String> parameterMap) {
+	protected PostRequestBuilder(String url, ResourceType resourceType, Multimap<String, String> parameterMap) {
 		super(url, HttpMethod.POST, resourceType, parameterMap);
 	}
 

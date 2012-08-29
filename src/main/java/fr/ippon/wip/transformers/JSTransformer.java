@@ -19,8 +19,8 @@
 package fr.ippon.wip.transformers;
 
 import fr.ippon.wip.config.WIPConfiguration;
-import fr.ippon.wip.http.request.PostRequest;
-import fr.ippon.wip.http.request.Request.ResourceType;
+import fr.ippon.wip.http.request.PostRequestBuilder;
+import fr.ippon.wip.http.request.RequestBuilder.ResourceType;
 import fr.ippon.wip.util.WIPUtil;
 
 import org.xml.sax.SAXException;
@@ -162,7 +162,7 @@ public class JSTransformer extends AbstractTransformer {
 
 		// ---------------------------------------------------------------------------
 
-		Map<String, PostRequest.ResourceType> jsUrls = wipConfig.getJavascriptResourcesMap();
+		Map<String, PostRequestBuilder.ResourceType> jsUrls = wipConfig.getJavascriptResourcesMap();
 		for (String jsUrl : jsUrls.keySet()) {
 			url = jsUrl;
 			// Add \\ for regex characters like "?"

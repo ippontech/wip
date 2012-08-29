@@ -30,7 +30,7 @@ import fr.ippon.wip.portlet.WIPortlet;
  * @author François Prot
  * @author Yohan Legat
  */
-public abstract class AbstractRequest implements Request {
+public abstract class AbstractRequestBuilder implements RequestBuilder {
 
 	protected String requestedURL;
 
@@ -47,7 +47,7 @@ public abstract class AbstractRequest implements Request {
 		}
 	};
 
-	protected AbstractRequest(String url, HttpMethod httpMethod, ResourceType resourceType, Multimap<String, String> parameterMap) {
+	protected AbstractRequestBuilder(String url, HttpMethod httpMethod, ResourceType resourceType, Multimap<String, String> parameterMap) {
 		this.requestedURL = url;
 		this.httpMethod = httpMethod;
 		this.resourceType = resourceType;

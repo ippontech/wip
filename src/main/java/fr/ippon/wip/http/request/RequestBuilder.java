@@ -28,7 +28,7 @@ import org.apache.http.client.methods.HttpRequestBase;
  * @author Yohan Legat
  *
  */
-public interface Request {
+public interface RequestBuilder {
 
 	public enum HttpMethod {
 		GET, POST

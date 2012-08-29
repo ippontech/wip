@@ -19,7 +19,7 @@
 package fr.ippon.wip.http.hc;
 
 import fr.ippon.wip.config.WIPConfiguration;
-import fr.ippon.wip.http.request.Request;
+import fr.ippon.wip.http.request.RequestBuilder;
 import fr.ippon.wip.transformers.*;
 import fr.ippon.wip.transformers.pool.CloseableXmlReader;
 import fr.ippon.wip.transformers.pool.Pool;
@@ -81,7 +81,7 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
 		PortletRequest portletRequest = HttpClientResourceManager.getInstance().getCurrentPortletRequest();
 		PortletResponse portletResponse = HttpClientResourceManager.getInstance().getCurrentPortletResponse();
 		WIPConfiguration config = WIPUtil.getConfiguration(portletRequest);
-		Request request = HttpClientResourceManager.getInstance().getCurrentRequest();
+		RequestBuilder request = HttpClientResourceManager.getInstance().getCurrentRequest();
 
 		if (httpResponse == null) {
 			// No response -> no transformation
