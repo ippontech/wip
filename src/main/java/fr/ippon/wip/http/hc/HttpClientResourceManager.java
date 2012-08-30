@@ -19,6 +19,7 @@
 package fr.ippon.wip.http.hc;
 
 import fr.ippon.wip.config.WIPConfiguration;
+import fr.ippon.wip.http.request.IgnoreHttpRequestFilter;
 import fr.ippon.wip.http.request.RequestBuilder;
 import fr.ippon.wip.util.WIPUtil;
 
@@ -125,6 +126,7 @@ public class HttpClientResourceManager {
 
 			decoratedClient.addPreProcessor(new LtpaRequestInterceptor());
 			decoratedClient.addPreProcessor(new StaleIfErrorRequestInterceptor(staleIfErrorTime));
+			decoratedClient.addFilter(new IgnoreHttpRequestFilter());
 
 			decoratedClient.addPostProcessor(new TransformerResponseInterceptor());
 

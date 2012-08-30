@@ -23,24 +23,18 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
 import com.google.common.base.Stopwatch;
 
-import fr.ippon.wip.config.WIPConfiguration;
+import fr.ippon.wip.http.request.AbstractHttpRequestFilter;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 /**
  * This class uses the decorator pattern to inject preProcessor (HttpRequestInterceptor)
@@ -51,15 +45,14 @@ import java.util.regex.PatternSyntaxException;
  */
 public class HttpClientDecorator implements HttpClient {
 	
-	private static final Logger LOG = Logger.getLogger(HttpClientDecorator.class.getName());
-	
-	private static final HttpResponse NotFoundResponse = new BasicHttpResponse(HttpVersion.HTTP_1_1, HttpStatus.SC_NOT_FOUND, "Deleted by WIP");
-	
     private final HttpClient backend;
 
     private final List<HttpRequestInterceptor> preProcessors = new LinkedList<HttpRequestInterceptor>();
+    
     private final List<HttpResponseInterceptor> postProcessors = new LinkedList<HttpResponseInterceptor>();
-
+    
+    private final List<AbstractHttpRequestFilter> filters = new LinkedList<AbstractHttpRequestFilter>();
+    
     public static ThreadLocal<Long> timeProcess = new ThreadLocal<Long>();
     
     /**
@@ -75,6 +68,10 @@ public class HttpClientDecorator implements HttpClient {
      */
     public void addPreProcessor(HttpRequestInterceptor interceptor) {
         preProcessors.add(interceptor);
+    }
+    
+    public void addFilter(AbstractHttpRequestFilter filter) {
+    	filters.add(filter);
     }
     
     /**
@@ -135,11 +132,9 @@ public class HttpClientDecorator implements HttpClient {
      */
     public HttpResponse execute(HttpHost target, HttpRequest request, HttpContext context) throws IOException {
         try {
-//        	WIPConfiguration configuration = (WIPConfiguration) context.getAttribute("WIP_CONFIGURATION");
-//        	
-//        	HttpRequestBase base = (HttpRequestBase) request;
-//        	if(isDeletedScript(configuration, base.getURI().toString()))
-//        		return NotFoundResponse;
+        	for(AbstractHttpRequestFilter filter : filters)
+        		if(!filter.filter(target, request, context))
+        			return AbstractHttpRequestFilter.NOT_FOUND_RESPONSE;
         	
             for (HttpRequestInterceptor preProcessor : preProcessors) {
                 preProcessor.process(request, context);
@@ -159,28 +154,6 @@ public class HttpClientDecorator implements HttpClient {
         }
     }
     
-	/**
-	 * Check if the script from the given URL has to be deleted
-	 * 
-	 * @param url
-	 *            the script URL
-	 * @return a boolean indicating if the script has to be deleted
-	 */
-	private boolean isDeletedScript(WIPConfiguration configuration, String url) {
-		for (String regex : configuration.getScriptsToDelete()) {
-			try {
-				Pattern p = Pattern.compile(regex);
-				Matcher m = p.matcher(url);
-				if (m.find())
-					return true;
-			} catch (PatternSyntaxException e) {
-				LOG.log(Level.WARNING, "Could not parse deletedScript regex: ", e);
-			}
-		}
-
-		return false;
-	}
-
     /**
      * Calls #execute(HttpHost, HttpRequest, ResponseHandler, HttpContext)
      */

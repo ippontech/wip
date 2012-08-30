@@ -53,8 +53,6 @@ public class TransformerBuilder {
 
 	public static final int STATUS_NO_TRANSFORMATION = 1;
 
-	public static final int STATUS_EMPTY_HTTP_RESPONSE = 2;
-
 	public TransformerBuilder() {
 	}
 
@@ -127,12 +125,6 @@ public class TransformerBuilder {
 	private WIPTransformer buildJavascriptTransformer() {
 		// JavaScript transformation
 		JSTransformer transformer = new JSTransformer(portletRequest, portletResponse, actualURL);
-
-		// Empty content
-		if (transformer.isDeletedScript(actualURL)) {
-			status = STATUS_EMPTY_HTTP_RESPONSE;
-			return null;
-		}
 
 		if (((JSTransformer) transformer).isIgnoredScript(actualURL)) {
 			status = STATUS_NO_TRANSFORMATION;

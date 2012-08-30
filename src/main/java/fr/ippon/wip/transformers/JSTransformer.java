@@ -82,28 +82,6 @@ public class JSTransformer extends AbstractTransformer {
 	}
 
 	/**
-	 * Check if the script from the given URL has to be deleted
-	 * 
-	 * @param url
-	 *            the script URL
-	 * @return a boolean indicating if the script has to be deleted
-	 */
-	public boolean isDeletedScript(String url) {
-		for (String regex : wipConfig.getScriptsToDelete()) {
-			try {
-				Pattern p = Pattern.compile(regex);
-				Matcher m = p.matcher(url);
-				if (m.find())
-					return true;
-			} catch (PatternSyntaxException e) {
-				LOG.log(Level.WARNING, "Could not parse deletedScript regex: ", e);
-			}
-		}
-
-		return false;
-	}
-
-	/**
 	 * Check if the script from the given URL has to be rewritten
 	 * 
 	 * @param url

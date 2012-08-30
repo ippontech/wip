@@ -44,7 +44,6 @@ import javax.portlet.PortletResponse;
 import javax.xml.transform.TransformerException;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -60,13 +59,6 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
 	
 	private static final Pool<CloseableXmlReader> xmlReaderPool = new XMLReaderPool(100);
 
-	private void emptyResponse(HttpResponse httpResponse) {
-		EntityUtils.consumeQuietly(httpResponse.getEntity());
-		httpResponse.setEntity(new StringEntity("", Charset.defaultCharset()));
-		httpResponse.setStatusCode(HttpStatus.SC_NOT_FOUND);
-		httpResponse.setReasonPhrase("Deleted by WIP");
-	}
-	
 	/**
 	 * If httpResponse must be transformed, creates an instance of
 	 * WIPTransformer, executes WIPTransformer#transform on the response content
@@ -128,12 +120,6 @@ class TransformerResponseInterceptor implements HttpResponseInterceptor {
 		int status = transformerBuilder.build();
 		if (status == TransformerBuilder.STATUS_NO_TRANSFORMATION)
 			return;
-
-		// Send à 404 empty response
-		if (status == TransformerBuilder.STATUS_EMPTY_HTTP_RESPONSE) {
-			emptyResponse(httpResponse);
-			return;
-		}
 
 		WIPTransformer transformer = transformerBuilder.getTransformer();
 		// Call WIPTransformer#transform method and update the response Entity
