@@ -11,8 +11,17 @@ import org.apache.http.protocol.HttpContext;
 
 import fr.ippon.wip.config.WIPConfiguration;
 
+/**
+ * A request filter based on the content of the ignore script parameter in the current configuration.
+ * 
+ * @author Yohan Legat
+ *
+ */
 public class IgnoreHttpRequestFilter extends AbstractHttpRequestFilter {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean filter(HttpHost target, HttpRequest request, HttpContext context) {
 		WIPConfiguration configuration = (WIPConfiguration) context.getAttribute("WIP_CONFIGURATION");
@@ -36,7 +45,7 @@ public class IgnoreHttpRequestFilter extends AbstractHttpRequestFilter {
 					return true;
 				
 			} catch (PatternSyntaxException e) {
-				return false;
+				throw e;
 			}
 		}
 
