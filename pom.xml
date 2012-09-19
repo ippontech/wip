@@ -24,6 +24,11 @@
                     <artifactId>xalan</artifactId>
                     <version>2.7.1</version>
                 </dependency>
+                <dependency>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                    <version>1.6.4</version>
+                </dependency>
             </dependencies>
         </profile>
         <profile>
@@ -40,6 +45,11 @@
                         </exclusion>
                     </exclusions>
                 </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>gatein</id>
+            <dependencies>
             </dependencies>
         </profile>
     </profiles>
