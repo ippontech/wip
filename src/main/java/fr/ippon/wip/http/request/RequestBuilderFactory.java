@@ -103,7 +103,7 @@ public enum RequestBuilderFactory {
 	 *            resource type, if any
 	 * @param httpMethod
 	 *            http method, if any
-	 * @param parameterMap
+	 * @param originalMap
 	 *            parameters map, if any
 	 * @return a implementation of Request
 	 */
@@ -121,7 +121,7 @@ public enum RequestBuilderFactory {
 			// hack; can't figure why separators are sometime "&" or "&amp;"...
 			query = query.replaceAll("amp;", "");
 
-			requestedURL = "http://" + uri.getHost() + uri.getPath();
+			requestedURL = uri.getScheme() + "://" + uri.getHost() + (uri.getPort() == -1 ? "" : ":" + uri.getPort()) + uri.getPath();
 			updateParameterMap(parameterMap, query);
 		}
 

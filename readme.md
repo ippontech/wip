@@ -22,7 +22,7 @@ The WIP portlet acts as a reverse proxy between the target application and the p
 
 Most of the CSS, Javascript and HTML header information will be correctly managed by WIP at the cost of some little overhead processing.
 
-WIP is bundled with Apache HttpComponents 4.1 and takes advantage of its EhCache integration in order to provide the best performances and availability.
+WIP is bundled with Apache HttpComponents 4.2 and takes advantage of its EhCache integration in order to provide the best performances and availability.
 
 You'll also be able to control content processing and specify what part of the application you want to integrate with XSLT or XPath.
 
