@@ -98,7 +98,7 @@ public class HttpClientDecorator implements HttpClient {
 
     HttpHost getHttpHost(HttpUriRequest request) {
         URI uri = request.getURI();
-        return new HttpHost(uri.getAuthority());
+        return new HttpHost(uri.getHost(), uri.getPort(), uri.getScheme());
     }
 
     /**
