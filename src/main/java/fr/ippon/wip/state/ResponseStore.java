@@ -76,11 +76,11 @@ public class ResponseStore extends LinkedHashMap<UUID, Response> {
      */
     public UUID store(Response response) {
         UUID id = UUID.nameUUIDFromBytes(response.getUrl().getBytes());
-        if (containsKey(id)) {
-            throw new IllegalStateException("An object already exists for this UUID");
-        } else {
+        //if (containsKey(id)) {
+        //    throw new IllegalStateException("An object already exists for this UUID");
+        //} else {
             put(id, response);
-        }
+        //}
         return id;
     }
 }

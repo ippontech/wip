@@ -22,11 +22,13 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.http.request.PostRequestBuilder;
+import fr.ippon.wip.http.request.RequestBuilder;
 import fr.ippon.wip.portlet.WIPortlet;
 import fr.ippon.wip.util.WIPUtil;
 
@@ -123,7 +125,15 @@ public class UrlFactory {
 		if (portletResponse instanceof MimeResponse) {
 			// Create a portal URL
 			BaseURL baseURL;
-			if (resourceType == PostRequestBuilder.ResourceType.HTML) {
+            boolean isAction = (resourceType == PostRequestBuilder.ResourceType.HTML);
+            // TEST
+            for (Map.Entry<String, RequestBuilder.ResourceType> entry : configuration.getJavascriptResourcesMap().entrySet()) {
+                if (entry.getValue() == RequestBuilder.ResourceType.AJAX && absoluteUrl.contains(entry.getKey())) {
+                    isAction = false;
+                    break;
+                }
+            }
+			if (isAction) {
 				// Create an ActionURL
 				baseURL = ((MimeResponse) portletResponse).createActionURL();
 			} else {

@@ -175,9 +175,9 @@ public class Response {
 		httpServletResponse.setContentType(mimeType);
 		httpServletResponse.setCharacterEncoding(charset.name());
 		httpServletResponse.setStatus(responseCode);
-		httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"" + getFileName() + "\"");
 		if (isBinary()) {
-			OutputStream os = httpServletResponse.getOutputStream();
+            httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"" + getFileName() + "\"");
+            OutputStream os = httpServletResponse.getOutputStream();
 			IOUtils.copy(new ByteArrayInputStream(content), os);
 			os.close();
 		} else {

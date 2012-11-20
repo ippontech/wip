@@ -226,22 +226,22 @@ public class WIPortlet extends GenericPortlet {
 		// Check if remote URI must be proxied
 		if (!wipConfig.isProxyURI(wipResponse.getUrl())) {
 			// Redirect to remote URI without proxying
-				response.sendRedirect(wipResponse.getUrl());
+			response.sendRedirect(wipResponse.getUrl());
 		} else {
-			// Store response for future usage
-			UUID uuid = ResponseStore.getInstance().store(wipResponse);
-			// Check if content must be rendered in the portlet or as an
-			// attachment
-			if (wipResponse.isHtml()) {
-				// Update state & let the portlet render
-				PortletWindow windowState = PortletWindow.getInstance(request);
-				windowState.setResponseID(uuid);
-				windowState.setActualURL(wipResponse.getUrl());
-			} else {
-				// Redirect to ResourceServlet
-				response.sendRedirect(request.getContextPath() + "/ResourceHandler?&uuid=" + uuid.toString());
-			}
-		}
+            // Store response for future usage
+            UUID uuid = ResponseStore.getInstance().store(wipResponse);
+            // Check if content must be rendered in the portlet or as an
+            // attachment
+            if (wipResponse.isHtml()) {
+                // Update state & let the portlet render
+                PortletWindow windowState = PortletWindow.getInstance(request);
+                windowState.setResponseID(uuid);
+                windowState.setActualURL(wipResponse.getUrl());
+            } else {
+                // Redirect to ResourceServlet
+                response.sendRedirect(request.getContextPath() + "/ResourceHandler?&uuid=" + uuid.toString());
+            }
+        }
 		
 		WIPLogging.INSTANCE.closeTransformLogFile();
 	}

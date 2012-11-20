@@ -52,7 +52,7 @@ public class ResourceHandler extends HttpServlet {
                          HttpServletResponse response) throws ServletException, IOException {
         // Retrieve response
         UUID uuid = UUID.fromString(request.getParameter("uuid"));
-        Response wipResponse = ResponseStore.getInstance().remove(uuid);
+        Response wipResponse = ResponseStore.getInstance().get(uuid);
 
         // Send response
         wipResponse.sendResponse(response);
