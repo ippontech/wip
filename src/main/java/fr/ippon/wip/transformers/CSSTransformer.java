@@ -141,7 +141,7 @@ public class CSSTransformer extends AbstractTransformer {
 			final String wip = "\n." + wipConfig.getPortletDivId() + " ";
 
 			// removing comments
-			input = input.replaceAll("\\/\\*.*\\*\\/", "");
+			input = input.replaceAll("\\/\\*[^*]*\\*+([^/*][^*]*\\*+)*\\/", "");
 
 			// Removing all double white spaced characters
 			input = input.replaceAll("\\r|\\n", "");
