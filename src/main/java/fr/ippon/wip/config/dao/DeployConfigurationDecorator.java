@@ -82,14 +82,8 @@ public class DeployConfigurationDecorator extends ConfigurationDAODecorator {
 
 	public DeployConfigurationDecorator(AbstractConfigurationDAO dao) {
 		super(dao);
-		try {
-			URL url = getClass().getResource("/deploy");
-			deployPath = new File(url.toURI());
 
-		} catch (URISyntaxException e) {
-			e.printStackTrace();
-		}
-
+        deployPath = new File(ConfigurationDAOFactory.INSTANCE.getDeployDirectoryLocation());
 		zip = new ZipConfiguration();
 	}
 

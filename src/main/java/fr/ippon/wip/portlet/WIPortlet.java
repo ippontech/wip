@@ -20,7 +20,6 @@ package fr.ippon.wip.portlet;
 
 import fr.ippon.wip.config.WIPConfiguration;
 import fr.ippon.wip.config.dao.AbstractConfigurationDAO;
-import fr.ippon.wip.config.dao.ConfigurationDAOFactory;
 import fr.ippon.wip.http.HttpExecutor;
 import fr.ippon.wip.http.hc.HttpClientExecutor;
 import fr.ippon.wip.http.hc.HttpClientResourceManager;
@@ -76,11 +75,9 @@ public class WIPortlet extends GenericPortlet {
 	public void init(PortletConfig config) throws PortletException {
 		super.init(config);
 
-		// initialization of logging singleton
+        // initialization of logging singleton
 		WIPLogging logging = WIPLogging.INSTANCE;
-		
-		ConfigurationDAOFactory.INSTANCE.setPortletContext(config.getPortletContext());
-		
+
 		double heuristicCacheRatio = Double.parseDouble(config.getInitParameter("HEURISTIC_CACHE_RATIO"));
 		HttpClientResourceManager.getInstance().setHeuristicCacheRation(heuristicCacheRatio);
 
@@ -298,6 +295,7 @@ public class WIPortlet extends GenericPortlet {
 	@Override
 	public void destroy() {
 		super.destroy();
+
 		executor.destroy();
 		WIPLogging.INSTANCE.closeAccessLogFile();
 	}

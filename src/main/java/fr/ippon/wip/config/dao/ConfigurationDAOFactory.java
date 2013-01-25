@@ -2,6 +2,7 @@ package fr.ippon.wip.config.dao;
 
 import java.io.File;
 import java.net.URL;
+import java.util.logging.Logger;
 
 import javax.portlet.PortletContext;
 
@@ -16,11 +17,26 @@ public enum ConfigurationDAOFactory {
 
 	INSTANCE;
 
+    private final Logger LOG = Logger.getLogger(ConfigurationDAOFactory.class.getName());
+
 	private AbstractConfigurationDAO xmlDAO;
-
 	private PortletContext context;
+    private String confDirectoryLocation;
+    private String deployDirectoryLocation;
 
-	/**
+    public void setConfDirectoryLocation(String confDirectoryLocation) {
+        this.confDirectoryLocation = confDirectoryLocation;
+    }
+
+    public String getDeployDirectoryLocation() {
+        return deployDirectoryLocation;
+    }
+
+    public void setDeployDirectoryLocation(String deployDirectoryLocation) {
+        this.deployDirectoryLocation = deployDirectoryLocation;
+    }
+
+    /**
 	 * We need a reference to the portlet context for retrieving the path to the
 	 * server configuration folder. Any portlet application using this factory
 	 * should call this method to make sure it has been set.
@@ -40,19 +56,29 @@ public enum ConfigurationDAOFactory {
 	 */
 	public synchronized AbstractConfigurationDAO getXMLDAOInstance() {
 		if (xmlDAO == null) {
-			String pathConfigFiles = context.getRealPath("../../conf/wip");
-			File configFolder = new File(pathConfigFiles);
-			if (!configFolder.exists())
-				configFolder.mkdir();
+            if (confDirectoryLocation == null) {
+                throw new IllegalStateException("confDirectoryLocation has not been initialized");
+            }
 
-			xmlDAO = new DeployConfigurationDecorator(new ConfigurationCacheDecorator(new XMLConfigurationDAO(pathConfigFiles)));
+            LOG.info("pathConfigFiles is "+ confDirectoryLocation+" on server "+context.getServerInfo());
 
-			// we create the default configuration if it does not exist in the
-			// server configuration folder
-			if (xmlDAO.getDefaultConfiguration() == null)
-				createDefaultConfiguration(xmlDAO);
-		}
+            File configFolder = new File(confDirectoryLocation);
+            if (!configFolder.exists()) {
+                configFolder.mkdirs();
+            }
 
+            File deployFolder = new File(deployDirectoryLocation);
+            if (!deployFolder.exists()) {
+                deployFolder.mkdirs();
+            }
+
+            xmlDAO = new DeployConfigurationDecorator(new ConfigurationCacheDecorator(new XMLConfigurationDAO(confDirectoryLocation)));
+
+            // we create the default configuration if it does not exist in the
+            // server configuration folder
+            if (xmlDAO.getDefaultConfiguration() == null)
+                createDefaultConfiguration(xmlDAO);
+        }
 		return xmlDAO;
 	}
 

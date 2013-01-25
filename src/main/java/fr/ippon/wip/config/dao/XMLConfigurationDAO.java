@@ -139,8 +139,8 @@ public class XMLConfigurationDAO extends AbstractConfigurationDAO {
 	 * 
 	 * @param name
 	 *            the name of the configuration
-	 * @param addPath
-	 *            append the path to the file name if true
+	 * @param fileType
+	 *            config (0), clipping (1) or transform (2)
 	 * @return the file associated to the configuration
 	 */
 	public File getConfigurationFile(String name, int fileType) {

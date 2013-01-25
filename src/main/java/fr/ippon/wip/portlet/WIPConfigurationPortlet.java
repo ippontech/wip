@@ -62,10 +62,8 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	private static final Logger LOG = Logger.getLogger(WIPConfigurationPortlet.class.getName());
 	
 	private AbstractConfigurationDAO configurationDAO;
-
-	private PortletFileUpload fileUploadPortlet;
-	
-	private File deployFile = null;
+    private PortletFileUpload fileUploadPortlet;
+    private String deployPath;
 
 	/**
 	 * Set if necessary the default configuration and page display in the
@@ -438,21 +436,31 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 	@Override
 	public void init(PortletConfig config) throws PortletException {
 		super.init(config);
-		ConfigurationDAOFactory.INSTANCE.setPortletContext(config.getPortletContext());
-		configurationDAO = ConfigurationDAOFactory.INSTANCE.getXMLDAOInstance();
 
-		try {
-			URL url = getClass().getResource("/deploy");
-			deployFile = new File(url.toURI());
-		} catch (URISyntaxException e) {
-			e.printStackTrace(); // should not happened
-		}
-		
-		DiskFileItemFactory factory = new DiskFileItemFactory(0, deployFile);
+        String confDirPath = config.getInitParameter("CONF_DIRECTORY_LOCATION");
+        String deployDirPath = config.getInitParameter("DEPLOY_DIRECTORY_LOCATION");
+
+        ConfigurationDAOFactory.INSTANCE.setPortletContext(config.getPortletContext());
+        ConfigurationDAOFactory.INSTANCE.setConfDirectoryLocation(confDirPath);
+        ConfigurationDAOFactory.INSTANCE.setDeployDirectoryLocation(deployDirPath);
+        configurationDAO = ConfigurationDAOFactory.INSTANCE.getXMLDAOInstance();
+
+	    File deployFile = new File(ConfigurationDAOFactory.INSTANCE.getDeployDirectoryLocation());
+        deployPath = deployFile.getAbsolutePath();
+        DiskFileItemFactory factory = new DiskFileItemFactory(0, deployFile);
 		fileUploadPortlet = new PortletFileUpload(factory);
 	}
 
-	/**
+    @Override
+    public void destroy() {
+        super.destroy();
+
+        deployPath = null;
+        configurationDAO = null;
+        fileUploadPortlet = null;
+    }
+
+    /**
 	 * Process the user action: a configuration can be deleted, selected or
 	 * saved.
 	 */
@@ -464,7 +472,8 @@ public class WIPConfigurationPortlet extends GenericPortlet {
 			try {
 				List<DiskFileItem> fileItems = fileUploadPortlet.parseRequest(request);
 				for(DiskFileItem fileItem : fileItems) {
-					String newName = FilenameUtils.concat(deployFile.getAbsolutePath(), fileItem.getName());
+                    // TODO : ???
+                    String newName = FilenameUtils.concat(deployPath, fileItem.getName());
 					File file = fileItem.getStoreLocation();
 					file.renameTo(new File(newName));
 				}

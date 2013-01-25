@@ -25,7 +25,7 @@
             <name>STALE_IF_ERROR</name>
             <value>0</value>
         </init-param>
-        
+
         <supports>
             <mime-type>text/html</mime-type>
             <portlet-mode>VIEW</portlet-mode>
@@ -52,6 +52,16 @@
         <display-name>WIPConfiguration</display-name>
 
         <portlet-class>fr.ippon.wip.portlet.WIPConfigurationPortlet</portlet-class>
+
+        <init-param>
+            <name>CONF_DIRECTORY_LOCATION</name>
+            <value>wip/conf</value>
+        </init-param>
+
+        <init-param>
+            <name>DEPLOY_DIRECTORY_LOCATION</name>
+            <value>wip/deploy</value>
+        </init-param>
 
         <supports>
             <mime-type>text/html</mime-type>
