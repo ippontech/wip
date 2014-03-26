@@ -33,7 +33,7 @@ Follow our 30 minutes [tutorial](https://github.com/ippontech/wip/wiki/Tutorial)
 
 Compatibility
 -------------
-WIP should work on any JSR 268 portal. We specifically tested it with Liferay 6.1 and GateIn 3.3
+WIP should work on any JSR 268 portal. We specifically tested it with Liferay 6.1 and GateIn 3.3.
 
 Contribution
 ------------

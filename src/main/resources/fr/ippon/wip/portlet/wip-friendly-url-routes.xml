@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!DOCTYPE routes PUBLIC "-//Liferay//DTD Friendly URL Routes 6.0.0//EN" "http://www.liferay.com/dtd/liferay-friendly-url-routes_6_0_0.dtd">
+
+<routes>
+    <route>
+        <pattern>/{instanceId}/{WIP_METHOD}/{WIP_RESOURCE_TYPE}/{WIP_LINK_URL}</pattern>
+    </route>
+</routes>
